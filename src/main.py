@@ -1,22 +1,31 @@
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
+import couchdb
+import json
 
 #Variables that contains the user credentials to access Twitter API
+# (This are all Kazi's credential)
 access_token = "126540213-AEMmwT6f9qADYoZMYVgoWuneugkmSTNgRijcS8hT"
 access_token_secret = "BfpYotAPGPA23B9dIcCicHR9r6YzwWFyhQx54SbVyXT6d"
 consumer_key = "FjDcSP67VEq6N0XxIsQpr9BRR"
 consumer_secret = "4qHx0cJvEwXD8u4yxKANVQP1mJ6oFNqHbEpELuo9l3SsSDKl1c"
 
+# Couchdb configure
+couch = couchdb.Server()
+db = couch['twitter']
+
 #This is a basic listener that just prints received tweets to stdout.
 class StdOutListener(StreamListener):
 
-    def on_data(self, data):
-        print(data)
-        return True
+	def on_data(self, data):
+		data = json.loads(data)
+		db.save({data['id']: data})
 
-    def on_error(self, status):
-        print(status)
+		return True
+
+	def on_error(self, status):
+		print(status)
 
 
 def main():
