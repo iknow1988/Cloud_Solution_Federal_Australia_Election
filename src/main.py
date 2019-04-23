@@ -34,9 +34,11 @@ def main():
 	auth = OAuthHandler(consumer_key, consumer_secret)
 	auth.set_access_token(access_token, access_token_secret)
 	stream = Stream(auth, l)
-
 	# This line filter Twitter Streams to capture data by the keywords: 'python', 'javascript', 'ruby'
-	stream.filter(track=['python', 'javascript', 'ruby'])
+	#stream.filter(track=['python', 'javascript', 'ruby'])
+	#locations= [140.3482679711,-39.7125077525,149.6598486874,-32.0871185235]
+	stream.filter(locations=[111, -44, 157, -10],languages= ["en"])
+	stream.sample()
 	return 0
 
 if __name__ == "__main__":
