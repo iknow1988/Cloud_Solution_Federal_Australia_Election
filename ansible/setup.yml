@@ -1,0 +1,38 @@
+---
+- hosts: all
+  become: true
+  become_user: ubuntu
+  remote_user: ubuntu
+  gather_facts: false
+  tasks:
+
+    - name: Wait for ssh to be up
+      become: false
+      wait_for:
+        port: 22
+        delay: 5
+        connect_timeout: 5
+        timeout: 360
+        host: "{{ ansible_host }}"
+      delegate_to: localhost
+
+    - name: Creates destination directory for ssh key
+      file:
+        state: directory
+        mode: 0700
+        dest: /home/ubuntu/.ssh/
+
+    - name: Push ssh key
+      copy:
+        src: "{{ ansible_ssh_private_key_file }}"
+        dest: /home/ubuntu/.ssh/authorized_keys
+        owner: ubuntu
+        mode: 0600
+      register: rsa
+      ignore_errors: true
+
+    - name: Final
+      pause:
+        seconds: 1
+        echo: false
+        prompt: "Setup done!"
