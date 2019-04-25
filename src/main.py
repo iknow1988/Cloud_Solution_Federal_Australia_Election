@@ -12,7 +12,7 @@ consumer_key = "FjDcSP67VEq6N0XxIsQpr9BRR"
 consumer_secret = "4qHx0cJvEwXD8u4yxKANVQP1mJ6oFNqHbEpELuo9l3SsSDKl1c"
 
 # Couchdb configure
-couch = couchdb.Server('https://admin:group2@115.146.84.108:9584/')
+couch = couchdb.Server('http://admin:group2@115.146.84.108:9584/')
 
 try:
 	db = couch.create('raw_twitter')
@@ -25,7 +25,7 @@ class StdOutListener(StreamListener):
 	def on_data(self, data):
 		try:
 			data = json.loads(data)
-			db[data['id']] = data
+			db[data['id_str']] = data
 		except:
 			print("Can not save to database")
 
