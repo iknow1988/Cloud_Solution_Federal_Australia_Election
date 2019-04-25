@@ -12,17 +12,23 @@ consumer_key = "FjDcSP67VEq6N0XxIsQpr9BRR"
 consumer_secret = "4qHx0cJvEwXD8u4yxKANVQP1mJ6oFNqHbEpELuo9l3SsSDKl1c"
 
 # Couchdb configure
-couch = couchdb.Server('https://admin:group2@115.146.85.64:9584/')
-db = couch['twitter']
-# db = couch.create('twitter')
+couch = couchdb.Server('https://admin:group2@115.146.84.108:9584/')
 
-#This is a basic listener that just prints received tweets to stdout.
+try:
+	db = couch.create('raw_twitter')
+except:
+	db = couch['raw_twitter']
+
+# This is a basic listener that just prints received tweets to stdout.
 class StdOutListener(StreamListener):
 
 	def on_data(self, data):
-		data = json.loads(data)
-		db.save({data['id']: data})
-		print(data['id'])
+		try:
+			data = json.loads(data)
+			db[data['id']] = data
+		except:
+			print("Can not save to database")
+
 		return True
 
 	def on_error(self, status):
