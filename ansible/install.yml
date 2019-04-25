@@ -73,7 +73,7 @@
     - name: Change Node Name
       replace:
         dest: /opt/couchdb/etc/vm.args
-        regexp: '^-name couchdb@localhost$'
+        regexp: '^-name couchdb@127.0.0.1'
         replace: '-name couchdb@{{ansible_host}}'
 
     - name: Set Cookie
@@ -82,6 +82,18 @@
         regexp: '^-setcookie monster$'
         replace: '-setcookie zaFradre6ech'
     
+    - name: Require valid user
+      lineinfile:
+        dest: /opt/couchdb/etc/local.ini
+        insertafter: '^\[chttpd\]$'
+        line: 'require_valid_user = true'
+    
+    - name: Bind Cluster Port to Public
+      lineinfile:
+        dest: /opt/couchdb/etc/local.ini
+        insertafter: '^\[chttpd\]$'
+        line: 'port = 9584'
+
     - name: Bind Cluster Address to Public
       lineinfile:
         dest: /opt/couchdb/etc/local.ini
@@ -94,11 +106,24 @@
         insertafter: '^\[httpd\]$'
         line: 'bind_address = 0.0.0.0'
 
-    - name: Add Admin User
+    - name: Require auth for httpd
+      lineinfile:
+        dest: /opt/couchdb/etc/local.ini
+        insertafter: '^\[httpd\]$'
+        line: 'WWW-Authenticate = Basic realm="administrator"'
+    
+
+    - name: Add CAdmin User
       lineinfile:
         dest: /opt/couchdb/etc/local.ini
         insertafter: '^\[admins\]$'
         line: 'cadmin = password'
+
+    - name: Add Admin User
+      lineinfile:
+        dest: /opt/couchdb/etc/local.ini
+        insertafter: '^\[admins\]$'
+        line: 'admin = password'
 
     - name: Install CouchDB Service
       copy:

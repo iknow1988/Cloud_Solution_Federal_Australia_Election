@@ -1,0 +1,51 @@
+---
+- hosts: dbservers
+  tasks:
+    - name: Cluster Setup
+      uri:
+        url: http://admin:password@{{ansible_host}}:9584/_cluster_setup
+        method: POST
+        body: '"{"action": "enable_cluster", "bind_address": "0.0.0.0", "username": "admin","password": "password", "node_count": "2"}'
+        body_format: json
+        status_code: 200
+        return_content: yes
+        headers:
+          Content-Type: "application/json"
+      register: json_response
+
+    - name: Join - master node
+      uri:
+        url: http://admin:password@{{ansible_host}}:9584/_cluster_setup
+        method: POST
+        body: '{"action": "enable_cluster", "bind_address":"0.0.0.0", "username": "admin", "password":"password", "port": 9584, "node_count": "2", "remote_node": "{{ansible_host}}", "remote_current_user": "admin", "remote_current_password": "password" }'
+        body_format: json
+        status_code: 200
+        return_content: yes
+        headers:
+          Content-Type: "application/json"
+
+    - name: Join - other nodes
+      uri:
+        url: http://admin:password@{{ansible_host}}:9584/_cluster_setup
+        method: POST
+        body: '{"action": "add_node", "host":"{{ansible_host}}", "port": 9584, "username": "admin", "password":"password"}'
+        body_format: json
+        status_code: 200
+        return_content: yes
+        headers:
+          Content-Type: "application/json"
+      register: json_response
+
+    - name: Finish cluster
+      uri:
+        url: http://admin:password@{{ansible_host}}:9584/_cluster_setup 
+        method: POST
+        body: '{"action": "finish_cluster"}'
+        body_format: json
+        status_code: 200
+        return_content: yes
+        headers:
+          Content-Type: "application/json"
+      register: json_response
+
+
