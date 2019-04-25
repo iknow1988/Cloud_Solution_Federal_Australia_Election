@@ -12,7 +12,7 @@ consumer_key = "FjDcSP67VEq6N0XxIsQpr9BRR"
 consumer_secret = "4qHx0cJvEwXD8u4yxKANVQP1mJ6oFNqHbEpELuo9l3SsSDKl1c"
 
 # Couchdb configure
-couch = couchdb.Server('https://admin:group2@localhost:5984/')
+couch = couchdb.Server('https://admin:group2@115.146.85.64:9584/')
 db = couch['twitter']
 # db = couch.create('twitter')
 
