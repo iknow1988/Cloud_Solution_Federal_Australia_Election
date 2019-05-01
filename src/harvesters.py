@@ -1,7 +1,5 @@
 from tweepy.streaming import StreamListener
-from tweepy import OAuthHandler
-from tweepy import Stream
-import tweepy
+from tweepy import OAuthHandler, Stream, API
 import helper
 import json
 from shapely.geometry import shape, Point, Polygon
@@ -62,10 +60,11 @@ class Harvester:
 
 class TimeLineHarvester(Harvester):
 
-	def __init__(self):
-		auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
+	def __init__(self, screen_name):
+		auth = OAuthHandler(self.consumer_key, self.consumer_secret)
 		auth.set_access_token(self.access_token, self.access_token_secret)
-		self.api = tweepy.API(auth, wait_on_rate_limit=True, retry_count=3, retry_delay=5, retry_errors=set([401, 404, 500, 503]))
+		self.api = API(auth, wait_on_rate_limit=True, retry_count=3, retry_delay=5, retry_errors=set([401, 404, 500, 503]))
+		self.screen_name = screen_name
 
 	def get_all_tweets(self,screen_name):
 		all_tweets = []
@@ -83,8 +82,10 @@ class TimeLineHarvester(Harvester):
 				pass
 			all_tweets.extend(new_tweets)
 			oldest = all_tweets[-1].id - 1
-		count = 0
+		self.save_to_db(all_tweets)
 
+	def save_to_db(self, all_tweets):
+		count = 0
 		for counter, tweet in enumerate(all_tweets):
 			data = tweet._json
 			if helper.tweet_in_australia(data["coordinates"], data['geo'], data['place']):
@@ -97,7 +98,7 @@ class TimeLineHarvester(Harvester):
 			if count and counter % 100 == 0:
 				print("Left to save to database: ", len(all_tweets) - counter)
 		if count:
-			print("Saved %s tweets to database" % count, "for user:", screen_name)
+			print("Saved %s tweets to database" % count, "for user:", self.screen_name)
 
 	def start_harvesting(self):
 		rows = len(self.users_db)

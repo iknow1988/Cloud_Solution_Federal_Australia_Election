@@ -1,7 +1,7 @@
 import couchdb
 import json
 import sys
-from hashtag_crawler import Harvester
+from harvesters import Harvester
 
 COUCH_SERVER = couchdb.Server("http://admin:group2@115.146.84.108:9584/")
 credential_db = COUCH_SERVER['tweeter_credentials']
