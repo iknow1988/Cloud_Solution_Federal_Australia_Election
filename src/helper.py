@@ -1,8 +1,8 @@
 from shapely.geometry import shape, Point, Polygon
-# import matplotlib.pyplot as plt
-# from matplotlib import patches
-# import numpy as np
-# from matplotlib.collections import PatchCollection
+import matplotlib.pyplot as plt
+from matplotlib import patches
+import numpy as np
+from matplotlib.collections import PatchCollection
 
 X_MIN = 110
 X_MAX = 160
@@ -11,25 +11,23 @@ Y_MAX = -8
 AUSTRALIA = Polygon([[X_MIN, Y_MIN], [X_MIN, Y_MAX], [X_MAX, Y_MAX], [X_MAX, Y_MIN]])
 
 
-# def plot_polygon(polygon):
-# 	fig, ax = plt.subplots(1)
-#
-# 	x, y = polygon.exterior.coords.xy
-# 	points = np.array([x, y], np.int32).T
-# 	# print(points)
-# 	polygon_shape = patches.Polygon(points, linewidth=1, edgecolor='r', facecolor='none')
-# 	ax.add_patch(polygon_shape)
-#
-# 	x, y = AUSTRALIA.exterior.coords.xy
-# 	points = np.array([x, y], np.int32).T
-# 	# print(points)
-# 	australia_shape = patches.Polygon(points, linewidth=1, edgecolor='g', facecolor='none')
-# 	ax.add_patch(australia_shape)
-#
-# 	plt.axis("auto")
-# 	plt.show()
+def plot_polygon(polygon):
+	fig, ax = plt.subplots(1)
 
+	x, y = polygon.exterior.coords.xy
+	points = np.array([x, y], np.int32).T
+	# print(points)
+	polygon_shape = patches.Polygon(points, linewidth=1, edgecolor='r', facecolor='none')
+	ax.add_patch(polygon_shape)
 
+	x, y = AUSTRALIA.exterior.coords.xy
+	points = np.array([x, y], np.int32).T
+	# print(points)
+	australia_shape = patches.Polygon(points, linewidth=1, edgecolor='g', facecolor='none')
+	ax.add_patch(australia_shape)
+
+	plt.axis("auto")
+	plt.show()
 
 
 def check_geo_in_australia(point, xmin = X_MIN, xmax = X_MAX, ymin = Y_MIN, ymax = Y_MAX):

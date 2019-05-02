@@ -1,10 +1,10 @@
 import couchdb
 import json
+import pandas as pd
 from helper import tweet_in_australia
 
 # COUCH_SERVER = couchdb.Server("http://admin:group2@115.146.85.64:9584/")
 COUCH_SERVER = couchdb.Server("http://admin:group2@115.146.84.108:9584/")
-db = COUCH_SERVER['raw_twitter']
 
 def fix_tweets():
     db = COUCH_SERVER['twitter']
@@ -53,7 +53,7 @@ def get_users():
 
 
 def copy_to_another_database():
-    old_db = COUCH_SERVER['election_twitter']
+    old_db = COUCH_SERVER['election_geo_twitter_new']
     new_db = COUCH_SERVER['election_geo_twitter']
     rows = len(old_db)
     for index, id in enumerate(old_db):
@@ -67,8 +67,9 @@ def copy_to_another_database():
         print("left:", rows - index)
 
 
-def filter_no_geo_tweets(order):
-    new_db = COUCH_SERVER['twitter']
+def filter_no_geo_tweets(order = False):
+    db = COUCH_SERVER['election_geo_twitter_all']
+    new_db = COUCH_SERVER['election_geo_twitter']
     rows = len(db)
     print("length of rows:", rows)
     count = 0
@@ -85,7 +86,7 @@ def filter_no_geo_tweets(order):
                 count = count + 1
             except:
                 pass
-        if index %1000 == 0:
+        if index %10 == 0:
             print("left:", rows - index, "Inserted:", count)
 
 
@@ -124,8 +125,27 @@ def check_no_geo_tweets():
             print(index+1, count, count/(index + 1))
 
 
+def add_followers():
+    try:
+        followers_db = COUCH_SERVER.create('followers')
+    except:
+        followers_db = COUCH_SERVER['followers']
+    df = pd.read_csv('australia_new.csv', encoding="ISO-8859-1")
+    followers = df.followers.values
+    for list1 in followers:
+        list1 = list1.strip("'").strip('[').strip(']')
+        ids = [x.strip() for x in list1.split(',')]
+        for id in ids:
+            try:
+                followers_db[id] = {'processed':0}
+                print(id, " saved to database")
+            except:
+                print("couldn't save to database")
+
+
+
 def main():
-    copy_to_another_database()
+    add_followers()
 
     return 0
 

@@ -19,7 +19,7 @@ def get_all_tweets(screen_name):
 	all_tweets = []
 	# make initial request for most recent tweets (200 is the maximum allowed count)
 	try:
-		new_tweets = api.user_timeline(screen_name=screen_name, count=200)
+		new_tweets = api.user_timeline(user_id=screen_name, count=200)
 		# save most recent tweets
 		all_tweets.extend(new_tweets)
 		# save the id of the oldest tweet less one
@@ -32,7 +32,7 @@ def get_all_tweets(screen_name):
 		# print("getting tweets before %s" % oldest)
 		# all subsequent requests use the max_id param to prevent duplicates
 		try:
-			new_tweets = api.user_timeline(screen_name=screen_name, count=200, max_id=oldest)
+			new_tweets = api.user_timeline(user_id=screen_name, count=200, max_id=oldest)
 		except:
 			pass
 		# save most recent tweets
@@ -40,8 +40,10 @@ def get_all_tweets(screen_name):
 		# update the id of the oldest tweet less one
 		oldest = all_tweets[-1].id - 1
 		# print("...%s tweets downloaded so far" % (len(all_tweets)))
+		if len(all_tweets)>3000:
+			break
 
-	# print("Downloaded all tweets of -> ", screen_name," : ", len(all_tweets))
+	print("Downloaded all tweets of -> ", screen_name," : ", len(all_tweets))
 	count = 0
 
 	for counter, tweet in enumerate(all_tweets):
@@ -53,8 +55,8 @@ def get_all_tweets(screen_name):
 			except:
 				pass
 				# print("Tweet in database")
-		if count and counter % 100 == 0:
-			print("Left to save to database: ", len(all_tweets) - counter)
+		# if count and counter % 100 == 0:
+		# 	print("Left to save to database: ", len(all_tweets) - counter)
 	if count:
 		print("Saved %s tweets to database" % count, "for user:", screen_name)
 
@@ -64,9 +66,9 @@ if __name__ == '__main__':
 	print(rows)
 	for index, id in enumerate(user_db):
 		doc = user_db[id]
-		name = doc['screen_name']
+		name = id
 		print(name)
-		if 'processed' not in doc:
+		if doc['processed'] == 0:
 			get_all_tweets(name)
 			doc['processed'] = 1
 			try:

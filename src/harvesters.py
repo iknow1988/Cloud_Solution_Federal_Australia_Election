@@ -3,34 +3,34 @@ from tweepy import OAuthHandler, Stream, API
 import helper
 import json
 from shapely.geometry import shape, Point, Polygon
+import datetime
 
 
 class StdOutListener(StreamListener):
 
 	def __init__(self, boundary, boundary_polygon, tweet_db, users_db):
-		self.BOUNDARY = boundary
-		self.BOUNDARY_POLYGON = boundary_polygon
+		self.boundary = boundary
+		self.boundary_polygon = boundary_polygon
 		self.tweet_db = tweet_db
 		self.users_db = users_db
 
 	def on_data(self, data):
 		data = json.loads(data)
-		if helper.tweet_in_australia_boundary(self.BOUNDARY, self.BOUNDARY_POLYGON, data["coordinates"],
+		if helper.tweet_in_australia_boundary(self.boundary, self.boundary_polygon, data["coordinates"],
 											  data['geo'], data['place']):
 			try:
 				self.tweet_db[data['id_str']] = data
 				user = data['user']['id_str']
-				print(data['id_str'], " saved to tweeter database")
+				print(datetime.datetime.now(), " : " ,data['id_str'], " saved to tweeter database")
 				if user not in self.users_db:
 					self.users_db[user] = {'screen_name': data['user']['screen_name']}
-					print("\tnew ", user, "added to user database")
 			except:
-				print(data['id_str'], " already exists")
+				print(datetime.datetime.now(), " : " , data['id_str'], " already exists")
 
 		return True
 
 	def on_error(self, status):
-		print(status)
+		print(datetime.datetime.now(), " : " , status)
 
 
 class Harvester:
@@ -49,42 +49,13 @@ class Harvester:
 		self.tags = tags
 		self.tweet_db = tweet_db
 		self.users_db = users_db
+		self.auth = OAuthHandler(self.consumer_key, self.consumer_secret)
+		self.auth.set_access_token(self.access_token, self.access_token_secret)
 
 	def start_harvesting(self):
-		l = StdOutListener(self.boundary, self.boundary_polygon, self.tweet_db, self.users_db)
-		auth = OAuthHandler(self.consumer_key, self.consumer_secret)
-		auth.set_access_token(self.access_token, self.access_token_secret)
-		stream = Stream(auth, l)
-		stream.filter(track=self.tags, locations=self.boundary, languages=["en"])
+		pass
 
-
-class TimeLineHarvester(Harvester):
-
-	def __init__(self, screen_name):
-		auth = OAuthHandler(self.consumer_key, self.consumer_secret)
-		auth.set_access_token(self.access_token, self.access_token_secret)
-		self.api = API(auth, wait_on_rate_limit=True, retry_count=3, retry_delay=5, retry_errors=set([401, 404, 500, 503]))
-		self.screen_name = screen_name
-
-	def get_all_tweets(self,screen_name):
-		all_tweets = []
-		try:
-			new_tweets = self.api.user_timeline(screen_name=screen_name, count=200)
-			all_tweets.extend(new_tweets)
-			oldest = all_tweets[-1].id - 1
-		except:
-			new_tweets = []
-			pass
-		while len(new_tweets) > 0:
-			try:
-				new_tweets = self.api.user_timeline(screen_name=screen_name, count=200, max_id=oldest)
-			except:
-				pass
-			all_tweets.extend(new_tweets)
-			oldest = all_tweets[-1].id - 1
-		self.save_to_db(all_tweets)
-
-	def save_to_db(self, all_tweets):
+	def save_tweets_to_db(self, all_tweets, user_id):
 		count = 0
 		for counter, tweet in enumerate(all_tweets):
 			data = tweet._json
@@ -94,27 +65,64 @@ class TimeLineHarvester(Harvester):
 					count = count + 1
 				except:
 					pass
-			# print("Tweet in database")
-			if count and counter % 100 == 0:
-				print("Left to save to database: ", len(all_tweets) - counter)
 		if count:
-			print("Saved %s tweets to database" % count, "for user:", self.screen_name)
+			print(datetime.datetime.now(), " : ", "Saved %s tweets to database" % count, "for user:", user_id)
+
+
+class StreamTweetHarvester(Harvester):
+
+	def __init__(self, user, boundary, tags, tweet_db, users_db):
+		Harvester.__init__(self, user, boundary, tags, tweet_db, users_db)
+
+	def start_harvesting(self):
+		l = StdOutListener(self.boundary, self.boundary_polygon, self.tweet_db, self.users_db)
+		stream = Stream(self.auth, l)
+		if self.tags and self.boundary:
+			stream.filter(track=self.tags, locations=self.boundary)
+		elif self.tags:
+			stream.filter(track=self.tags)
+		else:
+			stream.filter(locations=self.boundary)
+
+
+class TimeLineHarvester(Harvester):
+
+	def __init__(self, user, user_id, screen_name, boundary, boundary_polygon, tweet_db, users_db):
+		Harvester.__init__(self, user, boundary, boundary_polygon, tweet_db, users_db)
+		self.api = API(self.auth, wait_on_rate_limit=True, retry_count=3, retry_delay=5, retry_errors=set([401, 404, 500, 503]))
+		self.screen_name = screen_name
+		self.user_id = user_id
+
+	def get_all_tweets(self, user_id):
+		all_tweets = []
+		try:
+			new_tweets = self.api.user_timeline(user_id=user_id, count=200)
+			all_tweets.extend(new_tweets)
+			oldest = all_tweets[-1].id - 1
+		except:
+			new_tweets = []
+			pass
+		while len(new_tweets) > 0:
+			try:
+				new_tweets = self.api.user_timeline(user_id=user_id, count=200, max_id=oldest)
+			except:
+				pass
+			all_tweets.extend(new_tweets)
+			oldest = all_tweets[-1].id - 1
+		print(datetime.datetime.now(), " : ", "Downloaded tweets", len(new_tweets), " for user:", user_id)
+		self.save_tweets_to_db(all_tweets, user_id)
 
 	def start_harvesting(self):
 		rows = len(self.users_db)
-		print(rows)
-		for index, id in enumerate(self.users_db):
-			doc = self.users_db[id]
-			name = doc['screen_name']
-			print(name)
-			if 'processed' not in doc:
-				self.get_all_tweets(name)
+		for index, user_id in enumerate(self.users_db):
+			doc = self.users_db[user_id]
+			# name = doc['screen_name']
+			print(datetime.datetime.now(), " : ", "Processing", " : ", user_id)
+			if doc['processed'] == 0:
+				self.get_all_tweets(user_id)
 				doc['processed'] = 1
 				try:
 					self.users_db.save(doc)
-					print("Updated %s database" % name)
 				except:
-					print("%s database update error" % name)
-			else:
-				print("User already processed")
-			print("left:", rows - index)
+					pass
+			print(datetime.datetime.now(), " : ", " Users left:", rows - index)
