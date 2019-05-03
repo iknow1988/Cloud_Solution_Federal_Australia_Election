@@ -15,25 +15,18 @@ class DBHelper:
 
 	def get_hashtag_counts(self):
 		view = self.db.view('_design/views/_view/all_hashtags', reduce=True, group=True)
-		with open('hashtag_counts.csv', 'w') as file:
-			file.write("key, value")
-			file.write('\n')
-			for item in view:
-				file.write(str(item.key)+", "+ str(item.value))
-				file.write('\n')
+		self.write_to_csv(view, 'hashtag_counts.csv')
 
 	def get_leader_mentions_counts(self):
 		view = self.db.view('_design/views/_view/leader_mentions', reduce=True, group=True)
-		with open('leader_mention_counts.csv', 'w') as file:
-			file.write("key, value")
-			file.write('\n')
-			for item in view:
-				file.write(str(item.key)+", "+ str(item.value))
-				file.write('\n')
+		self.write_to_csv(view, 'leader_mention_counts.csv')
 
 	def get_party_mentions_counts(self):
 		view = self.db.view('_design/views/_view/party_mentions', reduce=True, group=True)
-		with open('party_mention_counts.csv', 'w') as file:
+		self.write_to_csv(view,'party_mention_counts.csv')
+
+	def write_to_csv(self, view, name):
+		with open(name, 'w') as file:
 			file.write("key, value")
 			file.write('\n')
 			for item in view:
