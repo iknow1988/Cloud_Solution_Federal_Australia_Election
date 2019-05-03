@@ -1,0 +1,28 @@
+---
+- hosts: all
+  become: true
+  become_user: ubuntu
+  remote_user: ubuntu
+  gather_facts: false
+  tasks:
+
+    - name: Final
+      pause:
+        seconds: 1
+        echo: false
+        prompt: "{{ lookup('env','OS_PROJECT_ID') }}"
+
+- name: Cluster Setup
+  uri:
+    url: http://{{ ansible_host }}:9584/_cluster_setup
+    method: POST
+    user: "admin"
+    password: "password"
+    body: '{"action": "enable_cluster", "bind_address": "0.0.0.0", "username": "admin","password": "password", "node_count": "2"}'
+    body_format: json
+    status_code: 200
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+  register: json_response
+  #with_items:  groups['dbservers']
