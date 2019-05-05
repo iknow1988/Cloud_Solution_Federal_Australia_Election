@@ -1,18 +1,12 @@
 from shapely.geometry import shape, Point, Polygon
-import matplotlib.pyplot as plt
-from matplotlib import patches
-import numpy as np
-from matplotlib.collections import PatchCollection
 from nltk.tokenize import word_tokenize
 import geopandas as gpd
-import pandas as pd
 
 X_MIN = 110
 X_MAX = 160
 Y_MIN = -44
 Y_MAX = -8
 AUSTRALIA = Polygon([[X_MIN, Y_MIN], [X_MIN, Y_MAX], [X_MAX, Y_MAX], [X_MAX, Y_MIN]])
-
 locations = {'North Lismore', 'Katoomba', 'Tumby Bay', 'Traralgon',
 			 'Georgetown', 'Forbes', 'Goulburn', 'Parkes', 'Geraldton', 'Innisfail',
 			 'Gladstone', 'Leeton', 'Bathurst', 'Cairns', 'Carnarvon', 'Queensland',
@@ -52,43 +46,6 @@ locations = {'North Lismore', 'Katoomba', 'Tumby Bay', 'Traralgon',
 			 'North Scottsdale', 'Moranbah'}
 
 
-def plot_polygon(polygon):
-	fig, ax = plt.subplots(1)
-
-	x, y = polygon.exterior.coords.xy
-	points = np.array([x, y], np.int32).T
-	# print(points)
-	polygon_shape = patches.Polygon(points, linewidth=1, edgecolor='r', facecolor='none')
-	ax.add_patch(polygon_shape)
-
-	x, y = AUSTRALIA.exterior.coords.xy
-	points = np.array([x, y], np.int32).T
-	# print(points)
-	australia_shape = patches.Polygon(points, linewidth=1, edgecolor='g', facecolor='none')
-	ax.add_patch(australia_shape)
-
-	plt.axis("auto")
-	plt.show()
-
-
-def plot_polygon(polygon, reference):
-	fig, ax = plt.subplots(1)
-
-	x, y = polygon.exterior.coords.xy
-	points = np.array([x, y], np.int32).T
-	# print(points)
-	polygon_shape = patches.Polygon(points, linewidth=1, edgecolor='r', facecolor='none')
-	ax.add_patch(polygon_shape)
-
-	x, y = reference.exterior.coords.xy
-	points = np.array([x, y], np.int32).T
-	# print(points)
-	australia_shape = patches.Polygon(points, linewidth=1, edgecolor='g', facecolor='none')
-	ax.add_patch(australia_shape)
-
-	plt.axis("auto")
-	plt.show()
-
 def check_geo_in_australia(point, xmin = X_MIN, xmax = X_MAX, ymin = Y_MIN, ymax = Y_MAX):
 	if point['coordinates']:
 		x = point['coordinates'][0]
@@ -107,20 +64,6 @@ def check_bounding_box_in_australia(box, BOUNDARY_POLYGON = AUSTRALIA):
 			return False
 	else:
 		return False
-
-
-def tweet_in_australia(coordinate_coordinates, geo_coordinates, bounding_box):
-	result = False
-	if coordinate_coordinates and check_geo_in_australia(coordinate_coordinates):
-		result = True
-	elif geo_coordinates and check_geo_in_australia(geo_coordinates):
-		result = True
-	elif bounding_box and check_bounding_box_in_australia(bounding_box['bounding_box']):
-		result = True
-	else:
-		return False
-
-	return result
 
 
 def tweet_in_australia_boundary(boundary, boundary_polygon, coordinate_coordinates, geo_coordinates, bounding_box,
@@ -142,24 +85,6 @@ def tweet_in_australia_boundary(boundary, boundary_polygon, coordinate_coordinat
 		result = False
 
 	return result
-
-
-def get_location(data):
-	coordinates = None
-	geo = None
-	place = None
-	place_type = None
-	name = None
-	full_name = None
-	if data['coordinates']:
-		coordinates = data["coordinates"]['coordinates']
-	if data['geo']:
-		geo = data['geo']['coordinates']
-	if data['place']:
-		name = place = data['place']['name']
-		place = data['place']['full_name']
-		place_type = data['place']['place_type']
-	return(coordinates, geo , name, place, place_type)
 
 
 def initialize_geo_map():

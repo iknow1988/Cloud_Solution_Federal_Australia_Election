@@ -1,11 +1,9 @@
 import couchdb
-import json
 import sys
 import atexit
 from harvesters import StreamTweetHarvester, KeywordsHarvester
 import datetime
 import pandas as pd
-from nltk.tokenize import word_tokenize
 
 COUCH_SERVER = couchdb.Server("http://admin:group2@115.146.84.108:9584/")
 credential_db = COUCH_SERVER['tweeter_credentials']
