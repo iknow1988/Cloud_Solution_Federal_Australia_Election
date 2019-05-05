@@ -6,5 +6,5 @@
   
   roles: 
     - role: couchdb-install
-    #- role: couchdb-cluster
+    - role: couchdb-cluster
 

@@ -8,7 +8,7 @@
 
 - name: Debug
   debug:  
-    msg: "Coordinator node {{ coordinator_node }} selected out of {{ ansible_play_hosts | length }} nodes"
+    msg: 'Coordinator node {{ coordinator_node }} selected out of {{ ansible_play_hosts | length }} nodes. {{ http_api_port }} - {{ www_user }} - {{ www_password }}'
   run_once: true
 
 - name: Setup the node
@@ -32,11 +32,11 @@
 
 - name: Join - master node
   uri:
-    url: http://{{ coordinator_node }}:{{http_api_port}}/_cluster_setup
+    url: http://{{ coordinator_node }}:{{ http_api_port }}/_cluster_setup
     method: POST
     user: "{{ www_user }}"
     password: "{{ www_password }}"
-    body: '{"action": "enable_cluster", "bind_address":"0.0.0.0", "username": "{{ www_user }}", "password":"{{ www_password }}", "port": {{http_api_port}}, "node_count": "{{ ansible_play_hosts | length }}", "remote_node": "{{ ansible_host }}", "remote_current_user": "{{ www_user }}", "remote_current_password": "{{ www_password }}" }'
+    body: '{"action": "enable_cluster", "bind_address":"{{ bind_address }}", "username": "{{ www_user }}", "password":"{{ www_password }}", "port": {{http_api_port}}, "node_count": "{{ ansible_play_hosts | length }}", "remote_node": "{{ ansible_host }}", "remote_current_user": "{{ www_user }}", "remote_current_password": "{{ www_password }}" }'
     body_format: json
     return_content: yes
     headers:
@@ -46,7 +46,7 @@
 
 - name: debug join master
   debug:
-    msg: "Task join master node: {{ inventory_hostname }}: {{result}}"
+    msg: "Task join master node: {{ inventory_hostname }}: {{ result }}"
   
 - name: Join - other nodes
   uri:
@@ -84,3 +84,4 @@
 - name: Info - Finish cluster
   debug:
     msg: "Cluster finished - coordinator :{{ coordinator_node }}"
+  run_once: true

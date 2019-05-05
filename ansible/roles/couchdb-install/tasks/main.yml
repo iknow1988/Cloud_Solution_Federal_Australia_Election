@@ -131,13 +131,13 @@
   lineinfile:
     dest: /opt/couchdb/etc/local.ini
     insertafter: '^\[admins\]$'
-    line: '{{ c_admin_user }} = "{{ c_admin_password }}"'
+    line: '{{ c_admin_user }} = {{ c_admin_password }}'
 
 - name: Add Admin User
   lineinfile:
     dest: /opt/couchdb/etc/local.ini
     insertafter: '^\[admins\]$'
-    line: '{{ admin_user }} = "{{ admin_password }}"'
+    line: '{{ admin_user }} = {{ admin_password }}'
 
 
 
