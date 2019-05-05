@@ -1,9 +1,10 @@
 - hosts: dbservers
   vars_files:
     - host_vars/nectar.yml
+    - group_vars/dbservers.yml
   gather_facts: true
-
+  
   roles: 
-    #- role: couchdb-install
-    - role: couchdb-cluster
+    - role: couchdb-install
+    #- role: couchdb-cluster
 

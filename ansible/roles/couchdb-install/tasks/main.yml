@@ -1,3 +1,7 @@
+# - name: Write the new instance host key to known hosts
+#   connection: local
+#   shell: "ssh-keyscan -H {{ ansible_host }} >> ~/.ssh/known_hosts"
+
 - name: System Update
   apt:
     update_cache: yes
@@ -17,25 +21,26 @@
 
 - name: Download CouchDB
   get_url:
-    url: http://apache.mirror.serversaustralia.com.au/couchdb/source/2.3.1/apache-couchdb-2.3.1.tar.gz
+    url: '{{ couchdb_src_url }}/{{ couchdb_src_version }}/{{ couchdb_src_file }}'
     dest: /usr/local/src
 
 - name: Unpack CouchDB Source
   unarchive:
-    src: /usr/local/src/apache-couchdb-2.3.1.tar.gz
+    src: /usr/local/src/{{ couchdb_src_file }}
     dest: /usr/local/src
     remote_src: yes
 
 - name: Configure Build
-  command: chdir=/usr/local/src/apache-couchdb-2.3.1 ./configure
+  command: chdir=/usr/local/src/{{ couchdb_src_folder }} ./configure
 
 - name: Make Build
   make:
-    chdir: /usr/local/src/apache-couchdb-2.3.1
+    chdir: /usr/local/src/{{ couchdb_src_folder }}
     target: release
 
+# TODO: this will fail if service is running
 - name: Deploy CouchDB
-  command: cp -R /usr/local/src/apache-couchdb-2.3.1/rel/couchdb /opt/
+  command: cp -R /usr/local/src/{{ couchdb_src_folder }}/rel/couchdb /opt/
 
 - name: Add CouchDB System Account
   user:
@@ -77,7 +82,19 @@
   replace:
     dest: /opt/couchdb/etc/vm.args
     regexp: '^-setcookie monster$'
-    replace: '-setcookie zaFradre6ech'
+    replace: '-setcookie {{ couchdb_cookie }}'
+
+# - name: Kernel port max
+#   lineinfile:
+#     dest: /opt/couchdb/etc/vm.args
+#     insertafter: '^-setcookie zaFradre6ech'
+#     line: '-kernel inet_dist_listen_max 9200'
+
+# - name: Kernel port min
+#   lineinfile:
+#     dest: /opt/couchdb/etc/vm.args
+#     insertafter: '^-setcookie zaFradre6ech'
+#     line: '-kernel inet_dist_listen_max 9100'
 
 - name: Require valid user
   lineinfile:
@@ -89,19 +106,19 @@
   lineinfile:
     dest: /opt/couchdb/etc/local.ini
     insertafter: '^\[chttpd\]$'
-    line: 'port = 9584'
+    line: 'port = {{ http_api_port }}'
 
 - name: Bind Cluster Address to Public
   lineinfile:
     dest: /opt/couchdb/etc/local.ini
     insertafter: '^\[chttpd\]$'
-    line: 'bind_address = 0.0.0.0'
+    line: 'bind_address = {{ bind_address }}'
 
 - name: Bind Node Address to Public
   lineinfile:
     dest: /opt/couchdb/etc/local.ini
-    insertafter: '^\[httpd\]$'
-    line: 'bind_address = 0.0.0.0'
+    insertafter: '^\[http\]$'
+    line: 'bind_address = {{ bind_address }}'
 
 - name: Require auth for httpd
   lineinfile:
@@ -114,13 +131,15 @@
   lineinfile:
     dest: /opt/couchdb/etc/local.ini
     insertafter: '^\[admins\]$'
-    line: 'cadmin = password'
+    line: '{{ c_admin_user }} = "{{ c_admin_password }}"'
 
 - name: Add Admin User
   lineinfile:
     dest: /opt/couchdb/etc/local.ini
     insertafter: '^\[admins\]$'
-    line: 'admin = password'
+    line: '{{ admin_user }} = "{{ admin_password }}"'
+
+
 
 - name: Install CouchDB Service
   copy:

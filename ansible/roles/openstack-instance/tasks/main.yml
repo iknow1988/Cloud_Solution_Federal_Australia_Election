@@ -13,13 +13,11 @@
     meta:
       hostname: '{{ item.instance_hostname }}'
       groups: '{{ item.instance_group }}'
-      
 
     state: present
     
   loop: '{{ instances }}'
   register: os_instance
-
 
 - name: Result
   debug:

@@ -1,1 +1,32 @@
-num_db_hosts: 2
+# couchdb source file
+couchdb_src_url: http://apache.mirror.serversaustralia.com.au/couchdb/source
+couchdb_src_file: apache-couchdb-2.3.1.tar.gz
+couchdb_src_folder: apache-couchdb-2.3.1
+couchdb_src_version: 2.3.1
+
+# cookie 
+couchdb_cookie: zaFradre6ech
+
+# default user for WWW 
+www_user: admin
+www_password: password
+
+# default user for admin
+admin_user: admin
+admin_password: password
+
+# default user for admin
+c_admin_user: cadmin
+c_admin_password: password
+
+# default bind address
+bind_address: 0.0.0.0
+
+# Standard clustered port for all HTTP API requests
+http_api_port: 9584
+
+# Administrative tasks such as node and shard management
+node_management_port: 5986
+
+# Erlang port mapper daemon (epmd)
+erlan_port: 4369
