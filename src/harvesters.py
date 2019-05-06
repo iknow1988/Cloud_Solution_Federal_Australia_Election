@@ -72,14 +72,17 @@ class Harvester:
 
 	def save_tweet_to_db(self, data, print_status = True):
 		result = False
+		text = None
 		if ('extended_tweet' in data and data['extended_tweet']):
-			party = self.get_party(data['extended_tweet']['full_text'])
+			text = data['extended_tweet']['full_text']
+			party = self.get_party(text)
 		elif('text' in data and data['text']):
-			party = self.get_party(data['text'])
+			text = data['text']
+			party = self.get_party(text)
 		else:
 			party = None
 		geo_data = self.check_geo(data)
-		if geo_data and data['text'] and party:
+		if geo_data and text and party:
 			try:
 				user = data['user']['id_str']
 				data['city'] = geo_data [0]
@@ -190,7 +193,7 @@ class TimeLineHarvester(Harvester):
 			oldest = all_tweets[-1].id - 1
 		print(datetime.datetime.now(), " : ", "Downloaded tweets", len(new_tweets), " for user:", user_id)
 		self.save_tweets_to_db(all_tweets, user_id)
-		time.sleep(10)
+		time.sleep(5)
 
 	def start_harvesting(self):
 		rows = len(self.users_db)
@@ -217,7 +220,7 @@ class KeywordsHarvester(Harvester):
 	def search_keyword(self, search_query, max_id=None, since_id=None):
 		tweet_count = 0
 		tweets_per_query = 100
-		max_tweets = 1000
+		max_tweets = 20000
 		geo = "-31.53162668535551,135.53294849999997,2514.0km"
 		while tweet_count < max_tweets:
 			if not max_id:
@@ -242,13 +245,11 @@ class KeywordsHarvester(Harvester):
 			self.save_tweets_to_db(new_tweets)
 			max_id = new_tweets[-1].id
 			time.sleep(5)
-			break
 
 	def start_harvesting(self):
 		tags = self.tags
 		n = 0
 		keywords = list()
-		exclude = list()
 		index = 0
 		for word in tags:
 			words = word.split(' ')
