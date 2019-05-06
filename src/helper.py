@@ -1,6 +1,13 @@
 from shapely.geometry import shape, Point, Polygon
 from nltk.tokenize import word_tokenize
 import geopandas as gpd
+import pandas as pd
+from nltk import word_tokenize
+import re
+import nltk
+regex = re.compile('[^a-zA-Z0-9_ ]')
+stopwords = list(nltk.corpus.stopwords.words('english')) # extend stop words if necessary
+stopwords.extend(['rt','http'])
 
 X_MIN = 110
 X_MAX = 160
@@ -66,29 +73,84 @@ def check_bounding_box_in_australia(box, BOUNDARY_POLYGON = AUSTRALIA):
 		return False
 
 
-def tweet_in_australia_boundary(boundary, boundary_polygon, coordinate_coordinates, geo_coordinates, bounding_box,
-								location):
-	result = False
+def get_city_state_country(location, cities, states, countries):
+	regex2 = re.compile('[^a-zA-Z ]')
+	text = regex2.sub('', str(location)).strip().lower()
+	tokenized = set(word_tokenize(text))
+	city = None
+	state = None
+	country = None
+	common = tokenized.intersection(set(cities.keys()))
+	if len(common) == 1:
+		city = common.pop()
+		state = cities[city]
+		country = 'australia'
+	else:
+		common = tokenized.intersection(set(states.keys()))
+		if len(common) == 1:
+			state = states[common.pop()]
+			country = 'australia'
+		elif len(tokenized.intersection(countries)) > 0:
+			country = 'australia'
+	if city or state or country:
+		return [city, state, country]
+	else:
+		return None
+
+def tweet_in_australia_boundary(data, boundary, boundary_polygon, coordinate_coordinates, geo_coordinates, bounding_box,
+								location, locations_array, seat_polygons, sa4_polygons):
+	locations = None
 	if coordinate_coordinates and check_geo_in_australia(coordinate_coordinates, boundary[0], boundary[2],
 														 boundary[1], boundary[3]):
-		result = True
+		locations = []
+		for seat in seat_polygons:
+			location = seat.give_location(data)
+			if location:
+				locations.append(location)
+		if len(locations) == 1:
+			locations = locations[0]
+		big_locations = []
+		for big in sa4_polygons:
+			big_loc = big.give_location(data)
+			if big_loc:
+				big_locations.append(big_loc)
+		if len(big_locations) == 1:
+			big_locations = big_locations[0]
+		if len(locations)>0 or len(big_locations)>0:
+			locations = [locations, big_locations, 'australia']
+		else:
+			locations = None
 	elif geo_coordinates and check_geo_in_australia(geo_coordinates, boundary[0], boundary[2], boundary[1], boundary[3]):
-		result = True
+		locations = []
+		for seat in seat_polygons:
+			location = seat.give_location(data)
+			if location:
+				locations.append(location)
+		if len(locations) == 1:
+			locations = locations[0]
+		big_locations = []
+		for big in sa4_polygons:
+			big_loc = big.give_location(data)
+			if big_loc:
+				big_locations.append(big_loc)
+		if len(big_locations) == 1:
+			big_locations = big_locations[0]
+		if len(locations)>0 or len(big_locations)>0:
+			locations = [locations, big_locations, 'australia']
+		else:
+			locations = None
 	elif bounding_box and check_bounding_box_in_australia(bounding_box['bounding_box'], boundary_polygon):
-		result = True
+		locations = get_city_state_country(location, locations_array[0], locations_array[1], locations_array[2])
 	elif location:
-		tweet_locations = set(word_tokenize(location))
-		common = locations.intersection(tweet_locations)
-		if len(common) > 0:
-			result = True
+		locations = get_city_state_country(location, locations_array[0], locations_array[1], locations_array[2])
 	else:
-		result = False
+		locations = None
 
-	return result
+	return locations
 
 
 def initialize_geo_map():
-	geodf_seats = gpd.read_file("shape/COM_ELB_region.shp")
+	geodf_seats = gpd.read_file("shape_files/COM_ELB_region.shp")
 	geodf_seats.crs = {'init': 'epsg:4326'}
 	seats = []
 	for index, row in geodf_seats.iterrows():
@@ -99,7 +161,7 @@ def initialize_geo_map():
 
 
 def initialize_sa_4_map():
-	geodf = gpd.read_file("australia/GCCSA_2016_AUST.shp")
+	geodf = gpd.read_file("shape_files/GCCSA_2016_AUST.shp")
 	geodf = geodf.dropna()
 	geodf.crs = {'init': 'epsg:4326'}
 	sa4 = []
@@ -149,5 +211,57 @@ class Seat:
 		else:
 			return None
 
+
+def get_party_features():
+	df = pd.read_csv('csv_files/political_party_attributes.csv', encoding="ISO-8859-1")
+	dictionary = {}
+	for index, row in df.iterrows():
+		vector = list()
+		if not pd.isnull(row['party_name']):
+			vector.extend([x.strip() for x in row['party_name'].split(',')])
+		if not pd.isnull(row['twitter']):
+			vector.extend([x.strip() for x in row['twitter'].split(',')])
+		if not pd.isnull(row['abbr']):
+			vector.extend([x.strip() for x in row['abbr'].split(',')])
+		if not pd.isnull(row['leader']):
+			vector.extend([x.strip() for x in row['leader'].split(',')])
+		if not pd.isnull(row['leader_twitter']):
+			vector.extend([x.strip() for x in row['leader_twitter'].split(',')])
+		# if not pd.isnull(row['ideology']):
+		# 	vector.extend([x.strip() for x in row['ideology'].split(',')])
+		vector = [x.lower() for x in vector if not pd.isnull(x)]
+		vector = [x for x in vector if not x in stopwords]
+		dictionary[row['party_name']] = vector
+
+	return dictionary
+
+
+def initialize_location_dictionaries():
+	df_city_names = pd.read_csv('csv_files/australia_city_names.csv')
+	cities = {}
+	for index, row in df_city_names.iterrows():
+		cities[row['city'].lower()] = row['admin'].lower()
+	states = dict()
+	states['NSW'] = 'New South Wales'
+	states['QLD'] = 'Queensland'
+	states['WA'] = 'Western Australia'
+	states['VIC'] = 'Victoria'
+	states['SA'] = 'South Australia'
+	states['TAS'] = 'Tasmania'
+	states['NT'] = 'Northern Territory'
+	states['ACT'] = 'Australian Capital Territory'
+	states['New South Wales'] = 'New South Wales'
+	states['Queensland'] = 'Queensland'
+	states['Western Australia'] = 'Western Australia'
+	states['Victoria'] = 'Victoria'
+	states['South Australia'] = 'South Australia'
+	states['Tasmania'] = 'Tasmania'
+	states['Northern Territory'] = 'Northern Territory'
+	states['Australian Capital Territory'] = 'Australian Capital Territory'
+
+	states = dict((k.lower(), v.lower()) for k, v in states.items())
+	countries = set(['australia', 'au'])
+
+	return [cities, states, countries]
 
 

@@ -7,6 +7,8 @@ import datetime
 import pandas as pd
 import time
 from http.client import IncompleteRead
+import re
+from nltk import word_tokenize
 
 
 class StdOutListener(StreamListener):
@@ -16,6 +18,8 @@ class StdOutListener(StreamListener):
 
 	def on_data(self, data):
 		data = json.loads(data)
+		# if 'extended_tweet' in data:
+		# 	print(data['extended_tweet']['full_text'])
 		self.harvester.save_tweet_to_db(data)
 		return True
 
@@ -43,21 +47,45 @@ class Harvester:
 		self.auth.set_access_token(self.access_token, self.access_token_secret)
 		self.seat_polygons = helper.initialize_geo_map()
 		self.sa4_polygons = helper.initialize_sa_4_map()
+		self.party_features = helper.get_party_features()
+		self.regex = re.compile('[^a-zA-Z0-9_ ]')
+		self.locations = helper.initialize_location_dictionaries()
 
 	def start_harvesting(self):
 		pass
 
+	def get_party(self, doc):
+		parties = []
+		doc_processed = self.regex.sub('', doc).strip().lower()
+		for party, party_features in self.party_features.items():
+			features = ["\\b(" + x + ")\\b" for x in party_features]
+			keywords = "|".join(features)
+			regex2 = re.compile(keywords)
+			found = regex2.findall(doc_processed)
+			if found:
+				parties.append(party)
+
+		if len(parties)>0:
+			return parties
+		else:
+			return None
+
 	def save_tweet_to_db(self, data, print_status = True):
 		result = False
-		if self.check_geo(data):
+		if ('extended_tweet' in data and data['extended_tweet']):
+			party = self.get_party(data['extended_tweet']['full_text'])
+		elif('text' in data and data['text']):
+			party = self.get_party(data['text'])
+		else:
+			party = None
+		geo_data = self.check_geo(data)
+		if geo_data and data['text'] and party:
 			try:
-				seat, sa4 = self.get_seat_sa4(data)
 				user = data['user']['id_str']
-				if seat:
-					data['seat'] = seat
-				if sa4:
-					data['sa4'] = sa4
-
+				data['city'] = geo_data [0]
+				data['state'] = geo_data[1]
+				data['country'] = geo_data[2]
+				data['party'] = party
 				self.tweet_db[data['id_str']] = data
 				if print_status:
 					print(datetime.datetime.now(), " : ", data['id_str'], " saved to tweeter database")
@@ -82,7 +110,7 @@ class Harvester:
 		coordinates = None
 		geo = None
 		place = None
-		location = None
+		user_location = None
 		if "coordinates" in data:
 			coordinates = data["coordinates"]
 		if "geo" in data:
@@ -90,11 +118,11 @@ class Harvester:
 		if 'place' in data:
 			place = data['place']
 		if 'user' in data and 'location' in data['user']:
-			location = data['user']['location']
-		if helper.tweet_in_australia_boundary(self.boundary, self.boundary_polygon, coordinates, geo, place, location):
-			return True
-		else:
-			return False
+			user_location = data['user']['location']
+		loc = helper.tweet_in_australia_boundary(data, self.boundary, self.boundary_polygon, coordinates, geo,
+											  place, user_location, self.locations,
+											  self.seat_polygons, self.sa4_polygons)
+		return loc
 
 	def get_seat_sa4(self, data):
 		locations = []
@@ -189,17 +217,20 @@ class KeywordsHarvester(Harvester):
 	def search_keyword(self, search_query, max_id=None, since_id=None):
 		tweet_count = 0
 		tweets_per_query = 100
-		max_tweets = 50000
+		max_tweets = 1000
 		geo = "-31.53162668535551,135.53294849999997,2514.0km"
 		while tweet_count < max_tweets:
 			if not max_id:
 				if not since_id:
-					new_tweets = self.api.search(q=search_query, count=tweets_per_query, geocode = geo)
+					new_tweets = self.api.search(q=search_query, count=tweets_per_query,
+												 geocode = geo)
 				else:
-					new_tweets = self.api.search(q=search_query, count=tweets_per_query, since_id=since_id, geocode = geo)
+					new_tweets = self.api.search(q=search_query, count=tweets_per_query,
+												 since_id=since_id, geocode = geo)
 			else:
 				if not since_id:
-					new_tweets = self.api.search(q=search_query, geocode = geo, count=tweets_per_query, max_id=str(max_id - 1), )
+					new_tweets = self.api.search(q=search_query, geocode = geo, count=tweets_per_query,
+												 max_id=str(max_id - 1))
 				else:
 					new_tweets = self.api.search(q=search_query, count=tweets_per_query, max_id=str(max_id - 1),
 											since_id=since_id, geocode = geo)
@@ -211,28 +242,31 @@ class KeywordsHarvester(Harvester):
 			self.save_tweets_to_db(new_tweets)
 			max_id = new_tweets[-1].id
 			time.sleep(5)
+			break
 
 	def start_harvesting(self):
 		tags = self.tags
 		n = 0
 		keywords = list()
 		exclude = list()
+		index = 0
 		for word in tags:
 			words = word.split(' ')
-			n = n + len(words)
 			if len(words) > 2:
-				print(datetime.datetime.now(), " STARTED WITH: ", word)
 				keyword = word
+				print(index, datetime.datetime.now(), " STARTED WITH: ", word)
 				self.search_keyword(search_query = keyword, max_id= None)
-				# n = 0
-				# keywords = list()
-			elif n < 10:
-				keywords.append(word)
+				index = index + 1
 			else:
-				print(datetime.datetime.now(), " STARTED WITH: ",keywords)
-				keyword = ' OR '.join(keywords)
-				self.search_keyword(search_query = keyword, max_id= None)
-				n = 0
-				keywords = list()
+				n = n + len(words)
+				if n < 10:
+					keywords.append(word)
+				else:
+					keyword = ' OR '.join(keywords)
+					print(index, datetime.datetime.now(), " STARTED WITH: ", keywords)
+					self.search_keyword(search_query = keyword, max_id= None)
+					n = 0
+					keywords = list()
+					index = index + 1
 
 

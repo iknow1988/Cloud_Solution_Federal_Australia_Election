@@ -5,7 +5,7 @@ from harvesters import StreamTweetHarvester, KeywordsHarvester
 import datetime
 import pandas as pd
 
-COUCH_SERVER = couchdb.Server("http://admin:group2@115.146.84.108:9584/")
+COUCH_SERVER = couchdb.Server("http://admin:password@103.6.254.59:9584/")
 credential_db = COUCH_SERVER['tweeter_credentials']
 
 TAGS = ['auspol','ausvotes','AusVotes19','ausvote2019' ,'auspol2019', 'ausvotes2019', 'ausvotes19',
@@ -14,10 +14,11 @@ TAGS = ['auspol','ausvotes','AusVotes19','ausvote2019' ,'auspol2019', 'ausvotes2
 		'LeadersDebate2','LeadersDebate1','LeadersDebate']
 
 try:
-	tweet_db = COUCH_SERVER.create('twitter')
+	tweet_db = COUCH_SERVER.create('tweeter_test')
 except:
-	tweet_db = COUCH_SERVER['twitter']
+	tweet_db = COUCH_SERVER['tweeter_test']
 users_db = COUCH_SERVER['users_twitter']
+
 
 def app(user, boundary):
 	harvester = StreamTweetHarvester(user, boundary, get_tags(), tweet_db, users_db)
@@ -43,7 +44,7 @@ def prepare_harvester_parameters(option):
 
 
 def get_tags():
-	df = pd.read_csv('australia.csv', encoding = "ISO-8859-1")
+	df = pd.read_csv('csv_files/political_party_attributes.csv', encoding = "ISO-8859-1")
 	temp = TAGS
 	temp.extend([x.lower() for x in df.party_name.values])
 
@@ -63,9 +64,9 @@ def get_tags():
 		tokenized = [x.lower().strip() for x in text.split(',')]
 		temp.extend(tokenized)
 
-	for text in df[df.ideology.notnull()].ideology.values:
-		tokenized = [x.lower().strip() for x in text.split(',')]
-		temp.extend(tokenized)
+	# for text in df[df.ideology.notnull()].ideology.values:
+	# 	tokenized = [x.lower().strip() for x in text.split(',')]
+	# 	temp.extend(tokenized)
 
 	for value in df[df.leader_twitter.notnull()].leader_twitter.values:
 		temp.extend(['@' + x.strip() for x in value.split(',')])
@@ -76,12 +77,13 @@ def get_tags():
 
 def streamline(argv):
 	try:
+		user = None
 		for index, id in enumerate(credential_db):
 			doc = credential_db[id]
 			if argv[1] == id:
-				if doc['in_use'] == 0:
+				if doc['in_use'] == "0":
 					user = doc
-					doc['in_use'] = 1
+					doc['in_use'] = "1"
 					try:
 						credential_db.save(doc)
 						atexit.register(exit_handler, user)
@@ -105,9 +107,9 @@ def streamline(argv):
 def timeline():
 	user = None
 	doc = credential_db['kun']
-	if doc['in_use'] == 0:
+	if doc['in_use'] == "0":
 		user = doc
-		doc['in_use'] = 1
+		doc['in_use'] = "1"
 		try:
 			credential_db.save(doc)
 			atexit.register(exit_handler, user)
@@ -137,9 +139,9 @@ def exit_handler(user):
 		for index, id in enumerate(credential_db):
 			doc = credential_db[id]
 			if user.id == id:
-				if doc['in_use'] == 1:
+				if doc['in_use'] == "1":
 					user = doc
-					doc['in_use'] = 0
+					doc['in_use'] = "0"
 					credential_db.save(doc)
 					print(user['_id'], " is unlocked")
 
