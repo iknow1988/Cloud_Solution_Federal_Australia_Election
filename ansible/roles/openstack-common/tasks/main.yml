@@ -1,0 +1,21 @@
+---
+# install dependencies
+- name: Install pip
+  become: yes
+  apt:
+    name: ['python-pip']
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == "Ubuntu"
+
+- name: Update pip 
+  become: yes
+  pip:
+    name: ['pip','cryptography']
+    state: latest
+
+- name: Install openstack
+  become: yes
+  pip:
+    name:  ['openstacksdk']
+    state: latest

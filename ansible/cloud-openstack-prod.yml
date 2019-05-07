@@ -1,0 +1,13 @@
+clouds:
+  devstack:
+    auth:
+      auth_url: https://keystone.rc.nectar.org.au:5000/v3/
+      username: danielfelipe.giltobon@student.unimelb.edu.au
+      password: ZTZmMmE4ZmMzMTljN2Uz
+      project_name: unimelb-comp90024-group-2
+      user_domain_name: Default
+      project_domain_name: Default
+ansible:
+  use_hostnames: True
+  expand_hostvars: False
+  fail_on_errors: True

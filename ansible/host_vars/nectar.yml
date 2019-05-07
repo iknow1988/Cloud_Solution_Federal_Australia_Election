@@ -1,0 +1,78 @@
+# common
+availability_zone: melbourne-qh2-uom
+
+# volumes 
+volumes: 
+  - vol_name: vol-prod-data
+    vol_size: 50
+  - vol_name: vol-prod-app
+    vol_size: 20
+
+# security group:
+security_groups:
+  - name: ssh
+    description: "SSH Security Group"
+  - name: couchdb
+    description: "CouchDB security group"
+  
+
+# TODO: Create a nested list for security groups - rules
+security_group_rules:
+  - name: SSH - Allow ingress ssh
+    security_group: ssh
+    direction: ingress
+    protocol: tcp
+    port_range_min: 22
+    port_range_max: 22
+    remote_ip_prefix: 0.0.0.0/0
+  - name: CouchDB - Internal cluster communication
+    security_group: couchdb
+    direction: ingress
+    protocol: tcp
+    port_range_min: 4369
+    port_range_max: 4369
+    remote_ip_prefix: 0.0.0.0/0
+  - name: CouchDB - Cluster communication
+    security_group: couchdb
+    direction: ingress
+    protocol: tcp
+    port_range_min: 5986
+    port_range_max: 5986
+    remote_ip_prefix: 0.0.0.0/0
+  - name: CouchDB - Cluster communication External
+    security_group: couchdb
+    direction: ingress
+    protocol: tcp
+    port_range_min: 9584
+    port_range_max: 9584  
+    remote_ip_prefix: 0.0.0.0/0
+
+
+# Inital instances
+instances:
+  - name: vm-prod-db-1
+    instance_name: vm-prod-db-1
+    instance_image:  0a2bac09-8beb-464a-9cbc-6adf4dfcd5e5
+    instance_key_name: gild-nectar
+    instance_flavor: 639b8b2a-a5a6-4aa2-8592-ca765ee7af63
+    instance_hostname: vm-prod-db-1
+    instance_group: dbservers
+  - name: vm-prod-db-2
+    instance_name: vm-prod-db-2
+    instance_image:  0a2bac09-8beb-464a-9cbc-6adf4dfcd5e5
+    instance_key_name: gild-nectar
+    instance_flavor: 639b8b2a-a5a6-4aa2-8592-ca765ee7af63
+    instance_hostname: vm-prod-db-2
+    instance_group: dbservers
+  - name: vm-prod-db-3
+    instance_name: vm-prod-db-3
+    instance_image:  0a2bac09-8beb-464a-9cbc-6adf4dfcd5e5
+    instance_key_name: gild-nectar
+    instance_flavor: 639b8b2a-a5a6-4aa2-8592-ca765ee7af63
+    instance_hostname: vm-prod-db-3
+    instance_group: dbservers
+  #- name: vm-prod-app-1
+  #  instance_name: vm-prod-app-1
+  #  instance_image:  0a2bac09-8beb-464a-9cbc-6adf4dfcd5e5
+  #  instance_key_name: gild-nectar
+  #  instance_flavor: 639b8b2a-a5a6-4aa2-8592-ca765ee7af63

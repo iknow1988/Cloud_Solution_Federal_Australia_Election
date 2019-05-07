@@ -1,0 +1,160 @@
+# - name: Write the new instance host key to known hosts
+#   connection: local
+#   shell: "ssh-keyscan -H {{ ansible_host }} >> ~/.ssh/known_hosts"
+
+- name: System Update
+  apt:
+    update_cache: yes
+    upgrade: dist
+
+- name: Install dependencies
+  apt:
+    name: 
+      - build-essential 
+      - pkg-config 
+      - erlang 
+      - libicu-dev 
+      - libmozjs185-dev 
+      - libcurl4-openssl-dev
+    state: latest
+    install_recommends: no
+
+- name: Download CouchDB
+  get_url:
+    url: '{{ couchdb_src_url }}/{{ couchdb_src_version }}/{{ couchdb_src_file }}'
+    dest: /usr/local/src
+
+- name: Unpack CouchDB Source
+  unarchive:
+    src: /usr/local/src/{{ couchdb_src_file }}
+    dest: /usr/local/src
+    remote_src: yes
+
+- name: Configure Build
+  command: chdir=/usr/local/src/{{ couchdb_src_folder }} ./configure
+
+- name: Make Build
+  make:
+    chdir: /usr/local/src/{{ couchdb_src_folder }}
+    target: release
+
+# TODO: this will fail if service is running
+- name: Deploy CouchDB
+  command: cp -R /usr/local/src/{{ couchdb_src_folder }}/rel/couchdb /opt/
+
+- name: Add CouchDB System Account
+  user:
+    name: couchdb
+    comment: "CouchDB System Account"
+    shell: /bin/bash
+    system: yes
+    home: /opt/couchdb
+    createhome: no
+
+- name: Change CouchDB Ownership
+  file:
+    path: /opt/couchdb
+    owner: couchdb
+    group: couchdb
+    mode: 0770
+    recurse: yes
+    state: directory
+
+- name: Change CouchDB Config File Permission
+  file:
+    path: /opt/couchdb/etc
+    owner: couchdb
+    group: couchdb
+    mode: 0644
+    recurse: yes
+    state: directory
+
+- name: Change CouchDB Directory Permission
+  command: find /opt/couchdb -type d -exec chmod 0770 {} \;
+
+- name: Change Node Name
+  replace:
+    dest: /opt/couchdb/etc/vm.args
+    regexp: '^-name couchdb@127.0.0.1'
+    replace: '-name couchdb@{{ansible_host}}'
+
+- name: Set Cookie
+  replace:
+    dest: /opt/couchdb/etc/vm.args
+    regexp: '^-setcookie monster$'
+    replace: '-setcookie {{ couchdb_cookie }}'
+
+# - name: Kernel port max
+#   lineinfile:
+#     dest: /opt/couchdb/etc/vm.args
+#     insertafter: '^-setcookie zaFradre6ech'
+#     line: '-kernel inet_dist_listen_max 9200'
+
+# - name: Kernel port min
+#   lineinfile:
+#     dest: /opt/couchdb/etc/vm.args
+#     insertafter: '^-setcookie zaFradre6ech'
+#     line: '-kernel inet_dist_listen_max 9100'
+
+- name: Require valid user
+  lineinfile:
+    dest: /opt/couchdb/etc/local.ini
+    insertafter: '^\[chttpd\]$'
+    line: 'require_valid_user = true'
+
+- name: Bind Cluster Port to Public
+  lineinfile:
+    dest: /opt/couchdb/etc/local.ini
+    insertafter: '^\[chttpd\]$'
+    line: 'port = {{ http_api_port }}'
+
+- name: Bind Cluster Address to Public
+  lineinfile:
+    dest: /opt/couchdb/etc/local.ini
+    insertafter: '^\[chttpd\]$'
+    line: 'bind_address = {{ bind_address }}'
+
+- name: Bind Node Address to Public
+  lineinfile:
+    dest: /opt/couchdb/etc/local.ini
+    insertafter: '^\[http\]$'
+    line: 'bind_address = {{ bind_address }}'
+
+- name: Require auth for httpd
+  lineinfile:
+    dest: /opt/couchdb/etc/local.ini
+    insertafter: '^\[httpd\]$'
+    line: 'WWW-Authenticate = Basic realm="administrator"'
+
+
+- name: Add CAdmin User
+  lineinfile:
+    dest: /opt/couchdb/etc/local.ini
+    insertafter: '^\[admins\]$'
+    line: '{{ c_admin_user }} = {{ c_admin_password }}'
+
+- name: Add Admin User
+  lineinfile:
+    dest: /opt/couchdb/etc/local.ini
+    insertafter: '^\[admins\]$'
+    line: '{{ admin_user }} = {{ admin_password }}'
+
+
+
+- name: Install CouchDB Service
+  copy:
+    src: couchdb.service
+    dest: /etc/systemd/system/couchdb.service
+    owner: root
+    group: root
+
+- name: Enable CouchDB Service
+  systemd:
+    daemon-reload: yes
+    name: couchdb
+    enabled: yes
+
+- name: Start CouchDB Service
+  systemd:
+    name: couchdb
+    state: started

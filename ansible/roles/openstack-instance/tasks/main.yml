@@ -1,0 +1,27 @@
+# create instances 
+
+- name: Create DB instances
+  os_server:
+    name: '{{ item.instance_name }}'
+    image: '{{ item.instance_image }}'
+    key_name: '{{ item.instance_key_name }}'
+    flavor: '{{ item.instance_flavor }}'
+    availability_zone: '{{ availability_zone }}'
+    security_groups: '{{ sg_names }}'
+    auto_ip: yes
+    wait: yes
+    meta:
+      hostname: '{{ item.instance_hostname }}'
+      groups: '{{ item.instance_group }}'
+
+    state: present
+    
+  loop: '{{ instances }}'
+  register: os_instance
+
+- name: Result
+  debug:
+    msg: "Instance {{ item.name }} created. IP: {{ item.openstack.public_v4}}"
+  with_items: "{{ os_instance }}"
+  when: os_instance.openstack is defined
+  

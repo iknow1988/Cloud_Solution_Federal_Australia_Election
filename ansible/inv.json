@@ -1,0 +1,528 @@
+{
+  "_melbourne-qh2": [
+    "API",
+    "CouchDB"
+  ],
+  "_melbourne-qh2-uom": [
+    "vm-prod-db-1",
+    "vm-prod-app-1"
+  ],
+  "_meta": {
+    "hostvars": {
+      "API": {
+        "ansible_host": "115.146.85.20",
+        "ansible_ssh_host": "115.146.85.20",
+        "openstack": {
+          "OS-DCF:diskConfig": "AUTO",
+          "OS-EXT-AZ:availability_zone": "melbourne-qh2",
+          "OS-EXT-SRV-ATTR:hypervisor_hostname": null,
+          "OS-EXT-SRV-ATTR:instance_name": null,
+          "OS-EXT-SRV-ATTR:user_data": null,
+          "OS-EXT-STS:power_state": 1,
+          "OS-EXT-STS:task_state": null,
+          "OS-EXT-STS:vm_state": "active",
+          "OS-SCH-HNT:scheduler_hints": null,
+          "OS-SRV-USG:launched_at": "2019-04-24T09:51:37.000000",
+          "OS-SRV-USG:terminated_at": null,
+          "accessIPv4": "115.146.85.20",
+          "accessIPv6": "",
+          "addresses": {
+            "queensberry": [
+              {
+                "OS-EXT-IPS-MAC:mac_addr": "fa:16:3e:b8:e7:60",
+                "OS-EXT-IPS:type": "fixed",
+                "addr": "115.146.85.20",
+                "version": 4
+              }
+            ]
+          },
+          "adminPass": null,
+          "az": "melbourne-qh2",
+          "block_device_mapping": null,
+          "cloud": "devstack",
+          "config_drive": "",
+          "created": "2019-04-24T09:51:07Z",
+          "created_at": "2019-04-24T09:51:07Z",
+          "disk_config": "AUTO",
+          "flavor": {
+            "id": "0"
+          },
+          "has_config_drive": false,
+          "hostId": "84084c1ab5ba15bc093019029f9aeaaafacfd44dcb8aba3fc2f21345",
+          "host_id": "84084c1ab5ba15bc093019029f9aeaaafacfd44dcb8aba3fc2f21345",
+          "hypervisor_hostname": null,
+          "id": "565d32c2-3493-4331-a893-5b5daf3ca859",
+          "image": {
+            "id": "0a2bac09-8beb-464a-9cbc-6adf4dfcd5e5"
+          },
+          "instance_name": null,
+          "interface_ip": "115.146.85.20",
+          "key_name": "Kazilatest",
+          "launched_at": "2019-04-24T09:51:37.000000",
+          "location": {
+            "cloud": "devstack",
+            "project": {
+              "domain_id": null,
+              "domain_name": "Default",
+              "id": "f4abb90676fe4052a751e81843788e96",
+              "name": "unimelb-comp90024-group-2"
+            },
+            "region_name": "",
+            "zone": "melbourne-qh2"
+          },
+          "metadata": {},
+          "name": "API",
+          "networks": {},
+          "os-extended-volumes:volumes_attached": [],
+          "personality": null,
+          "power_state": 1,
+          "private_v4": "",
+          "progress": 0,
+          "project_id": "f4abb90676fe4052a751e81843788e96",
+          "properties": {
+            "OS-DCF:diskConfig": "AUTO",
+            "OS-EXT-AZ:availability_zone": "melbourne-qh2",
+            "OS-EXT-SRV-ATTR:hypervisor_hostname": null,
+            "OS-EXT-SRV-ATTR:instance_name": null,
+            "OS-EXT-SRV-ATTR:user_data": null,
+            "OS-EXT-STS:power_state": 1,
+            "OS-EXT-STS:task_state": null,
+            "OS-EXT-STS:vm_state": "active",
+            "OS-SCH-HNT:scheduler_hints": null,
+            "OS-SRV-USG:launched_at": "2019-04-24T09:51:37.000000",
+            "OS-SRV-USG:terminated_at": null,
+            "os-extended-volumes:volumes_attached": []
+          },
+          "public_v4": "115.146.85.20",
+          "public_v6": "",
+          "region": "",
+          "scheduler_hints": null,
+          "security_groups": [
+            {
+              "name": "ssh"
+            },
+            {
+              "name": "http"
+            },
+            {
+              "name": "default"
+            }
+          ],
+          "status": "ACTIVE",
+          "tags": [],
+          "task_state": null,
+          "tenant_id": "f4abb90676fe4052a751e81843788e96",
+          "terminated_at": null,
+          "updated": "2019-05-02T05:25:36Z",
+          "user_data": null,
+          "user_id": "00b95251c4944a34923633394bdaa810",
+          "vm_state": "active",
+          "volumes": []
+        }
+      },
+      "CouchDB": {
+        "ansible_host": "115.146.84.108",
+        "ansible_ssh_host": "115.146.84.108",
+        "openstack": {
+          "OS-DCF:diskConfig": "AUTO",
+          "OS-EXT-AZ:availability_zone": "melbourne-qh2",
+          "OS-EXT-SRV-ATTR:hypervisor_hostname": null,
+          "OS-EXT-SRV-ATTR:instance_name": null,
+          "OS-EXT-SRV-ATTR:user_data": null,
+          "OS-EXT-STS:power_state": 1,
+          "OS-EXT-STS:task_state": null,
+          "OS-EXT-STS:vm_state": "active",
+          "OS-SCH-HNT:scheduler_hints": null,
+          "OS-SRV-USG:launched_at": "2019-04-24T03:32:17.000000",
+          "OS-SRV-USG:terminated_at": null,
+          "accessIPv4": "115.146.84.108",
+          "accessIPv6": "",
+          "addresses": {
+            "queensberry": [
+              {
+                "OS-EXT-IPS-MAC:mac_addr": "fa:16:3e:48:03:2e",
+                "OS-EXT-IPS:type": "fixed",
+                "addr": "115.146.84.108",
+                "version": 4
+              }
+            ]
+          },
+          "adminPass": null,
+          "az": "melbourne-qh2",
+          "block_device_mapping": null,
+          "cloud": "devstack",
+          "config_drive": "",
+          "created": "2019-04-24T03:31:34Z",
+          "created_at": "2019-04-24T03:31:34Z",
+          "disk_config": "AUTO",
+          "flavor": {
+            "id": "0"
+          },
+          "has_config_drive": false,
+          "hostId": "90cfa38390fcc6337b78828a051baa9dba80285445e3907e1f4e6c23",
+          "host_id": "90cfa38390fcc6337b78828a051baa9dba80285445e3907e1f4e6c23",
+          "hypervisor_hostname": null,
+          "id": "7516a26f-f82e-495a-89ab-61df69f2a54f",
+          "image": {
+            "id": "0a2bac09-8beb-464a-9cbc-6adf4dfcd5e5"
+          },
+          "instance_name": null,
+          "interface_ip": "115.146.84.108",
+          "key_name": "Ahmed Fahmin",
+          "launched_at": "2019-04-24T03:32:17.000000",
+          "location": {
+            "cloud": "devstack",
+            "project": {
+              "domain_id": null,
+              "domain_name": "Default",
+              "id": "f4abb90676fe4052a751e81843788e96",
+              "name": "unimelb-comp90024-group-2"
+            },
+            "region_name": "",
+            "zone": "melbourne-qh2"
+          },
+          "metadata": {},
+          "name": "CouchDB",
+          "networks": {},
+          "os-extended-volumes:volumes_attached": [
+            {
+              "id": "95927eed-b659-4b1a-891e-b363e852bfd9"
+            }
+          ],
+          "personality": null,
+          "power_state": 1,
+          "private_v4": "",
+          "progress": 0,
+          "project_id": "f4abb90676fe4052a751e81843788e96",
+          "properties": {
+            "OS-DCF:diskConfig": "AUTO",
+            "OS-EXT-AZ:availability_zone": "melbourne-qh2",
+            "OS-EXT-SRV-ATTR:hypervisor_hostname": null,
+            "OS-EXT-SRV-ATTR:instance_name": null,
+            "OS-EXT-SRV-ATTR:user_data": null,
+            "OS-EXT-STS:power_state": 1,
+            "OS-EXT-STS:task_state": null,
+            "OS-EXT-STS:vm_state": "active",
+            "OS-SCH-HNT:scheduler_hints": null,
+            "OS-SRV-USG:launched_at": "2019-04-24T03:32:17.000000",
+            "OS-SRV-USG:terminated_at": null,
+            "os-extended-volumes:volumes_attached": [
+              {
+                "id": "95927eed-b659-4b1a-891e-b363e852bfd9"
+              }
+            ]
+          },
+          "public_v4": "115.146.84.108",
+          "public_v6": "",
+          "region": "",
+          "scheduler_hints": null,
+          "security_groups": [
+            {
+              "name": "ssh"
+            },
+            {
+              "name": "http"
+            },
+            {
+              "name": "default"
+            }
+          ],
+          "status": "ACTIVE",
+          "tags": [],
+          "task_state": null,
+          "tenant_id": "f4abb90676fe4052a751e81843788e96",
+          "terminated_at": null,
+          "updated": "2019-04-24T04:35:08Z",
+          "user_data": null,
+          "user_id": "e6f72243fa04416787f4de97a6aed0c1",
+          "vm_state": "active",
+          "volumes": [
+            {
+              "id": "95927eed-b659-4b1a-891e-b363e852bfd9"
+            }
+          ]
+        }
+      },
+      "vm-prod-app-1": {
+        "ansible_host": "103.6.254.16",
+        "ansible_ssh_host": "103.6.254.16",
+        "openstack": {
+          "OS-DCF:diskConfig": "MANUAL",
+          "OS-EXT-AZ:availability_zone": "melbourne-qh2-uom",
+          "OS-EXT-SRV-ATTR:hypervisor_hostname": null,
+          "OS-EXT-SRV-ATTR:instance_name": null,
+          "OS-EXT-SRV-ATTR:user_data": null,
+          "OS-EXT-STS:power_state": 1,
+          "OS-EXT-STS:task_state": null,
+          "OS-EXT-STS:vm_state": "active",
+          "OS-SCH-HNT:scheduler_hints": null,
+          "OS-SRV-USG:launched_at": "2019-05-03T01:39:10.000000",
+          "OS-SRV-USG:terminated_at": null,
+          "accessIPv4": "103.6.254.16",
+          "accessIPv6": "",
+          "addresses": {
+            "qh2-uom": [
+              {
+                "OS-EXT-IPS-MAC:mac_addr": "fa:16:3e:67:37:91",
+                "OS-EXT-IPS:type": "fixed",
+                "addr": "103.6.254.16",
+                "version": 4
+              }
+            ]
+          },
+          "adminPass": null,
+          "az": "melbourne-qh2-uom",
+          "block_device_mapping": null,
+          "cloud": "devstack",
+          "config_drive": "",
+          "created": "2019-05-03T01:38:46Z",
+          "created_at": "2019-05-03T01:38:46Z",
+          "disk_config": "MANUAL",
+          "flavor": {
+            "id": "639b8b2a-a5a6-4aa2-8592-ca765ee7af63"
+          },
+          "has_config_drive": false,
+          "hostId": "45790233cef9ad41b4f2e10246043863665d1e19236c3e761ab9ebb1",
+          "host_id": "45790233cef9ad41b4f2e10246043863665d1e19236c3e761ab9ebb1",
+          "hypervisor_hostname": null,
+          "id": "72c9f194-577f-4a4d-a7a1-d3562c13804a",
+          "image": {
+            "id": "0a2bac09-8beb-464a-9cbc-6adf4dfcd5e5"
+          },
+          "instance_name": null,
+          "interface_ip": "103.6.254.16",
+          "key_name": "gild-nectar",
+          "launched_at": "2019-05-03T01:39:10.000000",
+          "location": {
+            "cloud": "devstack",
+            "project": {
+              "domain_id": null,
+              "domain_name": "Default",
+              "id": "f4abb90676fe4052a751e81843788e96",
+              "name": "unimelb-comp90024-group-2"
+            },
+            "region_name": "",
+            "zone": "melbourne-qh2-uom"
+          },
+          "metadata": {
+            "group": "appservers",
+            "hostname": "vm-prod-app-1"
+          },
+          "name": "vm-prod-app-1",
+          "networks": {},
+          "os-extended-volumes:volumes_attached": [],
+          "personality": null,
+          "power_state": 1,
+          "private_v4": "",
+          "progress": 0,
+          "project_id": "f4abb90676fe4052a751e81843788e96",
+          "properties": {
+            "OS-DCF:diskConfig": "MANUAL",
+            "OS-EXT-AZ:availability_zone": "melbourne-qh2-uom",
+            "OS-EXT-SRV-ATTR:hypervisor_hostname": null,
+            "OS-EXT-SRV-ATTR:instance_name": null,
+            "OS-EXT-SRV-ATTR:user_data": null,
+            "OS-EXT-STS:power_state": 1,
+            "OS-EXT-STS:task_state": null,
+            "OS-EXT-STS:vm_state": "active",
+            "OS-SCH-HNT:scheduler_hints": null,
+            "OS-SRV-USG:launched_at": "2019-05-03T01:39:10.000000",
+            "OS-SRV-USG:terminated_at": null,
+            "os-extended-volumes:volumes_attached": []
+          },
+          "public_v4": "103.6.254.16",
+          "public_v6": "",
+          "region": "",
+          "scheduler_hints": null,
+          "security_groups": [
+            {
+              "name": "ssh"
+            },
+            {
+              "name": "couchdb"
+            }
+          ],
+          "status": "ACTIVE",
+          "tags": [],
+          "task_state": null,
+          "tenant_id": "f4abb90676fe4052a751e81843788e96",
+          "terminated_at": null,
+          "updated": "2019-05-03T02:58:58Z",
+          "user_data": null,
+          "user_id": "ff511392996b4a8cb8912783611a5659",
+          "vm_state": "active",
+          "volumes": []
+        }
+      },
+      "vm-prod-db-1": {
+        "ansible_host": "103.6.254.54",
+        "ansible_ssh_host": "103.6.254.54",
+        "openstack": {
+          "OS-DCF:diskConfig": "MANUAL",
+          "OS-EXT-AZ:availability_zone": "melbourne-qh2-uom",
+          "OS-EXT-SRV-ATTR:hypervisor_hostname": null,
+          "OS-EXT-SRV-ATTR:instance_name": null,
+          "OS-EXT-SRV-ATTR:user_data": null,
+          "OS-EXT-STS:power_state": 1,
+          "OS-EXT-STS:task_state": null,
+          "OS-EXT-STS:vm_state": "active",
+          "OS-SCH-HNT:scheduler_hints": null,
+          "OS-SRV-USG:launched_at": "2019-05-03T01:38:31.000000",
+          "OS-SRV-USG:terminated_at": null,
+          "accessIPv4": "103.6.254.54",
+          "accessIPv6": "",
+          "addresses": {
+            "qh2-uom": [
+              {
+                "OS-EXT-IPS-MAC:mac_addr": "fa:16:3e:0d:d9:97",
+                "OS-EXT-IPS:type": "fixed",
+                "addr": "103.6.254.54",
+                "version": 4
+              }
+            ]
+          },
+          "adminPass": null,
+          "az": "melbourne-qh2-uom",
+          "block_device_mapping": null,
+          "cloud": "devstack",
+          "config_drive": "",
+          "created": "2019-05-03T01:38:03Z",
+          "created_at": "2019-05-03T01:38:03Z",
+          "disk_config": "MANUAL",
+          "flavor": {
+            "id": "639b8b2a-a5a6-4aa2-8592-ca765ee7af63"
+          },
+          "has_config_drive": false,
+          "hostId": "e3bff1090498909b30243228270d6e0aa92e543ab8e1f3c821434340",
+          "host_id": "e3bff1090498909b30243228270d6e0aa92e543ab8e1f3c821434340",
+          "hypervisor_hostname": null,
+          "id": "59591ef6-835c-405d-8aad-3653403079e5",
+          "image": {
+            "id": "0a2bac09-8beb-464a-9cbc-6adf4dfcd5e5"
+          },
+          "instance_name": null,
+          "interface_ip": "103.6.254.54",
+          "key_name": "gild-nectar",
+          "launched_at": "2019-05-03T01:38:31.000000",
+          "location": {
+            "cloud": "devstack",
+            "project": {
+              "domain_id": null,
+              "domain_name": "Default",
+              "id": "f4abb90676fe4052a751e81843788e96",
+              "name": "unimelb-comp90024-group-2"
+            },
+            "region_name": "",
+            "zone": "melbourne-qh2-uom"
+          },
+          "metadata": {
+            "group": "dbservers",
+            "hostname": "vm-prod-db-1"
+          },
+          "name": "vm-prod-db-1",
+          "networks": {},
+          "os-extended-volumes:volumes_attached": [],
+          "personality": null,
+          "power_state": 1,
+          "private_v4": "",
+          "progress": 0,
+          "project_id": "f4abb90676fe4052a751e81843788e96",
+          "properties": {
+            "OS-DCF:diskConfig": "MANUAL",
+            "OS-EXT-AZ:availability_zone": "melbourne-qh2-uom",
+            "OS-EXT-SRV-ATTR:hypervisor_hostname": null,
+            "OS-EXT-SRV-ATTR:instance_name": null,
+            "OS-EXT-SRV-ATTR:user_data": null,
+            "OS-EXT-STS:power_state": 1,
+            "OS-EXT-STS:task_state": null,
+            "OS-EXT-STS:vm_state": "active",
+            "OS-SCH-HNT:scheduler_hints": null,
+            "OS-SRV-USG:launched_at": "2019-05-03T01:38:31.000000",
+            "OS-SRV-USG:terminated_at": null,
+            "os-extended-volumes:volumes_attached": []
+          },
+          "public_v4": "103.6.254.54",
+          "public_v6": "",
+          "region": "",
+          "scheduler_hints": null,
+          "security_groups": [
+            {
+              "name": "ssh"
+            },
+            {
+              "name": "couchdb"
+            }
+          ],
+          "status": "ACTIVE",
+          "tags": [],
+          "task_state": null,
+          "tenant_id": "f4abb90676fe4052a751e81843788e96",
+          "terminated_at": null,
+          "updated": "2019-05-03T02:45:10Z",
+          "user_data": null,
+          "user_id": "ff511392996b4a8cb8912783611a5659",
+          "vm_state": "active",
+          "volumes": []
+        }
+      }
+    }
+  },
+  "appservers": [
+    "vm-prod-app-1"
+  ],
+  "dbservers": [
+    "vm-prod-db-1"
+  ],
+  "devstack": [
+    "API",
+    "CouchDB",
+    "vm-prod-db-1",
+    "vm-prod-app-1"
+  ],
+  "devstack_": [
+    "API",
+    "CouchDB",
+    "vm-prod-db-1",
+    "vm-prod-app-1"
+  ],
+  "devstack__melbourne-qh2": [
+    "API",
+    "CouchDB"
+  ],
+  "devstack__melbourne-qh2-uom": [
+    "vm-prod-db-1",
+    "vm-prod-app-1"
+  ],
+  "instance-565d32c2-3493-4331-a893-5b5daf3ca859": [
+    "API"
+  ],
+  "instance-59591ef6-835c-405d-8aad-3653403079e5": [
+    "vm-prod-db-1"
+  ],
+  "instance-72c9f194-577f-4a4d-a7a1-d3562c13804a": [
+    "vm-prod-app-1"
+  ],
+  "instance-7516a26f-f82e-495a-89ab-61df69f2a54f": [
+    "CouchDB"
+  ],
+  "melbourne-qh2": [
+    "API",
+    "CouchDB"
+  ],
+  "melbourne-qh2-uom": [
+    "vm-prod-db-1",
+    "vm-prod-app-1"
+  ],
+  "meta-group_appservers": [
+    "vm-prod-app-1"
+  ],
+  "meta-group_dbservers": [
+    "vm-prod-db-1"
+  ],
+  "meta-hostname_vm-prod-app-1": [
+    "vm-prod-app-1"
+  ],
+  "meta-hostname_vm-prod-db-1": [
+    "vm-prod-db-1"
+  ]
+}

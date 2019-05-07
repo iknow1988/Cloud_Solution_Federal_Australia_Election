@@ -1,0 +1,35 @@
+---
+- name: Create a new instance and attaches to a network and passes metadata 
+  gather_facts: false
+  hosts: localhost
+  tasks:
+    - name: launch an instance
+      os_server:
+        state: present
+        auth:
+          auth_url: "{{ lookup('env','OS_AUTH_URL') }}"
+          username: "{{ lookup('env','OS_USERNAME') }}"
+          password: "{{ lookup('env','OS_PASSWORD') }}"
+          project_name: "{{ lookup('env','OS_PROJECT_NAME') }}"
+        name: vm1-dbtest
+        image: 0a2bac09-8beb-464a-9cbc-6adf4dfcd5e5
+        key_name: gild-nectar
+        timeout: 200
+        flavor: 639b8b2a-a5a6-4aa2-8592-ca765ee7af63
+        availability_zone: melbourne-qh2-uom
+        security_groups: ssh
+        auto_ip: yes
+        nics:
+          - net-name: Classic Provider
+        meta:
+          hostname: dbtest1
+          group: dbservers
+          
+        userdata: |
+          chpasswd:
+            list: |
+              ubuntu:{{ DEFAULT_PASSWORD }}
+            expire: False
+          packages:
+            - ansible
+          package_upgrade: true
