@@ -146,7 +146,7 @@ def exit_handler(user):
 					print(user['_id'], " is unlocked")
 
 def temp():
-	df = pd.read_csv('australia.csv', encoding="ISO-8859-1")
+	df = pd.read_csv('csv_files/political_party_attributes.csv', encoding="ISO-8859-1")
 	# temp = TAGS
 	# temp.extend([x.lower() for x in df.party_name.values])
 	party_mention = []
