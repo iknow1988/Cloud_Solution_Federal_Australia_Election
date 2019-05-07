@@ -1,0 +1,87 @@
+# TODO: Add proper validation when request fails
+# TODO: Set up variable coordination node correctly
+
+- name: Selecting coordinator node
+  set_fact:
+    coordinator_node: '{{ ansible_host }}'
+  run_once: true
+
+- name: Debug
+  debug:  
+    msg: 'Coordinator node {{ coordinator_node }} selected out of {{ ansible_play_hosts | length }} nodes. {{ http_api_port }} - {{ www_user }} - {{ www_password }}'
+  run_once: true
+
+- name: Setup the node
+  uri:
+    url: http://{{ ansible_host }}:{{http_api_port}}/_cluster_setup
+    method: POST
+    user: "admin"
+    password: "password"
+    body: '{"action": "enable_cluster", "bind_address":"0.0.0.0", "username": "{{ www_user }}", "password":"{{ www_password }}", "node_count":"{{ ansible_play_hosts | length }}"}'
+    body_format: json
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+  register: result
+  failed_when: false
+
+- name: debug setup node
+  debug:
+    msg: "Task setup node: {{ ansible_host }}: {{result}}"
+
+
+- name: Join - master node
+  uri:
+    url: http://{{ coordinator_node }}:{{ http_api_port }}/_cluster_setup
+    method: POST
+    user: "{{ www_user }}"
+    password: "{{ www_password }}"
+    body: '{"action": "enable_cluster", "bind_address":"{{ bind_address }}", "username": "{{ www_user }}", "password":"{{ www_password }}", "port": {{http_api_port}}, "node_count": "{{ ansible_play_hosts | length }}", "remote_node": "{{ ansible_host }}", "remote_current_user": "{{ www_user }}", "remote_current_password": "{{ www_password }}" }'
+    body_format: json
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+    register: result
+  failed_when: false
+
+- name: debug join master
+  debug:
+    msg: "Task join master node: {{ inventory_hostname }}: {{ result }}"
+  
+- name: Join - other nodes
+  uri:
+    url: http://{{ coordinator_node }}:{{ http_api_port }}/_cluster_setup
+    method: POST
+    user: "{{ www_user }}"
+    password: "{{ www_password }}"
+    body: '{"action": "add_node", "host":"{{ ansible_host }}", "port": {{ http_api_port }}, "username": "{{ www_user }}", "password":"{{ www_password }}"}'
+    body_format: json
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+    register: result
+  failed_when: false
+  
+- name: debug join other node
+  debug:
+    msg: "Task join other node: {{ inventory_hostname }}: {{result}}"
+
+- name: Finish cluster
+  uri:
+    url: http://{{ coordinator_node }}:{{ http_api_port }}/_cluster_setup 
+    method: POST
+    user: "{{ www_user }}"
+    password: "{{ www_password }}"
+    body: '{"action": "finish_cluster"}'
+    body_format: json
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+  register: result
+  run_once: true
+  failed_when: false
+  
+- name: Info - Finish cluster
+  debug:
+    msg: "Cluster finished - coordinator :{{ coordinator_node }}"
+  run_once: true

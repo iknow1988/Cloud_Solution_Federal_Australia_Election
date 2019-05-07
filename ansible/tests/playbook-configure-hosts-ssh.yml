@@ -9,7 +9,7 @@
     - name: Wait for ssh to be up
       become: false
       wait_for:
-        port: 22
+        port: {{SSH_PORT}}
         delay: 5
         connect_timeout: 5
         timeout: 360
@@ -20,13 +20,13 @@
       file:
         state: directory
         mode: 0700
-        dest: /home/ubuntu/.ssh/
+        dest: /home/{{ ANSIBLE_USER }}/.ssh/
 
     - name: Push ssh key
       copy:
-        src: "{{ ansible_ssh_private_key_file }}"
-        dest: /home/ubuntu/.ssh/authorized_keys
-        owner: ubuntu
+        src: "{{ ANSIBLE_SSH_PRIVATE_KEY_FILE }}"
+        dest: /home/{{ ANSIBLE_USER }}/.ssh/authorized_keys
+        owner: "{{ ANSIBLE_USER }}"
         mode: 0600
       register: rsa
       ignore_errors: true

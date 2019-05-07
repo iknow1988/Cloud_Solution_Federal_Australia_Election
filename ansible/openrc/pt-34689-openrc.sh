@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # To use an OpenStack cloud you need to authenticate against the Identity
 # service named keystone, which returns a **Token** and **Service Catalog**.
 # The catalog contains the endpoints for all services the user/tenant has
@@ -19,6 +19,7 @@ export OS_USER_DOMAIN_NAME="Default"
 if [ -z "$OS_USER_DOMAIN_NAME" ]; then unset OS_USER_DOMAIN_NAME; fi
 export OS_PROJECT_DOMAIN_ID="default"
 if [ -z "$OS_PROJECT_DOMAIN_ID" ]; then unset OS_PROJECT_DOMAIN_ID; fi
+echo "setting up for ... $OS_PROJECT_NAME"
 # unset v2.0 items in case set
 unset OS_TENANT_ID
 unset OS_TENANT_NAME
