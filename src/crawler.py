@@ -5,7 +5,7 @@ from harvesters import StreamTweetHarvester, KeywordsHarvester
 import datetime
 import pandas as pd
 
-COUCH_SERVER = couchdb.Server("http://admin:password@103.6.254.59:9584/")
+COUCH_SERVER = couchdb.Server("http://admin:password@103.6.254.96:9584/")
 credential_db = COUCH_SERVER['tweeter_credentials']
 
 TAGS = ['auspol','ausvotes','AusVotes19','ausvote2019' ,'auspol2019', 'ausvotes2019', 'ausvotes19',

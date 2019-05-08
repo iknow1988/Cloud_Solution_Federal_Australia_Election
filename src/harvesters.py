@@ -103,7 +103,7 @@ class Harvester:
 
 	def save_tweets_to_db(self, all_tweets):
 		count = 0
-		for tweet in enumerate(all_tweets):
+		for index, tweet in enumerate(all_tweets):
 			data = tweet._json
 			if self.save_tweet_to_db(data, False):
 				count = count + 1
@@ -128,26 +128,6 @@ class Harvester:
 											  self.seat_polygons, self.sa4_polygons)
 		return loc
 
-	def get_seat_sa4(self, data):
-		locations = []
-		big_locations = []
-		if ('coordinates' in data and data['coordinates']) or ('geo' in data and data['geo']):
-			for seat in self.seat_polygons:
-				location = seat.give_location(data)
-				if location:
-					locations.append(location)
-			for big in self.sa4_polygons:
-				big_loc = big.give_location(data)
-				if big_loc:
-					big_locations.append(big_loc)
-		if len(locations) == 1 :
-			locations = locations [0]
-		if len(big_locations) == 1:
-			big_locations = big_locations[0]
-		if locations or big_locations:
-			print(locations, big_locations)
-		return locations, big_locations
-
 
 class StreamTweetHarvester(Harvester):
 
@@ -156,7 +136,6 @@ class StreamTweetHarvester(Harvester):
 
 	def start_harvesting(self):
 		l = StdOutListener(self)
-		# l = StdOutListener(self.boundary, self.boundary_polygon, self.tweet_db, self.users_db)
 		stream = Stream(self.auth, l)
 		while True:
 			try:
