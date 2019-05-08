@@ -1,0 +1,4 @@
+- name: handle couchdb
+  debug:
+    msg: "Recieved notification that some guy was down service_couchdb_status"
+    

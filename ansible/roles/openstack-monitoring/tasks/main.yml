@@ -1,0 +1,34 @@
+- name: populate service facts
+  service_facts:
+
+- name: Check if service is running
+  command: systemctl status couchdb
+  ignore_errors: true
+  changed_when: false
+  register: service_couchdb_status
+  failed_when: service_couchdb_status is failed
+  
+- name: CouchDB Service  Status - Debug
+  debug:
+      var: ansible_facts.services['couchdb.service']
+  when: service_couchdb_status is failed
+
+- name: Restarting services with issues found
+  systemd:
+    name: couchdb
+    state: started
+  register: service_couchdb_restarted
+  when: service_couchdb_status is failed
+  failed_when: service_couchdb_restarted is failed
+
+# - name: CouchDB Service Started
+#   debug:
+#       msg: "Service restarted for {{ ansible_host }} succesfully"
+#   when: service_couchdb_restarted is defined
+#   failed_when: service_couchdb_restarted is failed
+
+
+# - name: fail the play if the previous command did not succeed
+#   fail:
+#     msg: "the service is inactive"
+#   when: "'inactive' in service_couchdb_status.stdout"

@@ -1,5 +1,7 @@
 # common
 availability_zone: melbourne-qh2-uom
+ansible_user: ubuntu
+default_ssh_port: 22
 
 # volumes 
 volumes: 
@@ -56,7 +58,7 @@ instances:
     instance_key_name: gild-nectar
     instance_flavor: 639b8b2a-a5a6-4aa2-8592-ca765ee7af63
     instance_hostname: vm-prod-db-1
-    instance_group: dbservers
+    instance_group: dbservers, appservers
   - name: vm-prod-db-2
     instance_name: vm-prod-db-2
     instance_image:  0a2bac09-8beb-464a-9cbc-6adf4dfcd5e5
@@ -71,8 +73,10 @@ instances:
     instance_flavor: 639b8b2a-a5a6-4aa2-8592-ca765ee7af63
     instance_hostname: vm-prod-db-3
     instance_group: dbservers
-  #- name: vm-prod-app-1
-  #  instance_name: vm-prod-app-1
-  #  instance_image:  0a2bac09-8beb-464a-9cbc-6adf4dfcd5e5
-  #  instance_key_name: gild-nectar
-  #  instance_flavor: 639b8b2a-a5a6-4aa2-8592-ca765ee7af63
+  # - name: vm-prod-app-1
+  #   instance_name: vm-prod-app-1
+  #   instance_image:  0a2bac09-8beb-464a-9cbc-6adf4dfcd5e5
+  #   instance_key_name: gild-nectar
+  #   instance_flavor: 639b8b2a-a5a6-4aa2-8592-ca765ee7af63
+  #   instance_group: appservers
+

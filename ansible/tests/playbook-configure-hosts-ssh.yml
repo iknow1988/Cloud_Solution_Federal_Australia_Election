@@ -1,15 +1,17 @@
 ---
-- hosts: all
+- hosts: vm-prod-db-2
   become: true
   become_user: ubuntu
   remote_user: ubuntu
   gather_facts: false
+  vars_files:
+    - ../host_vars/nectar.yml
+  
   tasks:
-
     - name: Wait for ssh to be up
       become: false
       wait_for:
-        port: {{SSH_PORT}}
+        port: 22
         delay: 5
         connect_timeout: 5
         timeout: 360
@@ -20,16 +22,17 @@
       file:
         state: directory
         mode: 0700
-        dest: /home/{{ ANSIBLE_USER }}/.ssh/
+        dest: /home/{{ ansible_user }}/.ssh/
 
     - name: Push ssh key
       copy:
-        src: "{{ ANSIBLE_SSH_PRIVATE_KEY_FILE }}"
-        dest: /home/{{ ANSIBLE_USER }}/.ssh/authorized_keys
-        owner: "{{ ANSIBLE_USER }}"
+        src: "{{ item.file_name }}"
+        dest: /home/{{ ansible_user }}/.ssh/authorized_keys
+        owner: "{{ ansible_user }}"
         mode: 0600
       register: rsa
       ignore_errors: true
+      loop: '{{ keys }}'
 
     - name: Final
       pause:
