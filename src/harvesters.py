@@ -4,11 +4,13 @@ import helper
 import json
 from shapely.geometry import shape, Point, Polygon
 import datetime
-import pandas as pd
 import time
 from http.client import IncompleteRead
+from urllib3.exceptions import ProtocolError
 import re
+import nltk
 from nltk import word_tokenize
+lemmatizer = nltk.stem.wordnet.WordNetLemmatizer()
 
 
 class StdOutListener(StreamListener):
@@ -18,8 +20,6 @@ class StdOutListener(StreamListener):
 
 	def on_data(self, data):
 		data = json.loads(data)
-		# if 'extended_tweet' in data:
-		# 	print(data['extended_tweet']['full_text'])
 		self.harvester.save_tweet_to_db(data)
 		return True
 
@@ -89,6 +89,7 @@ class Harvester:
 				data['state'] = geo_data[1]
 				data['country'] = geo_data[2]
 				data['party'] = party
+				data['processed_text'] = helper.get_processed_tweet(text)
 				self.tweet_db[data['id_str']] = data
 				if print_status:
 					print(datetime.datetime.now(), " : ", data['id_str'], " saved to tweeter database")
@@ -102,7 +103,7 @@ class Harvester:
 
 	def save_tweets_to_db(self, all_tweets):
 		count = 0
-		for counter, tweet in enumerate(all_tweets):
+		for index, tweet in enumerate(all_tweets):
 			data = tweet._json
 			if self.save_tweet_to_db(data, False):
 				count = count + 1
@@ -127,26 +128,6 @@ class Harvester:
 											  self.seat_polygons, self.sa4_polygons)
 		return loc
 
-	def get_seat_sa4(self, data):
-		locations = []
-		big_locations = []
-		if ('coordinates' in data and data['coordinates']) or ('geo' in data and data['geo']):
-			for seat in self.seat_polygons:
-				location = seat.give_location(data)
-				if location:
-					locations.append(location)
-			for big in self.sa4_polygons:
-				big_loc = big.give_location(data)
-				if big_loc:
-					big_locations.append(big_loc)
-		if len(locations) == 1 :
-			locations = locations [0]
-		if len(big_locations) == 1:
-			big_locations = big_locations[0]
-		if locations or big_locations:
-			print(locations, big_locations)
-		return locations, big_locations
-
 
 class StreamTweetHarvester(Harvester):
 
@@ -155,12 +136,14 @@ class StreamTweetHarvester(Harvester):
 
 	def start_harvesting(self):
 		l = StdOutListener(self)
-		# l = StdOutListener(self.boundary, self.boundary_polygon, self.tweet_db, self.users_db)
 		stream = Stream(self.auth, l)
 		while True:
 			try:
 				stream.filter(track=self.tags)
 			except IncompleteRead:
+				stream.filter(track=self.tags)
+				continue
+			except (ProtocolError, AttributeError):
 				continue
 			except KeyboardInterrupt:
 				stream.disconnect()
@@ -178,7 +161,7 @@ class TimeLineHarvester(Harvester):
 	def get_all_tweets(self, user_id):
 		all_tweets = []
 		try:
-			new_tweets = self.api.user_timeline(user_id=user_id, count=200)
+			new_tweets = self.api.user_timeline(screen_name=user_id, count=200)
 			all_tweets.extend(new_tweets)
 			oldest = all_tweets[-1].id - 1
 		except:
@@ -186,13 +169,13 @@ class TimeLineHarvester(Harvester):
 			pass
 		while len(new_tweets) > 0:
 			try:
-				new_tweets = self.api.user_timeline(user_id=user_id, count=200, max_id=oldest)
+				new_tweets = self.api.user_timeline(screen_name=user_id, count=200, max_id=oldest)
 			except:
 				pass
 			all_tweets.extend(new_tweets)
 			oldest = all_tweets[-1].id - 1
 		print(datetime.datetime.now(), " : ", "Downloaded tweets", len(new_tweets), " for user:", user_id)
-		self.save_tweets_to_db(all_tweets, user_id)
+		self.save_tweets_to_db(all_tweets, False)
 		time.sleep(5)
 
 	def start_harvesting(self):
@@ -260,7 +243,7 @@ class KeywordsHarvester(Harvester):
 				index = index + 1
 			else:
 				n = n + len(words)
-				if n < 10:
+				if n < 8:
 					keywords.append(word)
 				else:
 					keyword = ' OR '.join(keywords)

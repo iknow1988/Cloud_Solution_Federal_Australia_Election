@@ -5,6 +5,11 @@ import pandas as pd
 from nltk import word_tokenize
 import re
 import nltk
+lemmatizer = nltk.stem.wordnet.WordNetLemmatizer()
+
+# pre process documents removing stop words, non alpha and lemmatizing
+stopwords = list(nltk.corpus.stopwords.words('english'))  # extend stop words if necessary
+stopwords.extend(['rt', 'http'])
 regex = re.compile('[^a-zA-Z0-9_ ]')
 stopwords = list(nltk.corpus.stopwords.words('english')) # extend stop words if necessary
 stopwords.extend(['rt','http'])
@@ -263,5 +268,28 @@ def initialize_location_dictionaries():
 	countries = set(['australia', 'au'])
 
 	return [cities, states, countries]
+
+
+def lemmatize(word):
+	lemma = lemmatizer.lemmatize(word, 'v')
+
+	if lemma == word:
+		lemma = lemmatizer.lemmatize(word, 'n')
+
+	if lemma == word:
+		lemma = lemmatizer.lemmatize(word, 'a')
+
+	return lemma
+
+
+def get_processed_tweet(doc):
+	new_doc = []
+	for word in word_tokenize(doc):
+		new_word = word.lower()
+		if new_word.isalpha() and new_word not in stopwords:
+			new_word = lemmatize(new_word)
+			if new_word not in stopwords:
+				new_doc.append(new_word)
+	return new_doc
 
 
