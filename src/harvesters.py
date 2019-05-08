@@ -8,9 +8,6 @@ import time
 from http.client import IncompleteRead
 from urllib3.exceptions import ProtocolError
 import re
-import nltk
-from nltk import word_tokenize
-lemmatizer = nltk.stem.wordnet.WordNetLemmatizer()
 
 
 class StdOutListener(StreamListener):
@@ -29,27 +26,28 @@ class StdOutListener(StreamListener):
 
 class Harvester:
 
-	def __init__(self, user, boundary, tags, tweet_db, users_db):
+	def __init__(self, twitter_credential, boundary, tags, databases):
 		self.boundary = boundary
-		xmin = int(boundary[0])
-		xmax = int(boundary[2])
-		ymin = int(boundary[1])
-		ymax = int(boundary[3])
-		self.boundary_polygon = Polygon([[xmin, ymin], [xmin, ymax], [xmax, ymax], [xmax, ymin]])
-		self.access_token = user['access_token']
-		self.access_token_secret = user['access_token_secret']
-		self.consumer_key = user['consumer_key']
-		self.consumer_secret = user['consumer_secret']
+		x_min = float(boundary[0])
+		x_max = float(boundary[2])
+		y_min = float(boundary[1])
+		y_max = float(boundary[3])
+		self.boundary_polygon = Polygon([[x_min, y_min], [x_min, y_max], [x_max, y_max], [x_max, y_min]])
+		self.access_token = twitter_credential['access_token']
+		self.access_token_secret = twitter_credential['access_token_secret']
+		self.consumer_key = twitter_credential['consumer_key']
+		self.consumer_secret = twitter_credential['consumer_secret']
 		self.tags = tags
-		self.tweet_db = tweet_db
-		self.users_db = users_db
+		self.tweet_db = databases[0]
+		self.users_db = databases[1]
 		self.auth = OAuthHandler(self.consumer_key, self.consumer_secret)
 		self.auth.set_access_token(self.access_token, self.access_token_secret)
-		self.seat_polygons = helper.initialize_geo_map()
-		self.sa4_polygons = helper.initialize_sa_4_map()
+		self.election_seat_polygons = helper.initialize_election_map()
+		self.gcc_polygons = helper.initialize_gcc_map()
 		self.party_features = helper.get_party_features()
 		self.regex = re.compile('[^a-zA-Z0-9_ ]')
 		self.locations = helper.initialize_location_dictionaries()
+		self.api = API(self.auth, wait_on_rate_limit=True, retry_count=3, retry_delay=5, retry_errors = set([401, 404, 500, 503]))
 
 	def start_harvesting(self):
 		pass
@@ -73,15 +71,15 @@ class Harvester:
 	def save_tweet_to_db(self, data, print_status = True):
 		result = False
 		text = None
-		if ('extended_tweet' in data and data['extended_tweet']):
+		if 'extended_tweet' in data and data['extended_tweet']:
 			text = data['extended_tweet']['full_text']
 			party = self.get_party(text)
-		elif('text' in data and data['text']):
+		elif 'text' in data and data['text']:
 			text = data['text']
 			party = self.get_party(text)
 		else:
 			party = None
-		geo_data = self.check_geo(data)
+		geo_data = self.get_geo_location(data)
 		if geo_data and text and party:
 			try:
 				user = data['user']['id_str']
@@ -110,33 +108,18 @@ class Harvester:
 		if count:
 			print(datetime.datetime.now(), " : ", "Saved %s tweets to database" % count)
 
-	def check_geo(self, data):
-		coordinates = None
-		geo = None
-		place = None
-		user_location = None
-		if "coordinates" in data:
-			coordinates = data["coordinates"]
-		if "geo" in data:
-			geo = data['geo']
-		if 'place' in data:
-			place = data['place']
-		if 'user' in data and 'location' in data['user']:
-			user_location = data['user']['location']
-		loc = helper.tweet_in_australia_boundary(data, self.boundary, self.boundary_polygon, coordinates, geo,
-											  place, user_location, self.locations,
-											  self.seat_polygons, self.sa4_polygons)
+	def get_geo_location(self, data):
+		loc = helper.tweet_in_australia_boundary(data, self)
 		return loc
 
 
 class StreamTweetHarvester(Harvester):
 
-	def __init__(self, user, boundary, tags, tweet_db, users_db):
-		Harvester.__init__(self, user, boundary, tags, tweet_db, users_db)
+	def __init__(self, twitter_credential, boundary, tags, databases):
+		Harvester.__init__(self, twitter_credential, boundary, tags, databases)
 
 	def start_harvesting(self):
-		l = StdOutListener(self)
-		stream = Stream(self.auth, l)
+		stream = Stream(self.auth, StdOutListener(self))
 		while True:
 			try:
 				stream.filter(track=self.tags)
@@ -152,16 +135,14 @@ class StreamTweetHarvester(Harvester):
 
 class TimeLineHarvester(Harvester):
 
-	def __init__(self, user, user_id, screen_name, boundary, tags, tweet_db, users_db):
-		Harvester.__init__(self, user, boundary, tags, tweet_db, users_db)
-		self.api = API(self.auth, wait_on_rate_limit=True, retry_count=3, retry_delay=5, retry_errors=set([401, 404, 500, 503]))
-		self.screen_name = screen_name
-		self.user_id = user_id
+	def __init__(self, twitter_credential, boundary, tags, databases, twitter_ids):
+		Harvester.__init__(self, twitter_credential, boundary, tags, databases)
+		self.twitter_screen_names = twitter_ids
 
-	def get_all_tweets(self, user_id):
+	def get_all_tweets(self, screen_name):
 		all_tweets = []
 		try:
-			new_tweets = self.api.user_timeline(screen_name=user_id, count=200)
+			new_tweets = self.api.user_timeline(screen_name=screen_name, count=200)
 			all_tweets.extend(new_tweets)
 			oldest = all_tweets[-1].id - 1
 		except:
@@ -169,57 +150,44 @@ class TimeLineHarvester(Harvester):
 			pass
 		while len(new_tweets) > 0:
 			try:
-				new_tweets = self.api.user_timeline(screen_name=user_id, count=200, max_id=oldest)
+				new_tweets = self.api.user_timeline(screen_name=screen_name, count=200, max_id=oldest)
 			except:
 				pass
 			all_tweets.extend(new_tweets)
 			oldest = all_tweets[-1].id - 1
-		print(datetime.datetime.now(), " : ", "Downloaded tweets", len(new_tweets), " for user:", user_id)
-		self.save_tweets_to_db(all_tweets, False)
+		print(datetime.datetime.now(), " : ", "Downloaded tweets", len(new_tweets), " for user:", screen_name)
+		self.save_tweets_to_db(all_tweets)
 		time.sleep(5)
 
 	def start_harvesting(self):
-		rows = len(self.users_db)
-		for index, user_id in enumerate(self.users_db):
-			doc = self.users_db[user_id]
-			# name = doc['screen_name']
-			print(datetime.datetime.now(), " : ", "Processing", " : ", user_id)
-			if doc['processed'] == 0:
-				self.get_all_tweets(user_id)
-				doc['processed'] = 1
-				try:
-					self.users_db.save(doc)
-				except:
-					pass
+		rows = len(self.twitter_screen_names)
+		for index, screen_name in enumerate(self.twitter_screen_names):
+			print(datetime.datetime.now(), " : ", "Processing", " : ", screen_name)
+			self.get_all_tweets(screen_name)
 			print(datetime.datetime.now(), " : ", " Users left:", rows - index)
 
 
 class KeywordsHarvester(Harvester):
 
-	def __init__(self, user, boundary, tags, tweet_db, users_db):
-		Harvester.__init__(self, user, boundary, tags, tweet_db, users_db)
-		self.api = API(self.auth, wait_on_rate_limit=True, retry_count=3, retry_delay=5, retry_errors=set([401, 404, 500, 503]))
+	def __init__(self, twitter_credential, boundary, tags, databases):
+		Harvester.__init__(self, twitter_credential, boundary, tags, databases)
 
-	def search_keyword(self, search_query, max_id=None, since_id=None):
+	def get_all_tweets(self, search_query, max_id=None, since_id=None):
 		tweet_count = 0
 		tweets_per_query = 100
-		max_tweets = 20000
+		max_tweets = 40000
 		geo = "-31.53162668535551,135.53294849999997,2514.0km"
 		while tweet_count < max_tweets:
 			if not max_id:
 				if not since_id:
-					new_tweets = self.api.search(q=search_query, count=tweets_per_query,
-												 geocode = geo)
+					new_tweets = self.api.search(q=search_query, count=tweets_per_query, geocode = geo)
 				else:
-					new_tweets = self.api.search(q=search_query, count=tweets_per_query,
-												 since_id=since_id, geocode = geo)
+					new_tweets = self.api.search(q=search_query, count=tweets_per_query, since_id=since_id, geocode = geo)
 			else:
 				if not since_id:
-					new_tweets = self.api.search(q=search_query, geocode = geo, count=tweets_per_query,
-												 max_id=str(max_id - 1))
+					new_tweets = self.api.search(q=search_query, geocode = geo, count=tweets_per_query, max_id=str(max_id - 1))
 				else:
-					new_tweets = self.api.search(q=search_query, count=tweets_per_query, max_id=str(max_id - 1),
-											since_id=since_id, geocode = geo)
+					new_tweets = self.api.search(q=search_query, count=tweets_per_query, max_id=str(max_id - 1), since_id=since_id, geocode = geo)
 			if not new_tweets:
 				print(datetime.datetime.now(), " : ", "No new tweets to show")
 				break
@@ -239,7 +207,7 @@ class KeywordsHarvester(Harvester):
 			if len(words) > 2:
 				keyword = word
 				print(index, datetime.datetime.now(), " STARTED WITH: ", word)
-				self.search_keyword(search_query = keyword, max_id= None)
+				self.get_all_tweets(search_query = keyword, max_id= None)
 				index = index + 1
 			else:
 				n = n + len(words)
@@ -248,7 +216,7 @@ class KeywordsHarvester(Harvester):
 				else:
 					keyword = ' OR '.join(keywords)
 					print(index, datetime.datetime.now(), " STARTED WITH: ", keywords)
-					self.search_keyword(search_query = keyword, max_id= None)
+					self.get_all_tweets(search_query = keyword, max_id= None)
 					n = 0
 					keywords = list()
 					index = index + 1
