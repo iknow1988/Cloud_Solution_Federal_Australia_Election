@@ -1,0 +1,9 @@
+- hosts: appservers
+  vars_files:
+    - host_vars/nectar.yml
+    - group_vars/appservers.yml
+  gather_facts: false
+  
+  roles: 
+    - role: analytics-install
+

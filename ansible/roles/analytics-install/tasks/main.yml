@@ -1,0 +1,26 @@
+- name: Install dependencies
+  apt:
+    name: 
+      - npm 
+      - nodejs-legacy
+    state: latest
+    install_recommends: no
+
+- name: Install jupyterhub requirements
+  npm:
+      name: configurable-http-proxy
+
+- name: Deploy app from repo
+  git:
+      repo: '{{ repo }}'
+      dest: '{{ appsrc }}'
+      version: '{{ version }}'
+
+- name: Install requirements
+  pip: 
+      requirements: '{{ appsrc }}/requirements.txt'
+
+- name: Upgrading notebooks
+  pip:
+      name: notebook
+      extra_args: --upgrade
