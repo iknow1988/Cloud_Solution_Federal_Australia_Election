@@ -49,7 +49,7 @@ class Saving_Layer:
 				data['tweet_intensity'] = sentiment_scores['intensity']
 				data['tweet_sentiment'] = sentiment_scores['sentiment']
 				self.tweet_db[data['id_str']] = data
-				print(datetime.datetime.now(), " : ", data['id_str'], " saved to tweeter database", self.comm.Get_rank())
+				print(datetime.datetime.now(), " : ", data['id_str'], " saved to tweeter database")
 				result = True
 				if user not in self.users_db:
 					self.users_db[user] = {'screen_name': data['user']['screen_name']}
