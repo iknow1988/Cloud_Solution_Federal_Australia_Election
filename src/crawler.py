@@ -2,193 +2,129 @@ import couchdb
 import sys
 import atexit
 from harvesters import StreamTweetHarvester, KeywordsHarvester
+from DB_Saver import Saving_Layer
 import datetime
 import pandas as pd
+from mpi4py import MPI
 
-COUCH_SERVER = couchdb.Server("http://admin:password@103.6.254.96:9584/")
+COUCH_SERVER = couchdb.Server("http://admin:p01ss0n@103.6.254.96:9584/")
 credential_db = COUCH_SERVER['tweeter_credentials']
 
-TAGS = ['auspol','ausvotes','AusVotes19','ausvote2019' ,'auspol2019', 'ausvotes2019', 'ausvotes19',
-		'bill shorten', 'dutton',
-		'lnpcorruption','BillShorten','ScottMorrison', 'BuildingOurEconomy',
-		'LeadersDebate2','LeadersDebate1','LeadersDebate']
+TAGS = ['auspol','ausvotes','AusVotes19','ausvote2019' ,'auspol2019', 'ausvotes2019', 'ausvotes19']
+
+MASTER_RANK = 0
 
 try:
 	tweet_db = COUCH_SERVER.create('tweeter_test')
 except:
 	tweet_db = COUCH_SERVER['tweeter_test']
-users_db = COUCH_SERVER['users_twitter']
+
+try:
+	users_db = COUCH_SERVER.create('users_twitter')
+except:
+	users_db = COUCH_SERVER['users_twitter']
+
+databases = [tweet_db, users_db]
 
 
-def app(user, boundary):
-	harvester = StreamTweetHarvester(user, boundary, get_tags(), tweet_db, users_db)
+def app(harvester_type, twitter_credential, comm):
+	harvester = None
+	if harvester_type == 'api_stream':
+		harvester = StreamTweetHarvester(twitter_credential, get_tracking_keywords(), comm)
+	elif harvester_type == 'api_search':
+		harvester = KeywordsHarvester(twitter_credential, get_tracking_keywords(), comm)
+	else:
+		harvester = StreamTweetHarvester(twitter_credential, get_tracking_keywords(), comm)
+	print(datetime.datetime.now(), "tweeter user in use ", twitter_credential.id, harvester.comm.Get_rank())
+
 	harvester.start_harvesting()
 
 
-def app_keywords(user, boundary):
-	harvester = KeywordsHarvester(user, boundary, get_tags(), tweet_db, users_db)
-	harvester.start_harvesting()
+def get_boundary():
+	return [110.0,-44.0,159.0,-8.0]
 
 
-def prepare_harvester_parameters(option):
-	parameters={
-		# 'kazi': [141,-35,159,-8],
-		'kazi': [110,-44,159,-8],
-		'nafis': [129,-41,141,-8],
-		'unknown1': [141,-44,154,-35],
-		'unknown2': [110,-37,129,-10],
-		'daniel':[110,-44,159,-8],
-		'kun':[110,-44,159,-8]
-	}
-	return parameters[option]
-
-
-def get_tags():
+def get_tracking_keywords():
 	df = pd.read_csv('csv_files/political_party_attributes.csv', encoding = "ISO-8859-1")
 	temp = TAGS
-	temp.extend([x.lower() for x in df.party_name.values])
 
+	# Add party twitter page
 	for text in df[df.twitter.notnull()].twitter.values:
-		tokenized = ['@' + x.strip() for x in text.split(',')]
-		temp.extend(tokenized)
+		temp.extend(['@' + x.strip() for x in text.split(',')])
 
+	# Add party name
 	for text in df[df.party_name.notnull()].party_name.values:
-		tokenized = [x.lower().strip() for x in text.split(',')]
-		temp.extend(tokenized)
+		temp.extend([x.lower().strip() for x in text.split(',')])
 
+	# Add party abbr name
 	for text in df[df.abbr.notnull()].abbr.values:
-		tokenized = [x.lower().strip() for x in text.split(',')]
-		temp.extend(tokenized)
+		temp.extend([x.lower().strip() for x in text.split(',')])
 
+	# Add leader name
 	for text in df[df.leader.notnull()].leader.values:
-		tokenized = [x.lower().strip() for x in text.split(',')]
-		temp.extend(tokenized)
+		temp.extend([x.lower().strip() for x in text.split(',')])
 
-	# for text in df[df.ideology.notnull()].ideology.values:
-	# 	tokenized = [x.lower().strip() for x in text.split(',')]
-	# 	temp.extend(tokenized)
-
+	# Add leader twitter
 	for value in df[df.leader_twitter.notnull()].leader_twitter.values:
 		temp.extend(['@' + x.strip() for x in value.split(',')])
 
-	print(len(temp))
-
 	return temp
 
-def streamline(argv):
-	try:
-		user = None
-		for index, id in enumerate(credential_db):
-			doc = credential_db[id]
-			if argv[1] == id:
-				if doc['in_use'] == "0":
-					user = doc
-					doc['in_use'] = "1"
-					try:
-						credential_db.save(doc)
-						atexit.register(exit_handler, user)
-						break
-					except:
-						print("Couldn't lock user")
-						exit(0)
-				else:
-					print(id, " is locked")
-		if user:
-			print(datetime.datetime.now(), " : ", user.id, " is in use for", prepare_harvester_parameters(id))
-			app(user, prepare_harvester_parameters(id))
-		else:
-			print(datetime.datetime.now(), " Error ")
-	finally:
-		exit_handler(user)
 
-	return 0
-
-
-def timeline():
+def get_twitter_credentials():
 	user = None
-	doc = credential_db['kun']
-	if doc['in_use'] == "0":
-		user = doc
-		doc['in_use'] = "1"
-		try:
-			credential_db.save(doc)
-			atexit.register(exit_handler, user)
-		except:
-			print("Couldn't lock user")
-			exit(0)
-	else:
-		print(id, " is locked")
+	for index, id in enumerate(credential_db):
+		doc = credential_db[id]
+		if doc['in_use'] == "0":
+			user = doc
+			doc['in_use'] = "1"
+			try:
+				credential_db.save(doc)
+				break
+			except:
+				print(datetime.datetime.now(), "Couldn't lock user")
+				exit(0)
+	if not user:
+		print(datetime.datetime.now(), " Couldn't lock any user ")
+		exit(0)
 
-	if user:
-		print(datetime.datetime.now(), " : ", user.id, " is in use for", prepare_harvester_parameters(user.id))
-		app_keywords(user, prepare_harvester_parameters(user.id))
-	else:
-		print(datetime.datetime.now(), " Error ")
+	return user
+
 
 def main(argv):
-	if len(argv) > 1:
-		streamline(argv)
-	else:
-		timeline()
+	comm = MPI.COMM_WORLD
+	rank = comm.Get_rank()
+	if rank == MASTER_RANK:
+		user = get_twitter_credentials()
+		atexit.register(exit_handler, user)
+		try:
+			harvester_type = 'api_streamline'
+			if len(argv) > 1:
+				harvester_type = argv[1]
+				app(harvester_type, user, comm)
+			else:
+				app(harvester_type, user, comm)
+		finally:
+			exit_handler(user)
 
-
+	elif rank == 1:
+		db_saver = Saving_Layer(get_boundary(), databases, comm)
+		while True:
+			data = comm.recv(source=MASTER_RANK, tag=1)
+			db_saver.save_tweet_to_db(data)
 
 def exit_handler(user):
-	print('My application is ending!')
+	print(datetime.datetime.now(), " : ", 'Application is ending!')
 	if user:
-		for index, id in enumerate(credential_db):
-			doc = credential_db[id]
-			if user.id == id:
-				if doc['in_use'] == "1":
-					user = doc
-					doc['in_use'] = "0"
-					credential_db.save(doc)
-					print(user['_id'], " is unlocked")
-
-def temp():
-	df = pd.read_csv('csv_files/political_party_attributes.csv', encoding="ISO-8859-1")
-	# temp = TAGS
-	# temp.extend([x.lower() for x in df.party_name.values])
-	party_mention = []
-	abbr = []
-	leader_name = []
-	ideology = []
-	leader_twitter_mentions = []
-	party_name = []
-	for text in df[df.twitter.notnull()].twitter.values:
-		tokenized = [x.strip() for x in text.split(',')]
-		party_mention.extend(tokenized)
-
-	for text in df[df.abbr.notnull()].abbr.values:
-		tokenized = [x.lower().strip() for x in text.split(',')]
-		abbr.extend(tokenized)
-
-	for text in df[df.leader.notnull()].leader.values:
-		tokenized = [x.lower().strip() for x in text.split(',')]
-		leader_name.extend(tokenized)
-
-	for text in df[df.ideology.notnull()].ideology.values:
-		tokenized = [x.lower().strip() for x in text.split(',')]
-		ideology.extend(tokenized)
-
-	for value in df[df.leader_twitter.notnull()].leader_twitter.values:
-		leader_twitter_mentions.extend([x.strip() for x in value.split(',')])
-
-
-	for value in df[df.party_name.notnull()].party_name.values:
-		party_name.extend([x.lower().strip() for x in value.split(',')])
-
-	print(party_name)
-	print(abbr)
-	print(party_mention)
-	print(leader_name)
-	print(leader_twitter_mentions)
-	print(ideology)
+		doc = credential_db[user['_id']]
+		if doc['in_use'] == "1":
+			user = doc
+			doc['in_use'] = "0"
+			credential_db.save(doc)
+			print(datetime.datetime.now(), " : ", user['_id'], " is unlocked")
 
 
 if __name__ == "__main__":
-	# print(len(list(set(get_tags()))))
 	main(sys.argv)
-	# temp()
 
 
