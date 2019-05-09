@@ -21,6 +21,7 @@
     name: 
       - npm 
       - nodejs
+      - python3-pip
       #- nodejs-legacy
     state: latest
     install_recommends: yes
@@ -39,7 +40,7 @@
 - name: Install requirements
   pip: 
       requirements: '{{ appsrc }}/requirements.txt'
-
+      executable: pip3
 - name: Upgrading notebooks
   pip:
       name: notebook
