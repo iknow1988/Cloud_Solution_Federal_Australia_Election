@@ -1,18 +1,34 @@
 
 (function() {
-
+	
   var map = L.map('map', {
     attributionControl: false
   });
-
+    var state_twitter;
+	
+	fetch('http://127.0.0.1:5000/state/')
+	.then(response => {
+		return response.json()
+	})
+    .then(data => {
+		state_twitter = data;
+	})
+  
+  
   L.tileLayer('http://{s}.tile.stamen.com/{style}/{z}/{x}/{y}.png', { style: 'toner-background' }).addTo(map);
   
   $.getJSON("states.geojson", function(data) {
 
     var info = L.control();
-
     info.update = function (props) {
-      this._div.innerHTML = (props ? '<b>' + props['STATE_NAME'] + '</b>' : '<b> Hover over a state </b>');
+		if(props){
+			var state_total_tweets = state_twitter[parseInt(props['STATE_CODE'])];
+			this._div.innerHTML = '<b>' + props['STATE_NAME'] + '</b>' ;
+			this._div.innerHTML += '<br><br><b> Number of Tweets : </b>' + state_total_tweets;
+		}else{
+			this._div.innerHTML = '<b> Hover over a state </b>';
+		}
+		
     };
 	
     info.onAdd = function (map) {
