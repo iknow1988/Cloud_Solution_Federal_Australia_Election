@@ -10,6 +10,8 @@ volumes:
   - vol_name: vol-prod-app
     vol_size: 20
 
+volume_snapshot: 'N'
+
 # security group:
 security_groups:
   - name: ssh
@@ -52,27 +54,27 @@ security_group_rules:
 
 # Inital instances
 instances:
-  - name: vm-prod-db-1
-    instance_name: vm-prod-db-1
-    instance_image:  0a2bac09-8beb-464a-9cbc-6adf4dfcd5e5
+  - name: vm-test
+    instance_name: vm-test
+    instance_image: cb6d0a36-37f4-47c4-8a82-e201bf667211 
     instance_key_name: gild-nectar
     instance_flavor: 639b8b2a-a5a6-4aa2-8592-ca765ee7af63
-    instance_hostname: vm-prod-db-1
+    instance_hostname: vm-test
     instance_group: dbservers, appservers
-  - name: vm-prod-db-2
-    instance_name: vm-prod-db-2
-    instance_image:  0a2bac09-8beb-464a-9cbc-6adf4dfcd5e5
-    instance_key_name: gild-nectar
-    instance_flavor: 639b8b2a-a5a6-4aa2-8592-ca765ee7af63
-    instance_hostname: vm-prod-db-2
-    instance_group: dbservers
-  - name: vm-prod-db-3
-    instance_name: vm-prod-db-3
-    instance_image:  0a2bac09-8beb-464a-9cbc-6adf4dfcd5e5
-    instance_key_name: gild-nectar
-    instance_flavor: 639b8b2a-a5a6-4aa2-8592-ca765ee7af63
-    instance_hostname: vm-prod-db-3
-    instance_group: dbservers
+  # - name: vm-prod-db-2
+  #   instance_name: vm-prod-db-2
+  #   instance_image:  0a2bac09-8beb-464a-9cbc-6adf4dfcd5e5
+  #   instance_key_name: gild-nectar
+  #   instance_flavor: 639b8b2a-a5a6-4aa2-8592-ca765ee7af63
+  #   instance_hostname: vm-prod-db-2
+  #   instance_group: dbservers
+  # - name: vm-prod-db-3
+  #   instance_name: vm-prod-db-3
+  #   instance_image:  0a2bac09-8beb-464a-9cbc-6adf4dfcd5e5
+  #   instance_key_name: gild-nectar
+  #   instance_flavor: 639b8b2a-a5a6-4aa2-8592-ca765ee7af63
+  #   instance_hostname: vm-prod-db-3
+  #   instance_group: dbservers
   # - name: vm-prod-app-1
   #   instance_name: vm-prod-app-1
   #   instance_image:  0a2bac09-8beb-464a-9cbc-6adf4dfcd5e5
@@ -80,3 +82,16 @@ instances:
   #   instance_flavor: 639b8b2a-a5a6-4aa2-8592-ca765ee7af63
   #   instance_group: appservers
 
+
+db: 0
+app: 0
+db_instance_prefix_name: db-dragonstone
+app_instance_prefix_name: app-winterfell
+instance_image: cb6d0a36-37f4-47c4-8a82-e201bf667211
+instance_key_name: gild-nectar
+instance_flavor: uom.mse.2c9g
+db_instance_group: dbservers
+db_instance_security_group: couchdb,ssh
+app_instance_security_group: couchdb,ssh
+app_instance_group: appservers
+db_app_instance_group: 'dbservers,appservers'

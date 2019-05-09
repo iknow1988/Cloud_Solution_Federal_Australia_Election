@@ -5,5 +5,6 @@
   gather_facts: false
   
   roles: 
+    - role: openstack-common
     - role: analytics-install
 

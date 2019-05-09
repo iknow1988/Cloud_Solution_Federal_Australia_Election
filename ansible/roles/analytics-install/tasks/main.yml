@@ -1,14 +1,34 @@
+- name: Grant internet access http
+  lineinfile:
+    dest: /etc/environment
+    insertafter: '^\[PATH\]$'
+    line: 'http_proxy="http://wwwproxy.unimelb.edu.au:8000"'
+
+- name: Grant internet access https
+  lineinfile:
+    dest: /etc/environment
+    insertafter: '^\[PATH\]$'
+    line: 'https_proxy="http://wwwproxy.unimelb.edu.au:8000"'
+
+- name: Grant internet access ftp
+  lineinfile:
+    dest: /etc/environment
+    insertafter: '^\[PATH\]$'
+    line: 'ftp_proxy="http://wwwproxy.unimelb.edu.au:8000"'
+
 - name: Install dependencies
   apt:
     name: 
       - npm 
-      - nodejs-legacy
+      - nodejs
+      #- nodejs-legacy
     state: latest
-    install_recommends: no
+    install_recommends: yes
 
 - name: Install jupyterhub requirements
   npm:
       name: configurable-http-proxy
+      global: yes
 
 - name: Deploy app from repo
   git:
