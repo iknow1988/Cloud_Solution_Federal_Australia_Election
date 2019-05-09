@@ -5,6 +5,11 @@ import pandas as pd
 from nltk import word_tokenize
 import re
 import nltk
+from nltk import word_tokenize,sent_tokenize,wordpunct_tokenize
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+
+# create object - pretrained basic model based on lexicons
+sid = SentimentIntensityAnalyzer()
 lemmatizer = nltk.stem.wordnet.WordNetLemmatizer()
 
 # pre process documents removing stop words, non alpha and lemmatizing
@@ -180,14 +185,14 @@ class Location:
 	def check_point_intersects(self, coordinate):
 		point = Point(coordinate[0], coordinate[1])
 		if self.geometry.intersects(point):
-			return self.name
+			return self.place_name
 		else:
 			return None
 
 	def check_bounding_box_intersects(self, polygon):
 		s1 = shape(polygon)
 		if self.geometry.intersects(s1):
-			return self.name
+			return self.place_name
 		else:
 			return None
 
@@ -274,4 +279,25 @@ def get_processed_tweet(doc):
 				new_doc.append(new_word)
 	return new_doc
 
+
+def get_polarity_score(tweet):
+	sentiment_scores = sid.polarity_scores(tweet)
+
+	if sentiment_scores['compound'] < 0.0:
+		sentiment_scores['sentiment'] = "Negative"
+		if sentiment_scores['compound'] <= -0.5:
+			sentiment_scores['intensity'] = "Strong"
+		else:
+			sentiment_scores['intensity'] = "Moderate"
+	elif sentiment_scores['compound'] > 0.0:
+		sentiment_scores['sentiment'] = "Positive"
+		if sentiment_scores['compound'] >= 0.5:
+			sentiment_scores['intensity'] = "Strong"
+		else:
+			sentiment_scores['intensity'] = "Moderate"
+	else:
+		sentiment_scores['sentiment'] = "Neutral"
+		sentiment_scores['intensity'] = None
+
+	return sentiment_scores
 

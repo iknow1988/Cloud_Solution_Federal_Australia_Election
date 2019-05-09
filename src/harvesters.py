@@ -88,6 +88,9 @@ class Harvester:
 				data['country'] = geo_data[2]
 				data['party'] = party
 				data['processed_text'] = helper.get_processed_tweet(text)
+				sentiment_scores = helper.get_polarity_score(text)
+				data['tweet_intensity'] = sentiment_scores['intensity']
+				data['tweet_sentiment'] = sentiment_scores['sentiment']
 				self.tweet_db[data['id_str']] = data
 				if print_status:
 					print(datetime.datetime.now(), " : ", data['id_str'], " saved to tweeter database")
