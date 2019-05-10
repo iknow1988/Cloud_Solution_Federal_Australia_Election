@@ -1,0 +1,151 @@
+,seat,city,state
+0,Adelaide,Port Adelaide Enfield,South Australia
+1,Aston,City of Knox,Victoria
+2,Ballarat,City of Ballarat,Victoria
+3,Banks,Georges River,NSW
+4,Barker,Adelaide,South Australia
+5,Barton,Bayside Council,NSW
+6,Bass,Launceston,Tasmania
+7,Batman,City of Yarra,Victoria
+8,Bendigo,City of Greater Bendigo,Victoria
+9,Bennelong,Willoughby,NSW
+10,Berowra,The Hills,NSW
+11,Blair,Ipswich,QLD
+12,Blaxland,Canterbury-Bankstown,NSW
+13,Bonner,Brisbane,QLD
+14,Boothby,Onkaparinga,South Australia
+15,Bowman,Brisbane,QLD
+16,Braddon,Burnie,Tasmania
+17,Bradfield,Hornsby,NSW
+18,Brand,Perth,Western Australia
+19,Brisbane,Brisbane,QLD
+20,Bruce,City of Monash,Victoria
+21,Burt,Perth,Western Australia
+22,Calare,Blayney,NSW
+23,Calwell,City of Hume,Victoria
+24,Canberra,Woden Valley,Australian Capital Territory
+25,Canning,Perth,Western Australia
+26,Capricornia,Rockhampton,QLD
+27,Casey,Shire of Yarra Ranges,Victoria
+28,Chifley,Blacktown,NSW
+29,Chisholm,City of Monash,Victoria
+30,Cook,Georges River,NSW
+31,Corangamite,Surf Coast Shire,Victoria
+32,Corio,City of Greater Geelong,Victoria
+33,Cowan,City of Wanneroo,Western Australia
+34,Cowper,Kempsey Shire Council,NSW
+35,Cunningham,Wollongong,NSW
+36,Curtin,Perth,Western Australia
+37,Dawson,Mackay,QLD
+38,Deakin,City of Maroondah,Victoria
+39,Denison,Hobart,Tasmania
+40,Dickson,Brisbane,QLD
+41,Dobell,Central Coast,NSW
+42,Dunkley,City of Frankston,Victoria
+43,Durack,Geraldton,Western Australia
+44,Eden-Monaro,Snowy Monaro,NSW
+45,Fadden,Gold Coast,QLD
+46,Fairfax,Maroochydore,QLD
+47,Farrer,Albury,NSW
+48,Fenner,Gungahlin,Australian Capital Territory
+49,Fisher,Maroochydore,QLD
+50,Flinders,Shire of Mornington Peninsula,Victoria
+51,Flynn,Rockhampton,QLD
+52,Forde,Brisbane,QLD
+53,Forrest,Bunbury,Western Australia
+54,Fowler,Liverpool,NSW
+55,Franklin,Hobart,Tasmania
+56,Fremantle,Perth,Western Australia
+57,Gellibrand,City of Hobsons Bay,Victoria
+58,Gilmore,Shoalhaven,NSW
+59,Gippsland,Shire of Wellington,Victoria
+60,Goldstein,City of Bayside,Victoria
+61,Gorton,City of Melton,Victoria
+62,Grayndler,Inner West,NSW
+63,Greenway,Penrith,NSW
+64,Grey,Barunga West,South Australia
+65,Griffith,Brisbane,QLD
+66,Groom,Toowoomba,QLD
+67,Hasluck,Perth,Western Australia
+68,Herbert,Townsville,QLD
+69,Higgins,City of Stonnington,Victoria
+70,Hindmarsh,Adelaide,South Australia
+71,Hinkler,Bundaberg Region,QLD
+72,Holt,City of Casey,Victoria
+73,Hotham,City of Glen Eira,Victoria
+74,Hughes,Liverpool,NSW
+75,Hume,Wollondilly,NSW
+76,Hunter,Lake Macquarie,NSW
+77,Indi,Albury,NSW
+78,Isaacs,City of Greater Dandenong,Victoria
+79,Jagajaga,City of Banyule,Victoria
+80,Kennedy,Townsville,QLD
+81,Kingsford Smith,Bayside Council,NSW
+82,Kingston,Adelaide,South Australia
+83,Kooyong,City of Boroondara,Victoria
+84,La Trobe,Shire of Cardinia,Victoria
+85,Lalor,City of Hobsons Bay,Victoria
+86,Leichhardt,Cairns,QLD
+87,Lilley,Brisbane,QLD
+88,Lindsay,Penrith,NSW
+89,Lingiari,Town of Alice Springs,Northern Territory
+90,Longman,Caboolture,QLD
+91,Lyne,Dungog,NSW
+92,Lyons,Launceston,Tasmania
+93,Macarthur,Camden,NSW
+94,Mackellar,Northern Beaches,NSW
+95,Macquarie,Hawkesbury,NSW
+96,Makin,Port Adelaide Enfield,South Australia
+97,Mallee,Naracoorte Lucindale,Victoria
+98,Maranoa,Brisbane,QLD
+99,Maribyrnong,City of Moonee Valley,Victoria
+100,Mayo,Adelaide Hills,South Australia
+101,McEwen,Shire of Nillumbik,Victoria
+102,McMahon,Parramatta,NSW
+103,McMillan,Shire of South Gippsland,Victoria
+104,McPherson,Gold Coast,QLD
+105,Melbourne,City of Yarra,Victoria
+106,Melbourne Ports,City of Port Phillip,Victoria
+107,Menzies,City of Manningham,Victoria
+108,Mitchell,Parramatta,NSW
+109,Moncrieff,Gold Coast,QLD
+110,Moore,Joondalup,Western Australia
+111,Moreton,Brisbane,QLD
+112,Murray,City of Greater Shepparton,Victoria
+113,New England,Upper Hunter,NSW
+114,Newcastle,Newcastle,NSW
+115,North Sydney,Willoughby,NSW
+116,OConnor,Albany,Western Australia
+117,Oxley,Ipswich,QLD
+118,Page,Ballina Shire Council,NSW
+119,Parkes,Narrabri,NSW
+120,Parramatta,Parramatta,NSW
+121,Paterson,Cessnock,NSW
+122,Pearce,City of Swan,Western Australia
+123,Perth,Town of Bassendean,Western Australia
+124,Petrie,Brisbane,QLD
+125,Port Adelaide,Adelaide,South Australia
+126,Rankin,Brisbane,QLD
+127,Reid,Canada Bay,NSW
+128,Richmond,Ballina Shire Council,NSW
+129,Riverina,Gundagai,NSW
+130,Robertson,Central Coast,NSW
+131,Ryan,Brisbane,QLD
+132,Scullin,City of Whittlesea,Victoria
+133,Shortland,Central Coast,NSW
+134,Solomon,City of Darwin,Northern Territory
+135,Stirling,Perth,Western Australia
+136,Sturt,Adelaide,South Australia
+137,Swan,Perth,Western Australia
+138,Sydney,Sydney,NSW
+139,Tangney,Perth,Western Australia
+140,Wakefield,Adelaide,South Australia
+141,Wannon,City of Warrnambool,Victoria
+142,Warringah,Northern Beaches,NSW
+143,Watson,Canterbury-Bankstown,NSW
+144,Wentworth,Woollahra,NSW
+145,Werriwa,Liverpool,NSW
+146,Whitlam,Shellharbour,NSW
+147,Wide Bay,Maryborough,QLD
+148,Wills,City of Moreland,Victoria
+149,Wright,Toowoomba,QLD
