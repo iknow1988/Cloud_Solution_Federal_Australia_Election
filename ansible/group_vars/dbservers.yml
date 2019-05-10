@@ -9,15 +9,15 @@ couchdb_cookie: zaFradre6ech
 
 # default user for WWW 
 www_user: admin
-www_password: password
+www_password: p01ss0n
 
 # default user for admin
 admin_user: admin
-admin_password: password
+admin_password: p01ss0n
 
 # default user for admin
 c_admin_user: cadmin
-c_admin_password: password
+c_admin_password: p01ss0n
 
 # default bind address
 bind_address: 0.0.0.0
