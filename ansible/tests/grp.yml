@@ -1,0 +1,4 @@
+--- 
+- name: aaaaaa
+  debug: msg="{{ outer_item.name }}-{{ item }}" 
+  loop: "{{range(1, outer_item.limit, 1)|list }}"

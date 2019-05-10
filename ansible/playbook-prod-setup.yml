@@ -1,12 +1,21 @@
-- hosts: vm-prod-db-2
+- hosts: localhost
   vars_files:
     - host_vars/nectar.yml
+  vars: 
+    - dbservers: '{{ db }}'
+    - appservers: '{{ app }}'
+    - snapshot: '{{ volume_snapshot }}'
   gather_facts: true
+
+  pre_tasks:
+    - name: Starting cloud
+      debug:
+        msg: Groups dbservers="{{ db }}" and appserver="{{ app }}"
 
   roles: 
     #- role: openstack-common
     #- role: openstack-volume
     #- role: openstack-security-group
-    - role: openstack-sshkeys
-    #- role: openstack-instance
-    #- role: openstack-volume-snapshot
+    - role: openstack-instance
+    #- role: openstack-sshkeys
+    #- {role: openstack-volume-snapshot, when: snapshot  == 'Y' }

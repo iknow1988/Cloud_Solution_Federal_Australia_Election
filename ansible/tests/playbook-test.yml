@@ -1,0 +1,31 @@
+---
+- name: create n instances
+  hosts: localhost
+  vars: 
+     grp: '{{ groups }}'
+
+  vars_files:
+    - ../host_vars/nectar.yml 
+
+    
+  tasks:
+  # - name: with_sequence -> loop
+  #   debug:
+  #     msg: "{{ 'testuser%02x' | format(item) }}"
+  #   # range is exclusive of the end point
+  #   loop: "{{range(1, 2, 1)|list }}"
+
+  - name: debug
+    debug:
+      msg: "{{ db }}"
+  
+  - name: debug
+    debug:
+      msg: "{{ app }}"
+
+  - name: including
+    include: grp.yml 
+    with_items: "{{ grp }}" 
+    loop_control: 
+      loop_var: outer_item 
+    

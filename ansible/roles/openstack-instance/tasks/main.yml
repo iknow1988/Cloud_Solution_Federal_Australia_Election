@@ -1,27 +1,65 @@
 # create instances 
 
+# - name: Create test instances
+#   os_server:
+#     name: '{{ item.instance_name }}'
+#     image: '{{ item.instance_image }}'
+#     key_name: '{{ item.instance_key_name }}'
+#     flavor: '{{ item.instance_flavor }}'
+#     availability_zone: '{{ availability_zone }}'
+#     security_groups: ssh
+#     auto_ip: yes
+#     wait: yes
+#     meta:
+#       hostname: '{{ item.instance_hostname }}'
+#       groups: '{{ item.instance_group }}'
+
+#     state: present
+    
+#   loop: '{{ instances }}'
+#   register: os_instance
+
+# - name: Result
+#   debug:
+#     msg: "Instance {{ item.name }} created. IP: {{ item.openstack.public_v4}}"
+#   with_items: "{{ os_instance }}"
+#   when: os_instance.openstack is defined
+
 - name: Create DB instances
   os_server:
-    name: '{{ item.instance_name }}'
-    image: '{{ item.instance_image }}'
-    key_name: '{{ item.instance_key_name }}'
-    flavor: '{{ item.instance_flavor }}'
+    name: '{{ db_instance_prefix_name }}-{{ item }}'
+    image: '{{ instance_image }}'
+    key_name: '{{ instance_key_name }}'
+    flavor: '{{ instance_flavor }}'
     availability_zone: '{{ availability_zone }}'
-    security_groups: '{{ sg_names }}'
+    security_groups: '{{ db_instance_security_group }}'
     auto_ip: yes
     wait: yes
     meta:
-      hostname: '{{ item.instance_hostname }}'
-      groups: '{{ item.instance_group }}'
+      hostname: '{{ db_instance_prefix_name }}-{{ item }} '
+      groups: '{{ db_instance_group }}'
 
     state: present
     
-  loop: '{{ instances }}'
-  register: os_instance
+  loop: "{{range(1, db+1, 1)|list }}"
 
-- name: Result
-  debug:
-    msg: "Instance {{ item.name }} created. IP: {{ item.openstack.public_v4}}"
-  with_items: "{{ os_instance }}"
-  when: os_instance.openstack is defined
+- name: Create APP instances
+  os_server:
+    name: '{{ app_instance_prefix_name }}-{{ item }}'
+    image: '{{ instance_image }}'
+    key_name: '{{ instance_key_name }}'
+    flavor: '{{ instance_flavor }}'
+    availability_zone: '{{ availability_zone }}'
+    security_groups: '{{ app_instance_security_group }}'
+    auto_ip: yes
+    wait: yes
+    meta:
+      hostname: '{{ app_instance_prefix_name }}-{{ item }}'
+      groups: '{{ app_instance_group }}'
+
+    state: present
+    
+  loop: '{{range(1, app+1, 1)|list }}'
+  
+
   
