@@ -2,17 +2,14 @@ import couchdb
 import sys
 import atexit
 from harvesters import StreamTweetHarvester, KeywordsHarvester
-from DB_Saver import Saving_Layer
 import datetime
 import pandas as pd
-from mpi4py import MPI
 
-COUCH_SERVER = couchdb.Server("http://admin:p01ss0n@103.6.254.96:9584/")
+COUCH_SERVER = couchdb.Server("http://admin:p01ss0n@103.6.254.59:9584/")
 credential_db = COUCH_SERVER['tweeter_credentials']
 
-TAGS = ['auspol','ausvotes','AusVotes19','ausvote2019' ,'auspol2019', 'ausvotes2019', 'ausvotes19']
-
-MASTER_RANK = 0
+TAGS = ['auspol','ausvotes','AusVotes19','ausvote2019' ,'auspol2019', 'ausvotes2019',
+		'AusVotes2019' ,'ausvotes19','pmlive','BuildingOurEconomy','ilikebillshorten','thedrum']
 
 try:
 	tweet_db = COUCH_SERVER.create('tweeter_test')
@@ -27,20 +24,19 @@ except:
 databases = [tweet_db, users_db]
 
 
-def app(harvester_type, twitter_credential, comm):
+def app(harvester_type, twitter_credential, boundary):
 	harvester = None
 	if harvester_type == 'api_stream':
-		harvester = StreamTweetHarvester(twitter_credential, get_tracking_keywords(), comm)
+		harvester = StreamTweetHarvester(twitter_credential, boundary, get_tracking_keywords(), databases)
 	elif harvester_type == 'api_search':
-		harvester = KeywordsHarvester(twitter_credential, get_tracking_keywords(), comm)
+		harvester = KeywordsHarvester(twitter_credential, boundary, get_tracking_keywords(), databases)
 	else:
-		harvester = StreamTweetHarvester(twitter_credential, get_tracking_keywords(), comm)
-	print(datetime.datetime.now(), "tweeter user in use ", twitter_credential.id, harvester.comm.Get_rank())
-
+		harvester = StreamTweetHarvester(twitter_credential, boundary, get_tracking_keywords(), databases)
+	print(datetime.datetime.now(), "tweeter user in use ", twitter_credential.id)
 	harvester.start_harvesting()
 
 
-def get_boundary():
+def prepare_harvester_parameters():
 	return [110.0,-44.0,159.0,-8.0]
 
 
@@ -92,26 +88,18 @@ def get_twitter_credentials():
 
 
 def main(argv):
-	comm = MPI.COMM_WORLD
-	rank = comm.Get_rank()
-	if rank == MASTER_RANK:
-		user = get_twitter_credentials()
-		atexit.register(exit_handler, user)
-		try:
-			harvester_type = 'api_streamline'
-			if len(argv) > 1:
-				harvester_type = argv[1]
-				app(harvester_type, user, comm)
-			else:
-				app(harvester_type, user, comm)
-		finally:
-			exit_handler(user)
+	user = get_twitter_credentials()
+	atexit.register(exit_handler, user)
+	try:
+		harvester_type = 'api_streamline'
+		if len(argv) > 1:
+			harvester_type = argv[1]
+			app(harvester_type, user, prepare_harvester_parameters())
+		else:
+			app(harvester_type, user, prepare_harvester_parameters())
+	finally:
+		exit_handler(user)
 
-	elif rank == 1:
-		db_saver = Saving_Layer(get_boundary(), databases, comm)
-		while True:
-			data = comm.recv(source=MASTER_RANK, tag=1)
-			db_saver.save_tweet_to_db(data)
 
 def exit_handler(user):
 	print(datetime.datetime.now(), " : ", 'Application is ending!')
