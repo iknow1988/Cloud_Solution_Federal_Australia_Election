@@ -1,21 +1,64 @@
 ---
-# install dependencies
-- name: Install pip
-  become: yes
+- name: Grant internet access http
+  lineinfile:
+    dest: /etc/environment
+    insertafter: '^\[PATH\]$'
+    line: 'http_proxy="http://wwwproxy.unimelb.edu.au:8000"'
+
+- name: Grant internet access https
+  lineinfile:
+    dest: /etc/environment
+    insertafter: '^\[PATH\]$'
+    line: 'https_proxy="http://wwwproxy.unimelb.edu.au:8000"'
+
+- name: Grant internet access ftp
+  lineinfile:
+    dest: /etc/environment
+    insertafter: '^\[PATH\]$'
+    line: 'ftp_proxy="http://wwwproxy.unimelb.edu.au:8000"'
+
+- name: Install dependencies
   apt:
-    name: ['python-pip']
+    name: 
+      - openssl
+      - python3-pip
+      - python3-all-dev
+      - python3-setuptools
+      
+      #- nodejs-legacy
     state: latest
+    install_recommends: yes
     update_cache: yes
+
+# install dependencies
+# - name: Install pip
+#   become: yes
+#   apt:
+#     name: ['python-pip']
+#     state: latest
+#     update_cache: yes
   #when: ansible_distribution == "Ubuntu"
 
-- name: Update pip 
-  become: yes
-  pip:
-    name: ['pip','cryptography']
-    state: latest
+# - name: remove the link py27
+#   file: 
+#     path: '/usr/bin/python'
+#     state: absent 
 
-- name: Install openstack
-  become: yes
-  pip:
-    name:  ['openstacksdk']
-    state: latest
+- name: setup python 3 as default
+  file: 
+    src: '/usr/bin/python3.5' 
+    dest: '/usr/bin/python'
+    state: link 
+    force: yes
+
+# - name: Update pip 
+#   become: yes
+#   pip:
+#     name: ['pip3','cryptography']
+#     state: latest
+
+# - name: Install openstack
+#   become: yes
+#   pip:
+#     name:  ['openstacksdk']
+#     state: latest
