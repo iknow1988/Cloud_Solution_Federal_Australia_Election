@@ -82,12 +82,13 @@ instances:
   #   instance_flavor: 639b8b2a-a5a6-4aa2-8592-ca765ee7af63
   #   instance_group: appservers
 
+#cb6d0a36-37f4-47c4-8a82-e201bf667211
 
 db: 0
 app: 0
 db_instance_prefix_name: db-dragonstone
 app_instance_prefix_name: app-winterfell
-instance_image: cb6d0a36-37f4-47c4-8a82-e201bf667211
+instance_image: 84c5db58-d307-451a-aa69-7f5c4b40c385  
 instance_key_name: gild-nectar
 instance_flavor: uom.mse.2c9g
 db_instance_group: dbservers

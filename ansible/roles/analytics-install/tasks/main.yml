@@ -1,30 +1,32 @@
-- name: Grant internet access http
-  lineinfile:
-    dest: /etc/environment
-    insertafter: '^\[PATH\]$'
-    line: 'http_proxy="http://wwwproxy.unimelb.edu.au:8000"'
+# - name: Grant internet access http
+#   lineinfile:
+#     dest: /etc/environment
+#     insertafter: '^\[PATH\]$'
+#     line: 'http_proxy="http://wwwproxy.unimelb.edu.au:8000"'
 
-- name: Grant internet access https
-  lineinfile:
-    dest: /etc/environment
-    insertafter: '^\[PATH\]$'
-    line: 'https_proxy="http://wwwproxy.unimelb.edu.au:8000"'
+# - name: Grant internet access https
+#   lineinfile:
+#     dest: /etc/environment
+#     insertafter: '^\[PATH\]$'
+#     line: 'https_proxy="http://wwwproxy.unimelb.edu.au:8000"'
 
-- name: Grant internet access ftp
-  lineinfile:
-    dest: /etc/environment
-    insertafter: '^\[PATH\]$'
-    line: 'ftp_proxy="http://wwwproxy.unimelb.edu.au:8000"'
+# - name: Grant internet access ftp
+#   lineinfile:
+#     dest: /etc/environment
+#     insertafter: '^\[PATH\]$'
+#     line: 'ftp_proxy="http://wwwproxy.unimelb.edu.au:8000"'
 
-- name: Install dependencies
+- name: Install dependencies for analytics
   apt:
     name: 
       - npm 
       - nodejs
-      - python3-pip
+      - nodejs-legacy
+      
       #- nodejs-legacy
     state: latest
     install_recommends: yes
+    update_cache: yes
 
 - name: Install jupyterhub requirements
   npm:
@@ -37,11 +39,13 @@
       dest: '{{ appsrc }}'
       version: '{{ version }}'
 
-- name: Install requirements
-  pip: 
-      requirements: '{{ appsrc }}/requirements.txt'
-      executable: pip3
 - name: Upgrading notebooks
   pip:
       name: notebook
       extra_args: --upgrade
+
+- name: Install requirements
+  pip: 
+      requirements: '{{ appsrc }}/requirements.txt'
+      executable: pip3
+
