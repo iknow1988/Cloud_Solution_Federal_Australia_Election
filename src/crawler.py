@@ -2,7 +2,7 @@ import couchdb
 import sys
 import atexit
 from harvesters import StreamTweetHarvester, KeywordsHarvester
-from helper import Preprocessor
+from preprocessors import Preprocessor
 import datetime
 import pandas as pd
 import yaml

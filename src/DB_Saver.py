@@ -1,6 +1,6 @@
 import re
 import datetime
-import helper
+import preprocessors
 from shapely.geometry import shape, Point, Polygon
 from mpi4py import MPI
 
@@ -16,14 +16,14 @@ class Saving_Layer:
 		self.tweet_db = databases[0]
 		self.users_db = databases[1]
 		self.boundary_polygon = Polygon([[x_min, y_min], [x_min, y_max], [x_max, y_max], [x_max, y_min]])
-		self.election_seat_polygons = helper.initialize_election_map()
-		self.gcc_polygons = helper.initialize_gcc_map()
-		self.party_features = helper.get_party_features()
-		self.election_seat_polygons = helper.initialize_election_map()
-		self.gcc_polygons = helper.initialize_gcc_map()
-		self.party_features = helper.get_party_features()
+		self.election_seat_polygons = preprocessors.initialize_election_map()
+		self.gcc_polygons = preprocessors.initialize_gcc_map()
+		self.party_features = preprocessors.get_party_features()
+		self.election_seat_polygons = preprocessors.initialize_election_map()
+		self.gcc_polygons = preprocessors.initialize_gcc_map()
+		self.party_features = preprocessors.get_party_features()
 		self.regex = re.compile('[^a-zA-Z0-9_ ]')
-		self.locations = helper.initialize_location_dictionaries()
+		self.locations = preprocessors.initialize_location_dictionaries()
 		self.comm = comm
 
 	def save_tweet_to_db(self, data):
@@ -44,8 +44,8 @@ class Saving_Layer:
 				data['state'] = geo_data[1]
 				data['country'] = geo_data[2]
 				data['party'] = party
-				data['processed_text'] = helper.get_processed_tweet(text)
-				sentiment_scores = helper.get_polarity_score(text)
+				data['processed_text'] = preprocessors.get_processed_tweet(text)
+				sentiment_scores = preprocessors.get_polarity_score(text)
 				data['tweet_intensity'] = sentiment_scores['intensity']
 				data['tweet_sentiment'] = sentiment_scores['sentiment']
 				self.tweet_db[data['id_str']] = data
@@ -75,5 +75,5 @@ class Saving_Layer:
 			return None
 
 	def get_geo_location(self, data):
-		loc = helper.tweet_in_australia_boundary(data, self)
+		loc = preprocessors.tweet_in_australia_boundary(data, self)
 		return loc
