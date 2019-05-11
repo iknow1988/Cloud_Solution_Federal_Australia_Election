@@ -31,12 +31,21 @@
 - Check cluster
   `curl -X GET "http://115.146.85.179:9584/_membership" --user admin`
 
-
+   
 # 4. Scaling
   - Download openstack rc file and execute `wget https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/openstack.py`, `chmod +x openstack.py` and `source openstack.rc`
   - Install openstack sdk `pip3 install python-openstackclient` and `pip3 install python-novaclient`
   - Get diynamic inventory `./openstack_inventory.py --list > inventory.json`
   - Ping new inventory `ansible -i openstack_inventory.py --private-key ~/.ssh/gild-nectar.pem all -u ubuntu -m ping`
   
+
+# Replication
+
+curl -X PUT "http://admin:p01ss0n@172.26.37.251:9584/tweeter_test?n=2&q=8" 
+
+curl -H 'Content-Type: application/json' -X POST http://admin:p01ss0n@172.26.37.251:9584/_replicate -d ' {"source": "http://admin:p01ss0n@103.6.254.59:9584/tweeter_test/", "target": "http://admin:p01ss0n@172.26.37.251:9584/tweeter_test/"}' 
+
+
+
 # 5. References
     - https://docs.ansible.com/ansible/latest/user_guide/playbooks_intro.html 

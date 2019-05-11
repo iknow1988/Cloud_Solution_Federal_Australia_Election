@@ -4,3 +4,4 @@
     state: present
     key: "{{ lookup('file', '{{ item.file_name }}') }}"
   loop: '{{ keys }}'
+

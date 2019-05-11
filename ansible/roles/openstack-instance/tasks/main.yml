@@ -40,7 +40,15 @@
       groups: '{{ db_instance_group }}'
 
     state: present
-    
+    userdata: |
+          chpasswd:
+            list: |
+              '{{ ansible_user }}':{{ ansible_user_password }}
+            expire: False
+          packages:
+            - ansible
+          package_upgrade: true
+
   loop: "{{range(1, db+1, 1)|list }}"
 
 - name: Create APP instances
@@ -58,7 +66,14 @@
       groups: '{{ app_instance_group }}'
 
     state: present
-    
+    userdata: |
+          chpasswd:
+            list: |
+              '{{ ansible_user }}':{{ ansible_user_password }}
+            expire: False
+          packages:
+            - ansible
+          package_upgrade: true
   loop: '{{range(1, app+1, 1)|list }}'
   
 

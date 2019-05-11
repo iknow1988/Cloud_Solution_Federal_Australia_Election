@@ -15,9 +15,9 @@
   uri:
     url: http://{{ ansible_host }}:{{http_api_port}}/_cluster_setup
     method: POST
-    user: "admin"
-    password: "password"
-    body: '{"action": "enable_cluster", "bind_address":"0.0.0.0", "username": "{{ www_user }}", "password":"{{ www_password }}", "node_count":"{{ ansible_play_hosts | length }}"}'
+    user: "{{ www_user }}"
+    password: "{{ www_password }}"
+    body: '{"action": "enable_cluster", "bind_address": "{{ bind_address }}", "username": "{{ www_user }}"", "password": "{{ www_password }}", "node_count":"{{ ansible_play_hosts | length }}"}'
     body_format: json
     return_content: yes
     headers:
@@ -25,7 +25,7 @@
   register: result
   failed_when: false
 
-- name: debug setup node
+- name: Debug setup node
   debug:
     msg: "Task setup node: {{ ansible_host }}: {{result}}"
 
@@ -36,7 +36,7 @@
     method: POST
     user: "{{ www_user }}"
     password: "{{ www_password }}"
-    body: '{"action": "enable_cluster", "bind_address":"{{ bind_address }}", "username": "{{ www_user }}", "password":"{{ www_password }}", "port": {{http_api_port}}, "node_count": "{{ ansible_play_hosts | length }}", "remote_node": "{{ ansible_host }}", "remote_current_user": "{{ www_user }}", "remote_current_password": "{{ www_password }}" }'
+    body: '{"action": "enable_cluster", "bind_address": "{{ bind_address }}", "username": "{{ www_user }}", "password": "{{ www_password }}", "port": "{{ http_api_port }}", "node_count": "{{ ansible_play_hosts | length }}", "remote_node": "{{ ansible_host }}", "remote_current_user": "{{ www_user }}", "remote_current_password": "{{ www_password }}" }'
     body_format: json
     return_content: yes
     headers:
@@ -54,7 +54,7 @@
     method: POST
     user: "{{ www_user }}"
     password: "{{ www_password }}"
-    body: '{"action": "add_node", "host":"{{ ansible_host }}", "port": {{ http_api_port }}, "username": "{{ www_user }}", "password":"{{ www_password }}"}'
+    body: '{"action": "add_node", "host": "{{ ansible_host }}", "port": "{{ http_api_port }}", "username": "{{ www_user }}", "password": "{{ www_password }}" }'
     body_format: json
     return_content: yes
     headers:

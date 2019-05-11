@@ -2,9 +2,11 @@
   vars_files:
     - host_vars/nectar.yml
     - group_vars/dbservers.yml
-  gather_facts: true
+  gather_facts: false
   
   roles: 
+    - role: openstack-sshkeys
+    - role: openstack-common
     - role: couchdb-install
     - role: couchdb-cluster
 
