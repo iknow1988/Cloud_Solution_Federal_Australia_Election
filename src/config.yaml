@@ -15,7 +15,7 @@ COUCHDB:
     user: 'admin'
     password: 'p01ss0n'
     tweet_db: 'tweeter_test'
-    users_db: 'twitter_users'
+    users_db: 'users_twitter'
     credential_db: 'tweeter_credentials'
 
 MPI:

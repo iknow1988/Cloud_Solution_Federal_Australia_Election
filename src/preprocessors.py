@@ -50,7 +50,7 @@ class Location:
 
 class Preprocessor:
 
-	def __init__(self, config, boundary, tags, databases):
+	def __init__(self, config, boundary, tags, database):
 		self.config = config
 		self.boundary = boundary
 		x_min = float(boundary[0])
@@ -63,8 +63,7 @@ class Preprocessor:
 		self.stopwords.extend(['rt', 'http'])
 		self.regex = re.compile('[^a-zA-Z0-9_ ]')
 		self.tags = tags
-		self.tweet_db = databases[0]
-		self.users_db = databases[1]
+		self.database = database
 		self.regex = re.compile('[^a-zA-Z0-9_ ]')
 		temp = []
 		for tag in self.tags:
@@ -333,8 +332,7 @@ class Preprocessor:
 		loc = self.tweet_in_australia_boundary(data)
 		return loc
 
-	def save_tweet_to_db(self, data, print_status=True):
-		result = False
+	def process(self, data, print_status=True):
 		text = None
 		if 'extended_tweet' in data and data['extended_tweet']:
 			text = data['extended_tweet']['full_text']
@@ -346,29 +344,16 @@ class Preprocessor:
 			party = self.get_party(text)
 			geo_data = self.get_geo_location(data)
 			if geo_data and party:
-				try:
-					user = data['user']['id_str']
-					data['city'] = geo_data [0]
-					data['state'] = geo_data[1]
-					data['country'] = geo_data[2]
-					data['party'] = party
-					data['processed_text'] = self.get_processed_tweet(text, self.tags_tokenized)
-					sentiment_scores = self.get_polarity_score(text)
-					data['tweet_intensity'] = sentiment_scores['intensity']
-					data['tweet_sentiment'] = sentiment_scores['sentiment']
-					self.tweet_db[data['id_str']] = data
-					# print(data['city'], data['state'], data['country'], data['party'],
-					# 	  data['processed_text'], data['tweet_intensity'], data['tweet_sentiment'])
-					if print_status:
-						print(datetime.datetime.now(), " : ", data['id_str'], " saved to tweeter database")
-					result = True
-					if user not in self.users_db:
-						self.users_db[user] = {'screen_name': data['user']['screen_name']}
-				except Exception as e:
-					if type(e).__name__ != 'ResourceConflict':
-						template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-						print(datetime.datetime.now(), " : ", template.format(type(e).__name__, e.args))
-		return result
+				data['city'] = geo_data [0]
+				data['state'] = geo_data[1]
+				data['country'] = geo_data[2]
+				data['party'] = party
+				data['processed_text'] = self.get_processed_tweet(text, self.tags_tokenized)
+				sentiment_scores = self.get_polarity_score(text)
+				data['tweet_intensity'] = sentiment_scores['intensity']
+				data['tweet_sentiment'] = sentiment_scores['sentiment']
+				self.database.save_to_db(data, print_status)
+
 
 
 

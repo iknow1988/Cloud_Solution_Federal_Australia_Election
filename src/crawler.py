@@ -1,55 +1,13 @@
 import couchdb
 import sys
 import atexit
-from harvesters import StreamTweetHarvester, KeywordsHarvester
-from preprocessors import Preprocessor
 import datetime
 import pandas as pd
 import yaml
-
-
-def get_databases(configs):
-	tweet_db = None
-	users_db = None
-	credential_db = None
-	try:
-		connection_param = "http://%s:%s@%s:%s/" % (configs['user'], configs['password'],
-													configs['ip'], configs['port'])
-		couch_server = couchdb.Server(connection_param)
-	except Exception as e:
-		print(datetime.datetime.now(), " : ", e[1])
-		exit()
-
-	try:
-		tweet_db = couch_server.create(configs['tweet_db'])
-	except Exception as e:
-		if type(e).__name__ == 'PreconditionFailed':
-			tweet_db = couch_server[configs['tweet_db']]
-		else:
-			template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-			print(datetime.datetime.now(), " : ", template.format(type(e).__name__, e.args))
-
-	try:
-		users_db = couch_server.create(configs['users_db'])
-	except Exception as e:
-		if type(e).__name__ == 'PreconditionFailed':
-			users_db = couch_server[configs['users_db']]
-		else:
-			template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-			print(datetime.datetime.now(), " : ", template.format(type(e).__name__, e.args))
-
-	try:
-		credential_db = couch_server[configs['credential_db']]
-	except Exception as e:
-		template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-		print(datetime.datetime.now(), " : ", template.format(type(e).__name__, e.args))
-
-	if tweet_db and users_db and credential_db:
-		databases = [tweet_db, users_db, credential_db]
-		return databases
-	else:
-		print(datetime.datetime.now(), " : ", "Database configuration error")
-		exit(0)
+from harvesters import StreamTweetHarvester, KeywordsHarvester
+from preprocessors import Preprocessor
+from database_saver import Database
+import os
 
 
 def get_tracking_keywords(configs):
@@ -79,29 +37,30 @@ def get_tracking_keywords(configs):
 	return keywords
 
 
-def get_twitter_credentials(credential_db):
-	user = None
-	for index, id in enumerate(credential_db):
-		doc = credential_db[id]
-		if doc['in_use'] == "0":
-			user = doc
-			doc['in_use'] = "1"
-			try:
-				credential_db.save(doc)
-				break
-			except:
-				print(datetime.datetime.now(), "Couldn't lock user")
-				exit(0)
-	if not user:
-		print(datetime.datetime.now(), " Couldn't lock any user ")
+def pre_check_files():
+	try:
+		with open("config.yaml", 'r') as ymlfile:
+			configs = yaml.load(ymlfile, Loader=yaml.FullLoader)
+			ymlfile.close()
+	except Exception as e:
+		template = "An exception of type {0} occurred due to config file not found. Arguments:\n{1!r}"
+		print(datetime.datetime.now(), " : ", template.format(type(e).__name__, e.args))
+		exit(0)
+	try:
+		exists = open(configs['APP_DATA']['party_features'], 'r')
+		exists = open(configs['APP_DATA']['election_map_shape_file'], 'r')
+		exists = open(configs['APP_DATA']['gcc_map_shape_file'], 'r')
+		exists = open(configs['APP_DATA']['australia_city_names'], 'r')
+		exists = open(configs['APP_DATA']['aurin_data_locations'], 'r')
+	except FileNotFoundError:
+		print(datetime.datetime.now(), " : One of the Data files in configuration not found")
 		exit(0)
 
-	return user
+	return configs
 
-
-def run_app(harvester_type, twitter_credential, boundary, keywords ,databases, configs):
+def run_app(harvester_type, twitter_credential, boundary, keywords ,database, configs):
 	harvester = None
-	preprocessor = Preprocessor(configs, boundary, keywords, databases)
+	preprocessor = Preprocessor(configs, boundary, keywords, database)
 	if harvester_type == configs['harvester_type_1']:
 		harvester = StreamTweetHarvester(twitter_credential, boundary, keywords, preprocessor)
 	elif harvester_type == configs['harvester_type_2']:
@@ -113,37 +72,28 @@ def run_app(harvester_type, twitter_credential, boundary, keywords ,databases, c
 	harvester.start_harvesting()
 
 
-def exit_handler(user, credential_db):
+def exit_handler(database):
 	print(datetime.datetime.now(), " : ", 'Application is ending!')
-	if user:
-		doc = credential_db[user['_id']]
-		if doc['in_use'] == "1":
-			user = doc
-			doc['in_use'] = "0"
-			credential_db.save(doc)
-			print(datetime.datetime.now(), " : ", user['_id'], " is unlocked")
+	database.unlock_twitter_account()
 
 
 def main(argv):
-	with open("config.yaml", 'r') as ymlfile:
-		configs = yaml.load(ymlfile, Loader=yaml.FullLoader)
-		ymlfile.close()
-	databases = get_databases(configs['COUCHDB'])
+	configs = pre_check_files()
+	database = Database(configs['COUCHDB'])
 	boundary = configs['APP_DATA']['boundary']
 	keywords = get_tracking_keywords(configs['APP_DATA'])
 
-	credential_db = databases[2]
-	user = get_twitter_credentials(credential_db)
-	atexit.register(exit_handler, user, credential_db)
+	user = database.get_twitter_credential()
+	atexit.register(exit_handler, database)
 	try:
 		harvester_type = 'api_streamline'
 		if len(argv) > 1:
 			harvester_type = argv[1]
-		run_app(harvester_type, user, boundary, keywords, databases, configs['APP_DATA'])
+		run_app(harvester_type, user, boundary, keywords, database, configs['APP_DATA'])
 	except KeyboardInterrupt:
-		exit_handler(user, credential_db)
+		exit_handler(database)
 	finally:
-		exit_handler(user, credential_db)
+		exit_handler(database)
 
 
 if __name__ == "__main__":

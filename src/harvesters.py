@@ -34,7 +34,7 @@ class Harvester:
 		else:
 			text = None
 		if text:
-			self.preprocessor.save_tweet_to_db(data, print_status)
+			self.preprocessor.process(data, print_status)
 
 	def send_tweets_to_process(self, all_tweets):
 		count = 0
@@ -121,8 +121,8 @@ class KeywordsHarvester(Harvester):
 
 	def get_all_tweets(self, search_query, max_id=None, since_id=None):
 		tweet_count = 0
-		tweets_per_query = 10
-		max_tweets = 50
+		tweets_per_query = 100
+		max_tweets = 50000
 		geo = "-31.53162668535551,135.53294849999997,2514.0km"
 		while tweet_count < max_tweets:
 			if not max_id:
