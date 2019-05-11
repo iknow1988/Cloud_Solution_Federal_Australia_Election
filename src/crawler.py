@@ -2,72 +2,84 @@ import couchdb
 import sys
 import atexit
 from harvesters import StreamTweetHarvester, KeywordsHarvester
+from helper import Preprocessor
 import datetime
 import pandas as pd
-
-COUCH_SERVER = couchdb.Server("http://admin:p01ss0n@103.6.254.59:9584/")
-credential_db = COUCH_SERVER['tweeter_credentials']
-
-TAGS = ['auspol','ausvotes','AusVotes19','ausvote2019' ,'auspol2019', 'ausvotes2019',
-		'AusVotes2019' ,'ausvotes19','pmlive','BuildingOurEconomy','ilikebillshorten','thedrum']
-
-try:
-	tweet_db = COUCH_SERVER.create('tweeter_test')
-except:
-	tweet_db = COUCH_SERVER['tweeter_test']
-
-try:
-	users_db = COUCH_SERVER.create('users_twitter')
-except:
-	users_db = COUCH_SERVER['users_twitter']
-
-databases = [tweet_db, users_db]
+import yaml
 
 
-def app(harvester_type, twitter_credential, boundary):
-	harvester = None
-	if harvester_type == 'api_stream':
-		harvester = StreamTweetHarvester(twitter_credential, boundary, get_tracking_keywords(), databases)
-	elif harvester_type == 'api_search':
-		harvester = KeywordsHarvester(twitter_credential, boundary, get_tracking_keywords(), databases)
+def get_databases(configs):
+	tweet_db = None
+	users_db = None
+	credential_db = None
+	try:
+		connection_param = "http://%s:%s@%s:%s/" % (configs['user'], configs['password'],
+													configs['ip'], configs['port'])
+		couch_server = couchdb.Server(connection_param)
+	except Exception as e:
+		print(datetime.datetime.now(), " : ", e[1])
+		exit()
+
+	try:
+		tweet_db = couch_server.create(configs['tweet_db'])
+	except Exception as e:
+		if type(e).__name__ == 'PreconditionFailed':
+			tweet_db = couch_server[configs['tweet_db']]
+		else:
+			template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+			print(datetime.datetime.now(), " : ", template.format(type(e).__name__, e.args))
+
+	try:
+		users_db = couch_server.create(configs['users_db'])
+	except Exception as e:
+		if type(e).__name__ == 'PreconditionFailed':
+			users_db = couch_server[configs['users_db']]
+		else:
+			template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+			print(datetime.datetime.now(), " : ", template.format(type(e).__name__, e.args))
+
+	try:
+		credential_db = couch_server[configs['credential_db']]
+	except Exception as e:
+		template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+		print(datetime.datetime.now(), " : ", template.format(type(e).__name__, e.args))
+
+	if tweet_db and users_db and credential_db:
+		databases = [tweet_db, users_db, credential_db]
+		return databases
 	else:
-		harvester = StreamTweetHarvester(twitter_credential, boundary, get_tracking_keywords(), databases)
-	print(datetime.datetime.now(), "tweeter user in use ", twitter_credential.id)
-	harvester.start_harvesting()
+		print(datetime.datetime.now(), " : ", "Database configuration error")
+		exit(0)
 
 
-def prepare_harvester_parameters():
-	return [110.0,-44.0,159.0,-8.0]
-
-
-def get_tracking_keywords():
-	df = pd.read_csv('csv_files/political_party_attributes.csv', encoding = "ISO-8859-1")
-	temp = TAGS
+def get_tracking_keywords(configs):
+	df = pd.read_csv(configs['party_features'], encoding = "ISO-8859-1")
+	keywords = configs['keywords']
 
 	# Add party twitter page
 	for text in df[df.twitter.notnull()].twitter.values:
-		temp.extend(['@' + x.strip() for x in text.split(',')])
+		keywords.extend(['@' + x.strip() for x in text.split(',')])
 
 	# Add party name
 	for text in df[df.party_name.notnull()].party_name.values:
-		temp.extend([x.lower().strip() for x in text.split(',')])
+		keywords.extend([x.lower().strip() for x in text.split(',')])
 
 	# Add party abbr name
 	for text in df[df.abbr.notnull()].abbr.values:
-		temp.extend([x.lower().strip() for x in text.split(',')])
+		keywords.extend([x.lower().strip() for x in text.split(',')])
 
 	# Add leader name
 	for text in df[df.leader.notnull()].leader.values:
-		temp.extend([x.lower().strip() for x in text.split(',')])
+		keywords.extend([x.lower().strip() for x in text.split(',')])
 
 	# Add leader twitter
 	for value in df[df.leader_twitter.notnull()].leader_twitter.values:
-		temp.extend(['@' + x.strip() for x in value.split(',')])
+		keywords.extend(['@' + x.strip() for x in value.split(',')])
 
-	return temp
+	return keywords
 
 
-def get_twitter_credentials():
+def get_twitter_credentials(credential_db):
 	user = None
 	for index, id in enumerate(credential_db):
 		doc = credential_db[id]
@@ -87,21 +99,21 @@ def get_twitter_credentials():
 	return user
 
 
-def main(argv):
-	user = get_twitter_credentials()
-	atexit.register(exit_handler, user)
-	try:
-		harvester_type = 'api_streamline'
-		if len(argv) > 1:
-			harvester_type = argv[1]
-			app(harvester_type, user, prepare_harvester_parameters())
-		else:
-			app(harvester_type, user, prepare_harvester_parameters())
-	finally:
-		exit_handler(user)
+def run_app(harvester_type, twitter_credential, boundary, keywords ,databases, configs):
+	harvester = None
+	preprocessor = Preprocessor(configs, boundary, keywords, databases)
+	if harvester_type == configs['harvester_type_1']:
+		harvester = StreamTweetHarvester(twitter_credential, boundary, keywords, preprocessor)
+	elif harvester_type == configs['harvester_type_2']:
+		harvester = KeywordsHarvester(twitter_credential, boundary, keywords, preprocessor)
+	else:
+		harvester = StreamTweetHarvester(twitter_credential, boundary, keywords, preprocessor)
+	print(datetime.datetime.now(), "tweeter user in use ", twitter_credential.id)
+
+	harvester.start_harvesting()
 
 
-def exit_handler(user):
+def exit_handler(user, credential_db):
 	print(datetime.datetime.now(), " : ", 'Application is ending!')
 	if user:
 		doc = credential_db[user['_id']]
@@ -110,6 +122,28 @@ def exit_handler(user):
 			doc['in_use'] = "0"
 			credential_db.save(doc)
 			print(datetime.datetime.now(), " : ", user['_id'], " is unlocked")
+
+
+def main(argv):
+	with open("config.yaml", 'r') as ymlfile:
+		configs = yaml.load(ymlfile, Loader=yaml.FullLoader)
+		ymlfile.close()
+	databases = get_databases(configs['COUCHDB'])
+	boundary = configs['APP_DATA']['boundary']
+	keywords = get_tracking_keywords(configs['APP_DATA'])
+
+	credential_db = databases[2]
+	user = get_twitter_credentials(credential_db)
+	atexit.register(exit_handler, user, credential_db)
+	try:
+		harvester_type = 'api_streamline'
+		if len(argv) > 1:
+			harvester_type = argv[1]
+		run_app(harvester_type, user, boundary, keywords, databases, configs['APP_DATA'])
+	except KeyboardInterrupt:
+		exit_handler(user, credential_db)
+	finally:
+		exit_handler(user, credential_db)
 
 
 if __name__ == "__main__":

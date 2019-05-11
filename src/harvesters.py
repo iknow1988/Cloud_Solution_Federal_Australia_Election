@@ -1,13 +1,49 @@
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler, Stream, API
-import helper
 import json
-from shapely.geometry import shape, Point, Polygon
 import datetime
 import time
 from http.client import IncompleteRead
 from urllib3.exceptions import ProtocolError
-import re
+
+
+class Harvester:
+
+	def __init__(self, twitter_credential, boundary, tags, preprocessor):
+		self.boundary = boundary
+		self.access_token = twitter_credential['access_token']
+		self.access_token_secret = twitter_credential['access_token_secret']
+		self.consumer_key = twitter_credential['consumer_key']
+		self.consumer_secret = twitter_credential['consumer_secret']
+		self.tags = tags
+		self.auth = OAuthHandler(self.consumer_key, self.consumer_secret)
+		self.auth.set_access_token(self.access_token, self.access_token_secret)
+		self.api = API(self.auth, wait_on_rate_limit=True, retry_count=3, retry_delay=5,
+					   retry_errors = set([401, 404, 500, 503]))
+		self.preprocessor = preprocessor
+
+	def start_harvesting(self):
+		pass
+
+	def send_tweet_to_process(self, data, print_status = True):
+		text = None
+		if 'extended_tweet' in data and data['extended_tweet']:
+			text = data['extended_tweet']['full_text']
+		elif 'text' in data and data['text']:
+			text = data['text']
+		else:
+			text = None
+		if text:
+			self.preprocessor.save_tweet_to_db(data, print_status)
+
+	def send_tweets_to_process(self, all_tweets):
+		count = 0
+		for index, tweet in enumerate(all_tweets):
+			data = tweet._json
+			if self.send_tweet_to_process(data, False):
+				count = count + 1
+		if count:
+			print(datetime.datetime.now(), " : ", "Saved %s tweets to database" % count)
 
 
 class StdOutListener(StreamListener):
@@ -17,109 +53,17 @@ class StdOutListener(StreamListener):
 
 	def on_data(self, data):
 		data = json.loads(data)
-		self.harvester.save_tweet_to_db(data)
+		self.harvester.send_tweet_to_process(data)
 		return True
 
 	def on_error(self, status):
 		print(datetime.datetime.now(), " : " , status)
 
 
-class Harvester:
-
-	def __init__(self, twitter_credential, boundary, tags, databases):
-		self.boundary = boundary
-		x_min = float(boundary[0])
-		x_max = float(boundary[2])
-		y_min = float(boundary[1])
-		y_max = float(boundary[3])
-		self.boundary_polygon = Polygon([[x_min, y_min], [x_min, y_max], [x_max, y_max], [x_max, y_min]])
-		self.access_token = twitter_credential['access_token']
-		self.access_token_secret = twitter_credential['access_token_secret']
-		self.consumer_key = twitter_credential['consumer_key']
-		self.consumer_secret = twitter_credential['consumer_secret']
-		self.tags = tags
-		self.tweet_db = databases[0]
-		self.users_db = databases[1]
-		self.auth = OAuthHandler(self.consumer_key, self.consumer_secret)
-		self.auth.set_access_token(self.access_token, self.access_token_secret)
-		self.election_seat_polygons = helper.initialize_election_map()
-		self.gcc_polygons = helper.initialize_gcc_map()
-		self.party_features = helper.get_party_features()
-		self.regex = re.compile('[^a-zA-Z0-9_ ]')
-		self.locations = helper.initialize_location_dictionaries()
-		self.api = API(self.auth, wait_on_rate_limit=True, retry_count=3, retry_delay=5, retry_errors = set([401, 404, 500, 503]))
-
-	def start_harvesting(self):
-		pass
-
-	def get_party(self, doc):
-		parties = []
-		doc_processed = self.regex.sub('', doc).strip().lower()
-		for party, party_features in self.party_features.items():
-			features = ["\\b(" + x + ")\\b" for x in party_features]
-			keywords = "|".join(features)
-			regex2 = re.compile(keywords)
-			found = regex2.findall(doc_processed)
-			if found:
-				parties.append(party)
-
-		if len(parties)>0:
-			return parties
-		else:
-			return None
-
-	def save_tweet_to_db(self, data, print_status = True):
-		result = False
-		text = None
-		if 'extended_tweet' in data and data['extended_tweet']:
-			text = data['extended_tweet']['full_text']
-			party = self.get_party(text)
-		elif 'text' in data and data['text']:
-			text = data['text']
-			party = self.get_party(text)
-		else:
-			party = None
-		geo_data = self.get_geo_location(data)
-		if geo_data and text and party:
-			try:
-				user = data['user']['id_str']
-				data['city'] = geo_data [0]
-				data['state'] = geo_data[1]
-				data['country'] = geo_data[2]
-				data['party'] = party
-				data['processed_text'] = helper.get_processed_tweet(text)
-				sentiment_scores = helper.get_polarity_score(text)
-				data['tweet_intensity'] = sentiment_scores['intensity']
-				data['tweet_sentiment'] = sentiment_scores['sentiment']
-				self.tweet_db[data['id_str']] = data
-				if print_status:
-					print(datetime.datetime.now(), " : ", data['id_str'], " saved to tweeter database")
-				result = True
-				if user not in self.users_db:
-					self.users_db[user] = {'screen_name': data['user']['screen_name']}
-			except:
-				if print_status:
-					print(datetime.datetime.now(), " : " , data['id_str'], " already exists")
-		return result
-
-	def save_tweets_to_db(self, all_tweets):
-		count = 0
-		for index, tweet in enumerate(all_tweets):
-			data = tweet._json
-			if self.save_tweet_to_db(data, False):
-				count = count + 1
-		if count:
-			print(datetime.datetime.now(), " : ", "Saved %s tweets to database" % count)
-
-	def get_geo_location(self, data):
-		loc = helper.tweet_in_australia_boundary(data, self)
-		return loc
-
-
 class StreamTweetHarvester(Harvester):
 
-	def __init__(self, twitter_credential, boundary, tags, databases):
-		Harvester.__init__(self, twitter_credential, boundary, tags, databases)
+	def __init__(self, twitter_credential, boundary, tags, preprocessor):
+		Harvester.__init__(self, twitter_credential, boundary, tags, preprocessor)
 
 	def start_harvesting(self):
 		stream = Stream(self.auth, StdOutListener(self))
@@ -138,8 +82,8 @@ class StreamTweetHarvester(Harvester):
 
 class TimeLineHarvester(Harvester):
 
-	def __init__(self, twitter_credential, boundary, tags, databases, twitter_ids):
-		Harvester.__init__(self, twitter_credential, boundary, tags, databases)
+	def __init__(self, twitter_credential, boundary, tags, twitter_ids, preprocessor):
+		Harvester.__init__(self, twitter_credential, boundary, tags, preprocessor)
 		self.twitter_screen_names = twitter_ids
 
 	def get_all_tweets(self, screen_name):
@@ -159,7 +103,7 @@ class TimeLineHarvester(Harvester):
 			all_tweets.extend(new_tweets)
 			oldest = all_tweets[-1].id - 1
 		print(datetime.datetime.now(), " : ", "Downloaded tweets", len(new_tweets), " for user:", screen_name)
-		self.save_tweets_to_db(all_tweets)
+		self.send_tweets_to_process(all_tweets)
 		time.sleep(5)
 
 	def start_harvesting(self):
@@ -172,13 +116,13 @@ class TimeLineHarvester(Harvester):
 
 class KeywordsHarvester(Harvester):
 
-	def __init__(self, twitter_credential, boundary, tags, databases):
-		Harvester.__init__(self, twitter_credential, boundary, tags, databases)
+	def __init__(self, twitter_credential, boundary, tags, preprocessor):
+		Harvester.__init__(self, twitter_credential, boundary, tags, preprocessor)
 
 	def get_all_tweets(self, search_query, max_id=None, since_id=None):
 		tweet_count = 0
-		tweets_per_query = 100
-		max_tweets = 60000
+		tweets_per_query = 10
+		max_tweets = 50
 		geo = "-31.53162668535551,135.53294849999997,2514.0km"
 		while tweet_count < max_tweets:
 			if not max_id:
@@ -196,7 +140,7 @@ class KeywordsHarvester(Harvester):
 				break
 			print(datetime.datetime.now(), " : ", " downloaded ", len(new_tweets), " tweets", " and maxid", max_id)
 			tweet_count += len(new_tweets)
-			self.save_tweets_to_db(new_tweets)
+			self.send_tweets_to_process(new_tweets)
 			max_id = new_tweets[-1].id
 			time.sleep(5)
 
@@ -205,7 +149,6 @@ class KeywordsHarvester(Harvester):
 		n = 0
 		keywords = list()
 		index = 0
-		tags.reverse()
 		for word in tags:
 			words = word.split(' ')
 			if len(words) > 2:
