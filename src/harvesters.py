@@ -27,6 +27,7 @@ class Harvester:
 
 	def send_tweet_to_process(self, data, print_status = True):
 		text = None
+		result = False
 		if 'extended_tweet' in data and data['extended_tweet']:
 			text = data['extended_tweet']['full_text']
 		elif 'text' in data and data['text']:
@@ -34,7 +35,9 @@ class Harvester:
 		else:
 			text = None
 		if text:
-			self.preprocessor.process(data, print_status)
+			result = self.preprocessor.process(data, print_status)
+
+		return result
 
 	def send_tweets_to_process(self, all_tweets):
 		count = 0

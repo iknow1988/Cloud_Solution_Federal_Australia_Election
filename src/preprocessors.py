@@ -333,6 +333,7 @@ class Preprocessor:
 		return loc
 
 	def process(self, data, print_status=True):
+		result = False
 		text = None
 		if 'extended_tweet' in data and data['extended_tweet']:
 			text = data['extended_tweet']['full_text']
@@ -352,7 +353,9 @@ class Preprocessor:
 				sentiment_scores = self.get_polarity_score(text)
 				data['tweet_intensity'] = sentiment_scores['intensity']
 				data['tweet_sentiment'] = sentiment_scores['sentiment']
-				self.database.save_to_db(data, print_status)
+				result = self.database.save_to_db(data, print_status)
+
+		return result
 
 
 

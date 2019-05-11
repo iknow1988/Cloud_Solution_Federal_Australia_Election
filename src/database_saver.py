@@ -78,11 +78,11 @@ class Database:
 		return self.user
 
 	def save_to_db(self, data, print_status):
+		result = False
 		try:
 			user = data['user']['id_str']
 			self.tweet_db[data['id_str']] = data
-			# print(data['city'], data['state'], data['country'], data['party'],
-			# 	  data['processed_text'], data['tweet_intensity'], data['tweet_sentiment'])
+			result = True
 			if print_status:
 				print(datetime.datetime.now(), " : ", data['id_str'], " saved to tweeter database")
 			if user not in self.users_db:
@@ -91,6 +91,8 @@ class Database:
 			if type(e).__name__ != 'ResourceConflict':
 				template = "An exception of type {0} occurred. Arguments:\n{1!r}"
 				print(datetime.datetime.now(), " : ", template.format(type(e).__name__, e.args))
+
+		return result
 
 	def unlock_twitter_account(self):
 		if self.user:
