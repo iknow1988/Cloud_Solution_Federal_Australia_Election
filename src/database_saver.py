@@ -1,5 +1,7 @@
 import datetime
 import couchdb
+import pika
+import json
 
 
 class Database:
@@ -9,9 +11,11 @@ class Database:
 		users_db = None
 		credential_db = None
 		self.couch_server = None
+		database_config = configs['COUCHDB']
+		queue_config = configs['QUEUE']
 		try:
-			connection_param = "http://%s:%s@%s:%s/" % (configs['user'], configs['password'],
-														configs['ip'], configs['port'])
+			connection_param = "http://%s:%s@%s:%s/" % (database_config['user'], database_config['password'],
+														database_config['ip'], database_config['port'])
 			self.couch_server = couchdb.Server(connection_param)
 		except Exception as e:
 			template = "An exception of type {0} occurred. Arguments:\n{1!r}"
@@ -19,10 +23,10 @@ class Database:
 			exit(0)
 
 		try:
-			tweet_db = self.couch_server.create(configs['tweet_db'])
+			tweet_db = self.couch_server.create(database_config['tweet_db'])
 		except Exception as e:
 			if type(e).__name__ == 'PreconditionFailed':
-				tweet_db = self.couch_server[configs['tweet_db']]
+				tweet_db = self.couch_server[database_config['tweet_db']]
 			elif type(e).__name__ == 'unauthorized':
 				template = "An exception of type {0} occurred. Arguments:\n{1!r}"
 				print(datetime.datetime.now(), " : ", template.format(type(e).__name__, e.args))
@@ -32,16 +36,16 @@ class Database:
 				print(datetime.datetime.now(), " : ", template.format(type(e).__name__, e.args))
 
 		try:
-			users_db = self.couch_server.create(configs['users_db'])
+			users_db = self.couch_server.create(database_config['users_db'])
 		except Exception as e:
 			if type(e).__name__ == 'PreconditionFailed':
-				users_db = self.couch_server[configs['users_db']]
+				users_db = self.couch_server[database_config['users_db']]
 			else:
 				template = "An exception of type {0} occurred. Arguments:\n{1!r}"
 				print(datetime.datetime.now(), " : ", template.format(type(e).__name__, e.args))
 
 		try:
-			credential_db = self.couch_server[configs['credential_db']]
+			credential_db = self.couch_server[database_config['credential_db']]
 		except Exception as e:
 			template = "An exception of type {0} occurred. Arguments:\n{1!r}"
 			print(datetime.datetime.now(), " : ", template.format(type(e).__name__, e.args))
@@ -54,6 +58,14 @@ class Database:
 		else:
 			print(datetime.datetime.now(), " : ", "Database configuration error")
 			exit(0)
+
+		credentials = pika.PlainCredentials(queue_config['queue_user'], queue_config['queue_password'])
+		parameters = pika.ConnectionParameters(queue_config['queue_server'], queue_config['queue_port'], '/', credentials)
+		connection = pika.BlockingConnection(parameters)
+		self.channel = connection.channel()
+		self.channel.queue_declare(queue=queue_config['queue_savetodb'])
+		self.channel.basic_consume(queue=queue_config['queue_savetodb'], auto_ack=True, on_message_callback=self.callback)
+
 
 	def set_twitter_credential(self):
 		user = None
@@ -77,7 +89,7 @@ class Database:
 	def get_twitter_credential(self):
 		return self.user
 
-	def save_to_db(self, data, print_status):
+	def save_to_db(self, data, print_status = True):
 		result = False
 		try:
 			user = data['user']['id_str']
@@ -102,4 +114,11 @@ class Database:
 				doc['in_use'] = "0"
 				self.credential_db.save(doc)
 				print(datetime.datetime.now(), " : ", user['_id'], " is unlocked")
+
+	def callback(self, ch, method, properties, body):
+		data = json.loads(body.decode('utf-8'))
+		self.save_to_db(data)
+
+	def start_saving(self):
+		self.channel.start_consuming()
 
