@@ -1,0 +1,27 @@
+- hosts: rabbitmq
+  vars_files:
+    - host_vars/nectar.yml
+  gather_facts: false
+  
+  
+  pre_tasks:
+    - name: Wait for system to become reachable
+      wait_for_connection:
+        timeout: 900
+
+    - name: Wait for ssh to be up
+      become: false
+      wait_for:
+        port: 22
+        delay: 10
+        connect_timeout: 20
+        timeout: 600
+        host: "{{ ansible_host }}"
+    
+    
+
+  roles: 
+    - role: openstack-sshkeys
+    - role: openstack-common
+    - role: queue-rabbitmq
+

@@ -18,14 +18,7 @@ volume_size: 50
 
 # data fstype
 volume_fstype: ext4
-
 volume_snapshot: 'N'
-
-# volumes: 
-#   - vol_name: vol-db
-#     vol_size: 50
-  # - vol_name: vol-app
-  #   vol_size: 50
 
 
 
@@ -34,7 +27,9 @@ security_groups:
   - name: ssh
     description: "SSH Security Group"
   - name: couchdb
-    description: "CouchDB security group"
+    description: "CouchDB security Group"
+  - name: rabbitmq
+    description: "RabbitMQ Security Group"
   
 
 # TODO: Create a nested list for security groups - rules
@@ -74,17 +69,29 @@ security_group_rules:
     port_range_min: 9584
     port_range_max: 9584  
     remote_ip_prefix: 0.0.0.0/0
+  - name: RabbitMQ - Communication
+    security_group: rabbitmq
+    direction: ingress
+    protocol: tcp
+    port_range_min: 5672
+    port_range_max: 5672  
+    remote_ip_prefix: 0.0.0.0/0
 
 db: 0
 app: 0
+all: 0
+# uom.mse.2c9g
 db_instance_prefix_name: db-dragonstone
 app_instance_prefix_name: app-winterfell
 instance_image: 'NeCTAR Ubuntu 16.04 LTS (Xenial) amd64' 
 instance_key_name: gild-nectar
-instance_flavor: uom.mse.2c9g
+instance_flavor: uom.general.1c4g 
 db_instance_group: dbservers
 db_instance_security_group: couchdb,ssh
 app_instance_security_group: ssh
 app_instance_group: appservers
 db_app_instance_group: 'dbservers,appservers'
- 
+mq_instance_group: rabbitmq
+all_instance_group: 'dbservers,appservers,rabbitmq'
+all_instance_security_group: couchdb,ssh,rabbitmq
+all_instance_prefix_name: lannister

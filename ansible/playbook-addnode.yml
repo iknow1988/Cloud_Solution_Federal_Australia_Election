@@ -1,0 +1,22 @@
+- hosts: localhost
+  vars_files:
+    - host_vars/nectar.yml
+    - group_vars/dbservers.yml
+  vars: 
+    - db_num_servers: '1'
+    - total_db_servers: "{{ groups['dbservers']|default([]) | length }}"
+    - total_app_servers: "{{ groups['appservers']|default([]) | length }}"
+    - total_all_servers: "{{ groups['all']|default([]) | length }}"
+  gather_facts: false
+
+  pre_tasks:
+    - name: Selecting coordinator node
+      set_fact:
+        new_db_instances: "{{ groups['dbservers']|default([]) }}"
+  roles:
+    - role: openstack-instance
+    - role: openstack-volume
+    - role: couchdb-install
+      hosts: "{{ new_db_instances }}"
+    - role: couchdb-addnode
+      new_servers: "{{ new_db_instances }}"

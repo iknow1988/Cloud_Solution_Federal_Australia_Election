@@ -3,68 +3,71 @@
 
 - name: Selecting coordinator node
   set_fact:
-    coordinator_node: '{{ ansible_host }}'
+    coordinator_node: "{{ hostvars[item]['ansible_host'] }}"
+  with_items: "{{ groups['dbservers'] }}"
   run_once: true
 
-- name: Debug
+- name: Debug coordinator node
   debug:  
-    msg: 'Coordinator node {{ coordinator_node }} selected out of {{ ansible_play_hosts | length }} nodes. '
+    msg: "Coordinator node {{ coordinator_node }}"
   run_once: true
 
-- name: Setup the node
+- name: Add node to the cluster
   uri:
-    url: http://{{ ansible_host }}:{{http_api_port}}/_cluster_setup
-    method: POST
+    url: http://{{ coordinator_node }}:{{ node_management_port }}/_nodes/couchdb@{{ item }}
+    method: PUT
     user: "{{ www_user }}"
     password: "{{ www_password }}"
-    body: '{"action": "enable_cluster", "bind_address": "{{ bind_address }}", "username": "{{ www_user }}"", "password": "{{ www_password }}", "node_count":"{{ ansible_play_hosts | length }}"}'
+    body: '{}'
     body_format: json
     return_content: yes
     headers:
       Content-Type: "application/json"
   register: result
   failed_when: false
+  loop: "{{ new_db_instances }}"
 
-- name: Debug setup node
-  debug:
-    msg: "Task setup node: {{ ansible_host }}: {{result}}"
+# shard replicas will be handled by cluster
 
+# # set target node in maintenance module
+# - name: Set node in maintenance mode
+#   uri:
+#     url: http://{{ item }}:{{http_api_port}}/_node/couchdb/_config/couchdb/maintenance_mode
+#     method: PUT
+#     user: "{{ www_user }}"
+#     password: "{{ www_password }}"
+#     body: 'true'
+#     body_format: json
+#     return_content: yes
+#     headers:
+#       Content-Type: "application/json"
+#   register: result
+#   failed_when: false
+#   loop: "{{ new_db_instances }}"
 
+# # verify target node is down
+# - name: Check maintenance mode
+#   uri:
+#     url: http://{{ item }}:{{http_api_port}}/_up
+#     method: GET
+#     user: "{{ www_user }}"
+#     password: "{{ www_password }}"
+#     return_content: yes
+#     status_code: 404
+#     headers:
+#       Content-Type: "application/json"
+#   register: result
+#   loop: "{{ new_db_instances }}"
 
-- name: Join Nodes
-  uri:
-    url: http://{{ coordinator_node }}:{{ http_api_port }}/_cluster_setup
-    method: POST
-    user: "{{ www_user }}"
-    password: "{{ www_password }}"
-    body: '{"action": "add_node", "host": "{{ ansible_host }}", "port": "{{ http_api_port }}", "username": "{{ www_user }}", "password": "{{ www_password }}" }'
-    body_format: json
-    return_content: yes
-    headers:
-      Content-Type: "application/json"
-    register: result
-  failed_when: false
-  
-- name: debug join other node
-  debug:
-    msg: "Task join other node: {{ inventory_hostname }}: {{result}}"
-
-- name: Finish cluster
-  uri:
-    url: http://{{ coordinator_node }}:{{ http_api_port }}/_cluster_setup 
-    method: POST
-    user: "{{ www_user }}"
-    password: "{{ www_password }}"
-    body: '{"action": "finish_cluster"}'
-    body_format: json
-    return_content: yes
-    headers:
-      Content-Type: "application/json"
-  register: result
-  run_once: true
-  failed_when: false
-  
-- name: Info - Finish cluster
-  debug:
-    msg: "Cluster finished - coordinator :{{ coordinator_node }}"
-  run_once: true
+#   - name: Update metadata
+#   uri:
+#     url: http://localhost:{{ node_management_port }}/_dbs/{{ item.name }}
+#     method: GET
+#     user: "{{ www_user }}"
+#     password: "{{ www_password }}"
+#     return_content: yes
+#     status_code: 404
+#     headers:
+#       Content-Type: "application/json"
+#   register: result
+#   loop: "{{ databases }}"
