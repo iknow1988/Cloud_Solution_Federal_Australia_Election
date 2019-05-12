@@ -5,11 +5,12 @@ import datetime
 import time
 from http.client import IncompleteRead
 from urllib3.exceptions import ProtocolError
+import pika
 
 
 class Harvester:
 
-	def __init__(self, twitter_credential, boundary, tags, preprocessor):
+	def __init__(self, twitter_credential, boundary, tags, config):
 		self.boundary = boundary
 		self.access_token = twitter_credential['access_token']
 		self.access_token_secret = twitter_credential['access_token_secret']
@@ -18,16 +19,18 @@ class Harvester:
 		self.tags = tags
 		self.auth = OAuthHandler(self.consumer_key, self.consumer_secret)
 		self.auth.set_access_token(self.access_token, self.access_token_secret)
-		self.api = API(self.auth, wait_on_rate_limit=True, retry_count=3, retry_delay=5,
-					   retry_errors = set([401, 404, 500, 503]))
-		self.preprocessor = preprocessor
+		self.api = API(self.auth, wait_on_rate_limit=True, retry_count=3, retry_delay=5, retry_errors = set([401, 404, 500, 503]))
+		credentials = pika.PlainCredentials(config['queue_user'], config['queue_password'])
+		parameters = pika.ConnectionParameters(config['queue_server'], config['queue_port'], '/', credentials)
+		connection = pika.BlockingConnection(parameters)
+		self.channel = connection.channel()
+		self.channel.queue_declare(queue=config['queue_preprocess'])
 
 	def start_harvesting(self):
 		pass
 
-	def send_tweet_to_process(self, data, print_status = True):
+	def send_tweet_to_process(self, data):
 		text = None
-		result = False
 		if 'extended_tweet' in data and data['extended_tweet']:
 			text = data['extended_tweet']['full_text']
 		elif 'text' in data and data['text']:
@@ -35,18 +38,12 @@ class Harvester:
 		else:
 			text = None
 		if text:
-			result = self.preprocessor.process(data, print_status)
-
-		return result
+			self.channel.basic_publish(exchange='', routing_key='preprocess', body=json.dumps(data))
 
 	def send_tweets_to_process(self, all_tweets):
-		count = 0
 		for index, tweet in enumerate(all_tweets):
 			data = tweet._json
-			if self.send_tweet_to_process(data, False):
-				count = count + 1
-		if count:
-			print(datetime.datetime.now(), " : ", "Saved %s tweets to database" % count)
+			self.send_tweet_to_process(data)
 
 
 class StdOutListener(StreamListener):
@@ -65,8 +62,8 @@ class StdOutListener(StreamListener):
 
 class StreamTweetHarvester(Harvester):
 
-	def __init__(self, twitter_credential, boundary, tags, preprocessor):
-		Harvester.__init__(self, twitter_credential, boundary, tags, preprocessor)
+	def __init__(self, twitter_credential, boundary, tags, config):
+		Harvester.__init__(self, twitter_credential, boundary, tags, config)
 
 	def start_harvesting(self):
 		stream = Stream(self.auth, StdOutListener(self))
@@ -85,8 +82,8 @@ class StreamTweetHarvester(Harvester):
 
 class TimeLineHarvester(Harvester):
 
-	def __init__(self, twitter_credential, boundary, tags, twitter_ids, preprocessor):
-		Harvester.__init__(self, twitter_credential, boundary, tags, preprocessor)
+	def __init__(self, twitter_credential, boundary, tags, twitter_ids, config):
+		Harvester.__init__(self, twitter_credential, boundary, tags, config)
 		self.twitter_screen_names = twitter_ids
 
 	def get_all_tweets(self, screen_name):
@@ -119,13 +116,13 @@ class TimeLineHarvester(Harvester):
 
 class KeywordsHarvester(Harvester):
 
-	def __init__(self, twitter_credential, boundary, tags, preprocessor):
-		Harvester.__init__(self, twitter_credential, boundary, tags, preprocessor)
+	def __init__(self, twitter_credential, boundary, tags, config):
+		Harvester.__init__(self, twitter_credential, boundary, tags, config)
 
 	def get_all_tweets(self, search_query, max_id=None, since_id=None):
 		tweet_count = 0
 		tweets_per_query = 100
-		max_tweets = 50000
+		max_tweets = 10000
 		geo = "-31.53162668535551,135.53294849999997,2514.0km"
 		while tweet_count < max_tweets:
 			if not max_id:

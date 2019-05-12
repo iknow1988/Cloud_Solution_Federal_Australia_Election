@@ -1,3 +1,11 @@
+QUEUE:
+    queue_user: 'guest'
+    queue_password: 'guest'
+    queue_server: 'localhost'
+    queue_port: '5672'
+    queue_preprocess: 'preprocess'
+    queue_savetodb: 'savetodb'
+
 APP_DATA:
     keywords: ['auspol','ausvotes','AusVotes19','ausvote2019' ,'auspol2019', 'ausvotes2019', 'ausvotes19']
     boundary: [110.0,-44.0,159.0,-8.0]

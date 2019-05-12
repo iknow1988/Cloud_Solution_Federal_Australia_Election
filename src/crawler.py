@@ -7,7 +7,8 @@ import yaml
 from harvesters import StreamTweetHarvester, KeywordsHarvester
 from preprocessors import Preprocessor
 from database_saver import Database
-import os
+import threading
+import pika
 
 
 def get_tracking_keywords(configs):
@@ -40,7 +41,8 @@ def get_tracking_keywords(configs):
 def pre_check_files():
 	try:
 		with open("config.yaml", 'r') as ymlfile:
-			configs = yaml.load(ymlfile, Loader=yaml.FullLoader)
+			configs = yaml.load(ymlfile)
+			# configs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 			ymlfile.close()
 	except Exception as e:
 		template = "An exception of type {0} occurred due to config file not found. Arguments:\n{1!r}"
@@ -58,18 +60,39 @@ def pre_check_files():
 
 	return configs
 
-def run_app(harvester_type, twitter_credential, boundary, keywords ,database, configs):
+
+def start_harvester(harvester):
+	harvester.start_harvesting()
+
+
+def start_preprocessor(preprocessor):
+	preprocessor.start_processing()
+
+
+def start_database(database):
+	database.start_saving()
+
+
+def run_app(harvester_type, twitter_credential, boundary, keywords, database, configs):
 	harvester = None
-	preprocessor = Preprocessor(configs, boundary, keywords, database)
-	if harvester_type == configs['harvester_type_1']:
-		harvester = StreamTweetHarvester(twitter_credential, boundary, keywords, preprocessor)
-	elif harvester_type == configs['harvester_type_2']:
-		harvester = KeywordsHarvester(twitter_credential, boundary, keywords, preprocessor)
+	preprocessor = Preprocessor(configs, boundary, keywords)
+	if harvester_type == configs['APP_DATA']['harvester_type_1']:
+		harvester = StreamTweetHarvester(twitter_credential, boundary, keywords, configs['QUEUE'])
+	elif harvester_type == configs['APP_DATA']['harvester_type_2']:
+		harvester = KeywordsHarvester(twitter_credential, boundary, keywords, configs['QUEUE'])
 	else:
-		harvester = StreamTweetHarvester(twitter_credential, boundary, keywords, preprocessor)
+		harvester = StreamTweetHarvester(twitter_credential, boundary, keywords, configs['QUEUE'])
 	print(datetime.datetime.now(), "tweeter user in use ", twitter_credential.id)
 
-	harvester.start_harvesting()
+	harvester_thread = threading.Thread(target=start_harvester, args=(harvester,))
+	processing_thread = threading.Thread(target=start_preprocessor, args=(preprocessor,))
+	database_thread = threading.Thread(target=start_database, args=(database,))
+
+	harvester_thread.start()
+	processing_thread.start()
+	database_thread.start()
+
+	harvester_thread.join()
 
 
 def exit_handler(database):
@@ -79,7 +102,7 @@ def exit_handler(database):
 
 def main(argv):
 	configs = pre_check_files()
-	database = Database(configs['COUCHDB'])
+	database = Database(configs)
 	boundary = configs['APP_DATA']['boundary']
 	keywords = get_tracking_keywords(configs['APP_DATA'])
 
@@ -89,7 +112,7 @@ def main(argv):
 		harvester_type = 'api_streamline'
 		if len(argv) > 1:
 			harvester_type = argv[1]
-		run_app(harvester_type, user, boundary, keywords, database, configs['APP_DATA'])
+		run_app(harvester_type, user, boundary, keywords, database, configs)
 	except KeyboardInterrupt:
 		exit_handler(database)
 	finally:

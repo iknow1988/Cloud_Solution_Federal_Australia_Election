@@ -5,7 +5,8 @@ import re
 import nltk
 from nltk import word_tokenize,sent_tokenize,wordpunct_tokenize
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-import datetime
+import pika
+import json
 
 
 class Location:
@@ -50,8 +51,8 @@ class Location:
 
 class Preprocessor:
 
-	def __init__(self, config, boundary, tags, database):
-		self.config = config
+	def __init__(self, configs, boundary, tags):
+		self.config = configs['APP_DATA']
 		self.boundary = boundary
 		x_min = float(boundary[0])
 		x_max = float(boundary[2])
@@ -63,7 +64,6 @@ class Preprocessor:
 		self.stopwords.extend(['rt', 'http'])
 		self.regex = re.compile('[^a-zA-Z0-9_ ]')
 		self.tags = tags
-		self.database = database
 		self.regex = re.compile('[^a-zA-Z0-9_ ]')
 		temp = []
 		for tag in self.tags:
@@ -79,6 +79,14 @@ class Preprocessor:
 		self.party_features = self.get_party_features()
 		self.locations = self.initialize_location_dictionaries()
 		self.sid = SentimentIntensityAnalyzer()
+		config = configs['QUEUE']
+		credentials = pika.PlainCredentials(config['queue_user'], config['queue_password'])
+		parameters = pika.ConnectionParameters(config['queue_server'], config['queue_port'], '/', credentials)
+		connection = pika.BlockingConnection(parameters)
+		self.channel = connection.channel()
+		self.channel.queue_declare(queue=config['queue_preprocess'])
+		self.channel.queue_declare(queue=config['queue_savetodb'])
+		self.channel.basic_consume(queue=config['queue_preprocess'], auto_ack=True, on_message_callback=self.callback)
 
 	def check_coordinate_in_australia(self, point, boundary):
 		if point['coordinates']:
@@ -332,7 +340,7 @@ class Preprocessor:
 		loc = self.tweet_in_australia_boundary(data)
 		return loc
 
-	def process(self, data, print_status=True):
+	def process(self, data):
 		result = False
 		text = None
 		if 'extended_tweet' in data and data['extended_tweet']:
@@ -353,9 +361,17 @@ class Preprocessor:
 				sentiment_scores = self.get_polarity_score(text)
 				data['tweet_intensity'] = sentiment_scores['intensity']
 				data['tweet_sentiment'] = sentiment_scores['sentiment']
-				result = self.database.save_to_db(data, print_status)
+
+				self.channel.basic_publish(exchange='', routing_key='savetodb', body=json.dumps(data))
 
 		return result
+
+	def callback(self, ch, method, properties, body):
+		data = json.loads(body.decode('utf-8'))
+		self.process(data)
+
+	def start_processing(self):
+		self.channel.start_consuming()
 
 
 
