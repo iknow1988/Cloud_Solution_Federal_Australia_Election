@@ -1,0 +1,22 @@
+
+
+- name: Create databases
+  uri:
+    url: http://{{ coordinator_node }}:{{ http_api_port }}/{{ item.name }}?n={{ n_replicas }}&q={{ q_shards }}
+    method: PUT
+    user: "{{ www_user }}"
+    password: "{{ www_password }}"
+    body: '{}'
+    body_format: json
+    return_content: yes
+    status_code: 201
+    headers:
+      Content-Type: "application/json"
+
+  register: result
+  run_once: true
+  loop: '{{ databases }}'
+
+- name: debug databases
+  debug:
+    msg: "Databases created with coordinating node: {{ coordinator_node }}: {{ result }}"

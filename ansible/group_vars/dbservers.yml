@@ -4,8 +4,24 @@ couchdb_src_file: apache-couchdb-2.3.1.tar.gz
 couchdb_src_folder: apache-couchdb-2.3.1
 couchdb_src_version: 2.3.1
 
+# databases
+databases:
+  - name: twitter
+  - name: twitter_credentials
+  - name: twitter_users
+
+# replicas
+n_replicas: 3
+q_shards: 8
+
+# data location
+couchdb_data_location: /opt/couchdb/data
+
+# views location
+couchdb_views_location: /opt/couchdb/data
+
 # cookie 
-couchdb_cookie: zaFradre6ech
+couchdb_cookie: brumbrum
 
 # default user for WWW 
 www_user: admin
@@ -23,7 +39,7 @@ c_admin_password: p01ss0n
 bind_address: 0.0.0.0
 
 # Standard clustered port for all HTTP API requests
-http_api_port: 9584
+http_api_port: 5984
 
 # Administrative tasks such as node and shard management
 node_management_port: 5986

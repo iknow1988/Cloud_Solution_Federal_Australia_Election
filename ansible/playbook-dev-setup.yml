@@ -1,9 +1,0 @@
-- hosts: localhost
-  vars_files:
-    - host_vars/nectar.yml
-  gather_facts: true
-
-  roles: 
-    - role: openstack-common
-    - role: openstack-security-group
-    - role: openstack-instance

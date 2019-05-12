@@ -1,21 +1,27 @@
 ---
-- name: Grant internet access http
+- name: Grant internet access - http
   lineinfile:
     dest: /etc/environment
     insertafter: '^\[PATH\]$'
-    line: 'http_proxy="http://wwwproxy.unimelb.edu.au:8000"'
+    line: 'http_proxy="{{ http_proxy }}"'
 
-- name: Grant internet access https
+- name: Grant internet access - https
   lineinfile:
     dest: /etc/environment
     insertafter: '^\[PATH\]$'
-    line: 'https_proxy="http://wwwproxy.unimelb.edu.au:8000"'
+    line: 'https_proxy="{{ https_proxy }}"'
 
-- name: Grant internet access ftp
+- name: Grant internet access - ftp
   lineinfile:
     dest: /etc/environment
     insertafter: '^\[PATH\]$'
-    line: 'ftp_proxy="http://wwwproxy.unimelb.edu.au:8000"'
+    line: 'ftp_proxy="{{ ftp_proxy }}"'
+
+- name: Grant internet access - no proxy
+  lineinfile:
+    dest: /etc/environment
+    insertafter: '^\[PATH\]$'
+    line: 'no_proxy="{{ no_proxy }},{{ ansible_host }}"'
 
 - name: Install dependencies
   apt:
@@ -24,32 +30,22 @@
       - python3-pip
       - python3-all-dev
       - python3-setuptools
-      
-      #- nodejs-legacy
     state: latest
     install_recommends: yes
     update_cache: yes
 
-# install dependencies
-# - name: Install pip
-#   become: yes
-#   apt:
-#     name: ['python-pip']
-#     state: latest
-#     update_cache: yes
-  #when: ansible_distribution == "Ubuntu"
-
-# - name: remove the link py27
-#   file: 
-#     path: '/usr/bin/python'
-#     state: absent 
-
-- name: setup python 3 as default
+- name: Setup python 3 as default
   file: 
     src: '/usr/bin/python3.5' 
     dest: '/usr/bin/python'
     state: link 
     force: yes
+
+# - name: Update pip 
+#   become: yes
+#   pip:
+#     name: ['pip','cryptography']
+#     state: latest
 
 # - name: Update pip 
 #   become: yes
@@ -62,3 +58,4 @@
 #   pip:
 #     name:  ['openstacksdk']
 #     state: latest
+#     executable: pip3

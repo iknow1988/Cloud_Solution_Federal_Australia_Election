@@ -1,21 +1,3 @@
-# - name: Grant internet access http
-#   lineinfile:
-#     dest: /etc/environment
-#     insertafter: '^\[PATH\]$'
-#     line: 'http_proxy="http://wwwproxy.unimelb.edu.au:8000"'
-
-# - name: Grant internet access https
-#   lineinfile:
-#     dest: /etc/environment
-#     insertafter: '^\[PATH\]$'
-#     line: 'https_proxy="http://wwwproxy.unimelb.edu.au:8000"'
-
-# - name: Grant internet access ftp
-#   lineinfile:
-#     dest: /etc/environment
-#     insertafter: '^\[PATH\]$'
-#     line: 'ftp_proxy="http://wwwproxy.unimelb.edu.au:8000"'
-
 - name: Install dependencies for analytics
   apt:
     name: 

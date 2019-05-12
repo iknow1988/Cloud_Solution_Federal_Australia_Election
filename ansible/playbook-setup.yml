@@ -1,0 +1,22 @@
+- hosts: localhost
+  vars_files:
+    - host_vars/nectar.yml
+  vars: 
+    - dbservers: '{{ db }}'
+    - appservers: '{{ app }}'
+    - vol_snapshot: '{{ volume_snapshot }}'
+    - total_db_servers: "{{ groups['dbservers']|default([]) | length }}"
+    - total_app_servers: "{{ groups['appservers']|default([]) | length }}"
+  gather_facts: true
+
+  pre_tasks:
+    - name: Starting cloud
+      debug:
+        msg: Groups dbservers="{{ db }}" and appserver="{{ app }}"
+    
+  roles: 
+    
+    - role: openstack-security-group
+    - role: openstack-instance
+    - {role: openstack-volume, when: db > 0}
+    - {role: openstack-volume-snapshot, when: vol_snapshot  == 'Y' }

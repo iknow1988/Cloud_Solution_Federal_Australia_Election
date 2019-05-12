@@ -1,0 +1,38 @@
+- hosts: dbservers
+  vars_files:
+    - host_vars/nectar.yml
+    - group_vars/dbservers.yml
+  gather_facts: false
+  
+  
+  pre_tasks:
+    - name: Wait for system to become reachable
+      wait_for_connection:
+        timeout: 900
+
+    - name: Wait for ssh to be up
+      become: false
+      wait_for:
+        port: 22
+        delay: 2
+        connect_timeout: 10
+        timeout: 600
+        host: "{{ ansible_host }}"
+    
+    - name: Selecting coordinator node
+      set_fact:
+        coordinator_node: '{{ ansible_host }}'
+      run_once: true
+
+    - name: Debug
+      debug:  
+        msg: 'Coordinator node {{ coordinator_node }} selected out of {{ ansible_play_hosts | length }} nodes.'
+      run_once: true
+
+  roles: 
+    - role: openstack-sshkeys
+    - role: openstack-common
+    - role: couchdb-install
+    - role: couchdb-cluster
+    - role: couchdb-databases
+

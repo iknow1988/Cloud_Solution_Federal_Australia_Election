@@ -3,15 +3,31 @@ availability_zone: melbourne-qh2-uom
 ansible_user: ubuntu
 ansible_user_password: p01ss0n
 default_ssh_port: 22
+http_proxy: http://wwwproxy.unimelb.edu.au:8000
+https_proxy: http://wwwproxy.unimelb.edu.au:8000
+ftp_proxy: http://wwwproxy.unimelb.edu.au:8000
+no_proxy: 127.0.0.1,localhost,127.0.1.1,ubuntu
 
 # volumes 
-volumes: 
-  - vol_name: vol-prod-data
-    vol_size: 50
-  - vol_name: vol-prod-app
-    vol_size: 20
+
+# device data location 
+data_volume: /dev/vdb
+
+# volume size
+volume_size: 50
+
+# data fstype
+volume_fstype: ext4
 
 volume_snapshot: 'N'
+
+# volumes: 
+#   - vol_name: vol-db
+#     vol_size: 50
+  # - vol_name: vol-app
+  #   vol_size: 50
+
+
 
 # security group:
 security_groups:
@@ -48,42 +64,16 @@ security_group_rules:
     security_group: couchdb
     direction: ingress
     protocol: tcp
+    port_range_min: 5984
+    port_range_max: 5984  
+    remote_ip_prefix: 0.0.0.0/0
+  - name: CouchDB - Cluster communication External (Compatibility)
+    security_group: couchdb
+    direction: ingress
+    protocol: tcp
     port_range_min: 9584
     port_range_max: 9584  
     remote_ip_prefix: 0.0.0.0/0
-
-
-# Inital instances
-instances:
-  - name: vm-test
-    instance_name: vm-test
-    instance_image: cb6d0a36-37f4-47c4-8a82-e201bf667211 
-    instance_key_name: gild-nectar
-    instance_flavor: 639b8b2a-a5a6-4aa2-8592-ca765ee7af63
-    instance_hostname: vm-test
-    instance_group: dbservers, appservers
-  # - name: vm-prod-db-2
-  #   instance_name: vm-prod-db-2
-  #   instance_image:  0a2bac09-8beb-464a-9cbc-6adf4dfcd5e5
-  #   instance_key_name: gild-nectar
-  #   instance_flavor: 639b8b2a-a5a6-4aa2-8592-ca765ee7af63
-  #   instance_hostname: vm-prod-db-2
-  #   instance_group: dbservers
-  # - name: vm-prod-db-3
-  #   instance_name: vm-prod-db-3
-  #   instance_image:  0a2bac09-8beb-464a-9cbc-6adf4dfcd5e5
-  #   instance_key_name: gild-nectar
-  #   instance_flavor: 639b8b2a-a5a6-4aa2-8592-ca765ee7af63
-  #   instance_hostname: vm-prod-db-3
-  #   instance_group: dbservers
-  # - name: vm-prod-app-1
-  #   instance_name: vm-prod-app-1
-  #   instance_image:  0a2bac09-8beb-464a-9cbc-6adf4dfcd5e5
-  #   instance_key_name: gild-nectar
-  #   instance_flavor: 639b8b2a-a5a6-4aa2-8592-ca765ee7af63
-  #   instance_group: appservers
-
-#cb6d0a36-37f4-47c4-8a82-e201bf667211
 
 db: 0
 app: 0
@@ -94,7 +84,7 @@ instance_key_name: gild-nectar
 instance_flavor: uom.mse.2c9g
 db_instance_group: dbservers
 db_instance_security_group: couchdb,ssh
-app_instance_security_group: couchdb,ssh
+app_instance_security_group: ssh
 app_instance_group: appservers
 db_app_instance_group: 'dbservers,appservers'
  

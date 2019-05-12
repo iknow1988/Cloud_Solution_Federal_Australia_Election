@@ -19,6 +19,33 @@
     state: latest
     install_recommends: no
 
+
+- name: Create a ext4 filesystem for data storage (if empty volume)
+  filesystem:
+    fstype: '{{ volume_fstype }}'
+    dev: '{{ data_volume }}'
+    force: no
+
+- name: Mount data volume
+  mount:
+    path: '{{ couchdb_data_location }}'
+    src: '{{ data_volume }}'
+    fstype: '{{ volume_fstype }}'
+    state: mounted
+
+- name: Check if a current couchdb service is running
+  command: systemctl status couchdb
+  ignore_errors: true
+  changed_when: false
+  register: service_couchdb_status
+
+- name: Stop couchdb service if exists
+  systemd:
+    name: couchdb
+    state: stopped
+  when: service_couchdb_status is not failed
+
+
 - name: Download CouchDB
   get_url:
     url: '{{ couchdb_src_url }}/{{ couchdb_src_version }}/{{ couchdb_src_file }}'
@@ -41,6 +68,8 @@
 # TODO: this will fail if service is running
 - name: Deploy CouchDB
   command: cp -R /usr/local/src/{{ couchdb_src_folder }}/rel/couchdb /opt/
+
+
 
 - name: Add CouchDB System Account
   user:
@@ -82,19 +111,19 @@
   replace:
     dest: /opt/couchdb/etc/vm.args
     regexp: '^-setcookie monster$'
-    replace: '-setcookie {{ couchdb_cookie }}'
+    replace: '-setcookie brumbrum'
 
-# - name: Kernel port max
-#   lineinfile:
-#     dest: /opt/couchdb/etc/vm.args
-#     insertafter: '^-setcookie zaFradre6ech'
-#     line: '-kernel inet_dist_listen_max 9200'
+- name: Kernel port max
+  lineinfile:
+    dest: /opt/couchdb/etc/vm.args
+    insertafter: '^-setcookie brumbrum'
+    line: '-kernel inet_dist_listen_max 9200'
 
-# - name: Kernel port min
-#   lineinfile:
-#     dest: /opt/couchdb/etc/vm.args
-#     insertafter: '^-setcookie zaFradre6ech'
-#     line: '-kernel inet_dist_listen_max 9100'
+- name: Kernel port min
+  lineinfile:
+    dest: /opt/couchdb/etc/vm.args
+    insertafter: '^-setcookie brumbrum'
+    line: '-kernel inet_dist_listen_max 9100'
 
 - name: Require valid user
   lineinfile:
@@ -126,7 +155,6 @@
     insertafter: '^\[httpd\]$'
     line: 'WWW-Authenticate = Basic realm="administrator"'
 
-
 - name: Add CAdmin User
   lineinfile:
     dest: /opt/couchdb/etc/local.ini
@@ -138,8 +166,6 @@
     dest: /opt/couchdb/etc/local.ini
     insertafter: '^\[admins\]$'
     line: '{{ admin_user }} = {{ admin_password }}'
-
-
 
 - name: Install CouchDB Service
   copy:

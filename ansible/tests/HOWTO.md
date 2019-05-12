@@ -10,6 +10,7 @@
 - To check which hosts will be affected by playbook `ansible-playbook playbook.yml --list-hosts`
 
 # Configure
+http://docs.couchdb.com/en/latest/setup/cluster.html?highlight=test
 - Make sure to have admin and cadmin at the end of `local.ini`
 - Make sure you have the ip addreses in `vm.args` host
 - To get a node: `curl -X GET "http://115.146.85.179:5986/_nodes/couchdb@115.146.85.220" --user admin`
@@ -49,3 +50,19 @@ curl -H 'Content-Type: application/json' -X POST http://admin:p01ss0n@172.26.37.
 
 # 5. References
     - https://docs.ansible.com/ansible/latest/user_guide/playbooks_intro.html 
+
+
+
+
+curl -X PUT "http://admin:p01ss0n@172.26.37.251:9584/tweeter_test?n=2&q=8" 
+
+ip netns exec 0d1b399a-e61e-4afd-9353-e16bd507fc1f ssh -i ~/.ssh/gild-nectar.pem ubuntu@172.26.37.251
+
+  ip netns exec ssh USER@SERVER
+
+
+
+
+curl -X POST -H "Content-Type:application/json" http://admin:p01ss0n@localhost:5984/_cluster_setup  -d '{"action":"enable_cluster", "bind_address":"0.0.0.0", "username":"admin", "password":"p01ss0n", "node_count":"2"}'
+
+curl -X POST -H "Content-Type:application/json" http://{{ www_user }}:{{ www_password }}@localhost:5984/_cluster_setup -d '{"action":"enable_cluster", "bind_address":"0.0.0.0", "username":"{{ www_user }}", "password":"{{ www_password }}", "node_count":"2"}'
