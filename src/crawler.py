@@ -1,5 +1,3 @@
-import couchdb
-import sys
 import atexit
 import datetime
 import pandas as pd
@@ -8,7 +6,7 @@ from harvesters import StreamTweetHarvester, KeywordsHarvester
 from preprocessors import Preprocessor
 from database_saver import Database
 import threading
-import pika
+import sys
 
 
 def get_tracking_keywords(configs):
@@ -38,7 +36,15 @@ def get_tracking_keywords(configs):
 	return keywords
 
 
-def pre_check_files():
+def pre_check_files(argv):
+
+	if len(argv)>1:
+		file_name = 'logs/log_'+argv[1]+'.txt'
+	else:
+		file_name = 'logs/log_api_streamline.txt'
+
+	sys.stdout = open(file_name, 'a+')
+
 	try:
 		with open("config.yaml", 'r') as ymlfile:
 			configs = yaml.load(ymlfile)
@@ -101,7 +107,7 @@ def exit_handler(database):
 
 
 def main(argv):
-	configs = pre_check_files()
+	configs = pre_check_files(argv)
 	database = Database(configs)
 	boundary = configs['APP_DATA']['boundary']
 	keywords = get_tracking_keywords(configs['APP_DATA'])
