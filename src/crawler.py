@@ -7,6 +7,7 @@ from preprocessors import Preprocessor
 from database_saver import Database
 import threading
 import sys
+import time
 
 
 def get_tracking_keywords(configs):
@@ -104,25 +105,33 @@ def run_app(harvester_type, twitter_credential, boundary, keywords, database, co
 def exit_handler(database):
 	print(datetime.datetime.now(), " : ", 'Application is ending!')
 	database.unlock_twitter_account()
+	exit(0)
 
 
 def main(argv):
-	configs = pre_check_files(argv)
-	database = Database(configs)
-	boundary = configs['APP_DATA']['boundary']
-	keywords = get_tracking_keywords(configs['APP_DATA'])
+	while True:
+		configs = pre_check_files(argv)
+		database = Database(configs)
+		boundary = configs['APP_DATA']['boundary']
+		keywords = get_tracking_keywords(configs['APP_DATA'])
 
-	user = database.get_twitter_credential()
-	atexit.register(exit_handler, database)
-	try:
-		harvester_type = 'api_streamline'
-		if len(argv) > 1:
-			harvester_type = argv[1]
-		run_app(harvester_type, user, boundary, keywords, database, configs)
-	except KeyboardInterrupt:
-		exit_handler(database)
-	finally:
-		exit_handler(database)
+		user = database.get_twitter_credential()
+		atexit.register(exit_handler, database)
+		try:
+			harvester_type = 'api_streamline'
+			if len(argv) > 1:
+				harvester_type = argv[1]
+			run_app(harvester_type, user, boundary, keywords, database, configs)
+		except KeyboardInterrupt:
+			exit_handler(database)
+		except Exception as generic:
+			template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+			print(datetime.datetime.now(), " : ", template.format(type(generic).__name__, generic.args))
+			database.unlock_twitter_account()
+			time.sleep(30)
+			continue
+		finally:
+			exit_handler(database)
 
 
 if __name__ == "__main__":
