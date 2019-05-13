@@ -44,7 +44,7 @@ def pre_check_files(argv):
 	else:
 		file_name = 'logs/log_api_streamline.txt'
 
-	# sys.stdout = open(file_name, 'a+')
+	sys.stdout = open(file_name, 'a+')
 
 	try:
 		with open("config.yaml", 'r') as ymlfile:
