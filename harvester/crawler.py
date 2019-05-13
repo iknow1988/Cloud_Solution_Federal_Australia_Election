@@ -48,8 +48,8 @@ def pre_check_files(argv):
 
 	try:
 		with open("../config.yaml", 'r') as ymlfile:
-			# configs = yaml.load(ymlfile)
-			configs = yaml.load(ymlfile, Loader=yaml.FullLoader)
+			configs = yaml.load(ymlfile)
+			# configs = yaml.load(ymlfile, Loader=yaml.FullLoader)
 			ymlfile.close()
 	except Exception as e:
 		template = "An exception of type {0} occurred due to config file not found. Arguments:\n{1!r}"
