@@ -40,22 +40,3 @@
     dest: '/usr/bin/python'
     state: link 
     force: yes
-
-# - name: Update pip 
-#   become: yes
-#   pip:
-#     name: ['pip','cryptography']
-#     state: latest
-
-# - name: Update pip 
-#   become: yes
-#   pip:
-#     name: ['pip3','cryptography']
-#     state: latest
-
-# - name: Install openstack
-#   become: yes
-#   pip:
-#     name:  ['openstacksdk']
-#     state: latest
-#     executable: pip3

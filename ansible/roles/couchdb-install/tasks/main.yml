@@ -1,7 +1,3 @@
-# - name: Write the new instance host key to known hosts
-#   connection: local
-#   shell: "ssh-keyscan -H {{ ansible_host }} >> ~/.ssh/known_hosts"
-
 - name: System Update
   apt:
     update_cache: yes

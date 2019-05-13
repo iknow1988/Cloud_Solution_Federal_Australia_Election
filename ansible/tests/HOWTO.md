@@ -44,7 +44,7 @@ http://docs.couchdb.com/en/latest/setup/cluster.html?highlight=test
 
 curl -X PUT "http://admin:p01ss0n@172.26.37.251:9584/tweeter_test?n=2&q=8" 
 
-curl -H 'Content-Type: application/json' -X POST http://admin:p01ss0n@172.26.37.251:9584/_replicate -d ' {"source": "http://admin:p01ss0n@103.6.254.59:9584/tweeter_test/", "target": "http://admin:p01ss0n@172.26.37.251:9584/tweeter_test/"}' 
+curl -H 'Content-Type: application/json' -X POST http://admin:p01ss0n@172.26.37.219:5984/_replicate -d ' {"source": "http://admin:p01ss0n@103.6.254.59:9584/tweeter_test/", "target": "http://admin:p01ss0n@172.26.37.219:5984/twitter/"}' 
 
 
 
@@ -66,3 +66,35 @@ ip netns exec 0d1b399a-e61e-4afd-9353-e16bd507fc1f ssh -i ~/.ssh/gild-nectar.pem
 curl -X POST -H "Content-Type:application/json" http://admin:p01ss0n@localhost:5984/_cluster_setup  -d '{"action":"enable_cluster", "bind_address":"0.0.0.0", "username":"admin", "password":"p01ss0n", "node_count":"2"}'
 
 curl -X POST -H "Content-Type:application/json" http://{{ www_user }}:{{ www_password }}@localhost:5984/_cluster_setup -d '{"action":"enable_cluster", "bind_address":"0.0.0.0", "username":"{{ www_user }}", "password":"{{ www_password }}", "node_count":"2"}'
+
+
+# Rabbit
+wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb
+dpkg -i erlang-solutions_1.0_all.deb 
+apt-get update 
+ apt-get install erlang
+ apt-get install rabbitmq-server
+ systemctl start rabbitmq-server.service
+ systemctl enable rabbitmq-server.service
+
+
+##########################################
+ Clarification on adding a new node to CouchDB Cluster
+ 
+ Hi teaching stuff,
+
+I'm a bit confused on the procedure on how to add a new node and how to make sure my cluster is set up correctly.
+
+1. What I have done:
+
+Set up an initial cluster with 2 nodes. On both nodes I have similar responses to membership:
+
+{"all_nodes":["couchdb@172.26.37.219","couchdb@172.26.38.71"],"cluster_nodes":["couchdb@172.26.37.219","couchdb@172.26.38.71"]}
+
+When I create the database, say with 3 replicas and 8 shards it seems to be created across the cluster as expected and if I query each server I have the results as expected.
+
+2. What I need (my question)
+Suppose for scalability, I need to add a new node. Then, if I follow this
+https://docs.couchdb.org/en/latest/cluster/nodes.html 
+
+

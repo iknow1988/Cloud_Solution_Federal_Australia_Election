@@ -1,0 +1,80 @@
+- name: Install Transport HTTP
+  apt: 
+      name: apt-transport-https
+      state: present
+      update_cache: yes
+
+- name: System Update
+  apt:
+    update_cache: yes
+    upgrade: dist
+
+- name: Get esl-erlang package
+  get_url:
+    url: http://packages.erlang-solutions.com/site/esl/esl-erlang/FLAVOUR_1_general/esl-erlang_20.1-1~ubuntu~xenial_amd64.deb
+    dest: /home/ubuntu/esl-erlang_20.1-1~ubuntu~xenial_amd64.deb
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+
+- name: Install pacckage esl-erlang
+  apt:
+    deb: /home/ubuntu/esl-erlang_20.1-1~ubuntu~xenial_amd64.deb
+
+- name: Get erlang solutions
+  get_url:
+    url: https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb
+    dest: /home/ubuntu/erlang-solutions_1.0_all.deb
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+
+- name: Install erlang repository
+  apt:
+    deb: /home/ubuntu/erlang-solutions_1.0_all.deb
+
+- name: Add an Apt signing key
+  apt_key:
+    url: https://packages.erlang-solutions.com/debian/erlang_solutions.asc
+    state: present
+
+- name: fix unmet dependencies
+  shell: apt-get -f install
+  warn: false
+
+- name: Add rabbit repo
+  shell: echo "deb https://dl.bintray.com/rabbitmq/debian xenial main" | tee /etc/apt/sources.list.d/bintray.rabbitmq.list
+
+- name: add trusted key
+  shell: wget -O- https://www.rabbitmq.com/rabbitmq-release-signing-key.asc  | apt-key add -
+  warn: false
+
+- name: System Update
+  apt:
+    update_cache: yes
+    upgrade: dist
+
+- name: install rabbitmq
+  apt: 
+    name: rabbitmq-server
+    state: present
+    update_cache: yes
+
+- name: enable rabbitmq plugins
+  rabbitmq_plugin:
+    names: rabbitmq_management
+    state: enabled
+  notify:
+    - restart rabbitmq
+
+- name: add rabbitmq users admin
+  rabbitmq_user:
+    user: '{{ rabbitmq_admin_user }}'
+    password: '{{ rabbitmq_admin_password }}'
+    vhost: /
+    tags: administrator
+    configure_priv: .*
+    read_priv: .*
+    write_priv: .*
+    state: present
+

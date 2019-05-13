@@ -2,17 +2,20 @@
   vars_files:
     - host_vars/nectar.yml
   vars: 
-    - dbservers: '{{ db }}'
-    - appservers: '{{ app }}'
+    - db_num_servers: '{{ db }}'
+    - app_num_servers: '{{ app }}'
+    - all_num_servers: '{{ all }}'
     - vol_snapshot: '{{ volume_snapshot }}'
     - total_db_servers: "{{ groups['dbservers']|default([]) | length }}"
     - total_app_servers: "{{ groups['appservers']|default([]) | length }}"
+    - total_all_servers: "{{ groups['all']|default([]) | length }}"
   gather_facts: true
 
   pre_tasks:
     - name: Starting cloud
       debug:
-        msg: Groups dbservers="{{ db }}" and appserver="{{ app }}"
+        msg: all="{{ all }}" db="{{ db }}" app="{{ app }}"
+
     
   roles: 
     

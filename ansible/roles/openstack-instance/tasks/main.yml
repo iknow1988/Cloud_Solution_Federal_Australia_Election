@@ -1,5 +1,31 @@
 # create instances 
 
+- name: Create instances
+  os_server:
+    name: '{{ all_instance_prefix_name }}-{{ item }}'
+    image: '{{ instance_image }}'
+    key_name: '{{ instance_key_name }}'
+    flavor: '{{ instance_flavor }}'
+    availability_zone: '{{ availability_zone }}'
+    security_groups: '{{ all_instance_security_group }}'
+    auto_ip: yes
+    wait: yes
+    meta:
+      hostname: '{{ all_instance_prefix_name }}-{{ item }}'
+      groups: '{{ all_instance_group }}'
+
+    state: present
+    userdata: |
+          chpasswd:
+            list: |
+              '{{ ansible_user }}':{{ ansible_user_password }}
+            expire: False
+          packages:
+            - ansible
+          package_upgrade: true
+  register: new_app_instances
+  loop: "{{ range(total_all_servers|int + 1, total_all_servers|int + all + 1, 1)|list }}"
+
 - name: Create DB instances
   os_server:
     name: '{{ db_instance_prefix_name }}-{{ item }}'
@@ -23,7 +49,7 @@
           packages:
             - ansible
           package_upgrade: true
-
+  register: new_db_instances
   loop: "{{ range(total_db_servers|int + 1, total_db_servers|int + db + 1, 1)|list }}"
 
 - name: Create APP instances
@@ -49,4 +75,13 @@
           packages:
             - ansible
           package_upgrade: true
+  register: new_app_instances
   loop: "{{ range(total_app_servers|int + 1, total_app_servers|int + app + 1, 1)|list }}"
+
+
+
+- name: Registering new instances
+  set_fact:
+    new_db_instances: "{{ new_app_instances }}"
+    new_app_instances: "{{ new_db_instances }}"
+  run_once: true
