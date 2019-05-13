@@ -1,7 +1,7 @@
 QUEUE:
-    queue_user: 'guest'
-    queue_password: 'guest'
-    queue_server: 'localhost'
+    queue_user: 'admin'
+    queue_password: 'p01ss0n'
+    queue_server: '45.113.233.94'
     queue_port: '5672'
     queue_preprocess: 'preprocess'
     queue_savetodb: 'savetodb'
@@ -9,22 +9,22 @@ QUEUE:
 APP_DATA:
     keywords: ['auspol','ausvotes','AusVotes19','ausvote2019' ,'auspol2019', 'ausvotes2019', 'ausvotes19']
     boundary: [110.0,-44.0,159.0,-8.0]
-    party_features: 'csv_files/political_party_attributes.csv'
+    party_features: './csv_files/political_party_attributes.csv'
     harvester_type_1: 'api_stream'
     harvester_type_2: 'api_search'
-    election_map_shape_file: 'shape_files/COM_ELB_region.shp'
-    gcc_map_shape_file: 'shape_files/GCCSA_2016_AUST.shp'
-    australia_city_names: 'csv_files/australia_city_names.csv'
-    aurin_data_locations: 'csv_files/aurin_location.csv'
+    election_map_shape_file: './shape_files/COM_ELB_region.shp'
+    gcc_map_shape_file: './shape_files/GCCSA_2016_AUST.shp'
+    australia_city_names: './csv_files/australia_city_names.csv'
+    aurin_data_locations: './csv_files/aurin_location.csv'
 
 COUCHDB:
-    ip: '103.6.254.59'
-    port: '9584'
+    ip: '172.26.37.219'
+    port: '5984'
     user: 'admin'
     password: 'p01ss0n'
-    tweet_db: 'tweeter_test'
-    users_db: 'users_twitter'
-    credential_db: 'tweeter_credentials'
+    tweet_db: 'twitter'
+    users_db: 'twitter_users'
+    credential_db: 'twitter_credentials'
 
 MPI:
     size: 2
