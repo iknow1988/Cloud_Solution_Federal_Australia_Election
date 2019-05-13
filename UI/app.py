@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu May  9 03:44:49 2019
-
-@author: Lenovo
-"""
 import couchdb
 from flask import Flask, jsonify, make_response, render_template
 from flask_cors import CORS, cross_origin
@@ -31,11 +25,11 @@ state = {
 
 user = "admin"
 password = "p01ss0n"
-couch_server = couchdb.Server("http://%s:%s@103.6.254.59:9584/" % (user, password))
-db = couch_server['tweeter_test']
+couch_server = couchdb.Server("http://%s:%s@172.26.37.219:5984/" % (user, password))
+db = couch_server['twitter']
 
-ip = "http://admin:p01ss0n@103.6.254.59:9584/"
-tweeter_db = 'tweeter_test'
+ip = "http://admin:p01ss0n@172.26.37.219:5984/"
+tweeter_db = 'twitter'
 aurin_data_location = 'csv_files/vote_2016.csv'
 
 @app.route('/')
@@ -71,7 +65,12 @@ def scenario_1_2():
     for index, row in df2.iterrows():
         for key in state.keys():
             result[state[key]][row['party']][1] = row[key]
-
+    for key in state.keys():
+        df3 = scenerio_3_tweet_sentiment(ip,tweeter_db, key)
+        for index, row in df3.iterrows():
+            result[state[key]][row['party']][2] = row['Positive']
+            result[state[key]][row['party']][3] = row['Negative'] 
+            result[state[key]][row['party']][4] = row['Neutral']
     return jsonify(result)
 
 @app.route("/initial/", methods=['GET'])
@@ -269,6 +268,52 @@ def scenerio_2_popularity_of_party_in_state_vs_aurion(ip,tweeter_db,aurin_data_l
     df_vote = df_vote.drop(columns = ['index'])
     
     return df_twitter_party, df_vote
+
+def scenerio_3_tweet_sentiment(ip,tweeter_db, state_name):
+    
+    # **********fetching data from couchdb**********
+    couch_server = couchdb.Server(ip)
+    db = couch_server[tweeter_db]
+    view = db.view('_design/counts/_view/sentiment_party', reduce=True, group=True)
+
+    rows = []
+    rows2 = []
+    for item in view:
+        key = item.key
+        party = str(key[0])
+        sentiment = str(key[1])
+        intensity = str(key[2])
+        city = str(key[3])
+        state = str(key[4])
+        count = item.value
+        if(party == "Liberal Democratic Party" or party == "Liberal National Party" or
+           party == "Liberal Party of Australia"):
+            if(state.islower()):
+                rows2.append({'party': 'Liberal Party of Australia', 'sentiment': sentiment,
+                              'intensity': intensity, 'city': city, 'state' :state, 'count': count})
+        else:
+            if(state.islower()):
+                rows.append({'party': party, 'sentiment': sentiment, 'intensity': intensity, 'city': city,
+                             'state' :state, 'count': count})
+
+    # **********Twitter data dataframe creating**********
+    
+    df_twitter_sentiment = pd.DataFrame(rows)
+    df_twitter_sentiment = pd.concat([df_twitter_sentiment, pd.DataFrame(rows2)])
+    df_twitter_sentiment = df_twitter_sentiment[df_twitter_sentiment['state'] == state_name]
+    df_twitter_sentiment = df_twitter_sentiment[(df_twitter_sentiment['party'] == "Australian Labor Party") | 
+                         (df_twitter_sentiment['party'] == "Liberal Party of Australia") |
+                         (df_twitter_sentiment['party'] == "Australian Greens") |
+                         (df_twitter_sentiment['party'] == "United Australia Party")]
+    df_twitter_sentiment = df_twitter_sentiment.drop(columns = ['city','intensity','state'], axis = 1)
+    df_twitter_sentiment = df_twitter_sentiment.groupby(['party','sentiment']).sum().reset_index()
+
+    df_twitter_sentiment = pd.pivot_table(df_twitter_sentiment,values='count',index=['party'],
+                                          columns=['sentiment'])
+    df_twitter_sentiment = df_twitter_sentiment.div(df_twitter_sentiment.sum(axis=1), axis=0).round(2).reset_index()
+    
+    return df_twitter_sentiment
+
 
 if __name__ == '__main__':
     app.run()

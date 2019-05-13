@@ -36,11 +36,26 @@
 
 			arr2 = [];
 			arr2.push(['state','Percentage of tweets', 'Percentage of votes']);
+			var pol_arr = new Array(4);
+
+			for (var i = 0; i < pol_arr.length; i++) {
+				pol_arr[i] = [];
+				pol_arr[i].push(['Polarity', 'Percentage']);
+			}
+			x = 0;
 			for (var i in state_party_vote){
 				arr2.push([i,state_party_vote[i][0]*100, state_party_vote[i][1]*100])
+				pol_arr[x].push(['Positive', state_party_vote[i][2]*100 ]);
+				pol_arr[x].push(['Negative', state_party_vote[i][3]*100 ]);
+				pol_arr[x].push(['Neutral', state_party_vote[i][4]*100 ]);
+				x = x + 1;
+			}
+			
+			for (var i = 0; i < pol_arr.length; i++) {
+				console.log(pol_arr[i]);
 			}
 			this._div.innerHTML = '<b>' + props['STATE_NAME'] + '</b>' ;
-			this._div.innerHTML += '<br><br><b> Number of Tweets : </b>' + state_total_tweets;
+			this._div.innerHTML += '<b>      Number of Tweets : </b>' + state_total_tweets;
 			google.charts.load("current",  {packages: ["corechart"]});
 			google.charts.setOnLoadCallback(drawBarChart);
 			function drawBarChart() {
@@ -50,8 +65,8 @@
 				var view1 = new google.visualization.DataView(data1);
   
 
-				var options1 = {'title': "DING DONG", 'width':550, 'height':400, 
-					legend: { position: 'top', maxLines: 3 },
+				var options1 = {'title': "", 'width':550, 'height':300, 
+					legend: { position: 'bottom', maxLines: 3 },
 					theme: 'material',
 					tooltip: { isHtml: true},
 					backgroundColor: { fill:'transparent' },
@@ -62,6 +77,44 @@
 				
 				var chart1 = new google.visualization.ColumnChart(document.getElementById('map2'));
 				chart1.draw(view1, options1);
+				
+				for (var i = 0; i < pol_arr.length; i++) {
+				
+					var data1 = google.visualization.arrayToDataTable(pol_arr[i]);
+					var view1 = new google.visualization.DataView(data1);
+					if(i == 0){
+						title = "Australian Greens";
+						placeholder = "pie3";
+					}else if (i == 1){
+						title = "Australian Labor Party";
+						placeholder = "pie2";
+					}
+					else if (i == 2){
+						title = "Liberal Party";
+						placeholder = "pie1";
+					}
+					else if (i == 3){
+						title = "United Australia Party";
+						placeholder = "pie4";
+					}
+
+					var options1 = {'title': title, 'width':250, 'height':250, 
+						legend: { position: 'top', maxLines: 3 },
+						theme: 'material',
+						tooltip: { isHtml: true},
+						backgroundColor: { fill:'transparent' },
+						animation: {
+							duration: 1500,
+							startup: true
+					}};
+				
+					var chart1 = new google.visualization.PieChart(document.getElementById(placeholder));
+					chart1.draw(view1, options1);
+				
+				
+				}
+				
+				
 			}
 			
 		}else{
