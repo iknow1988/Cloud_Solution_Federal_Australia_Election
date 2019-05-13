@@ -388,4 +388,4 @@ def scenario_4_get_tweet_words(ip, tweeter_db, party_name, city_name, state_name
     
     return df_keywords
 if __name__ == '__main__':
-    app.run(port = 80)
+    app.run(host="0.0.0.0",port = 80)
