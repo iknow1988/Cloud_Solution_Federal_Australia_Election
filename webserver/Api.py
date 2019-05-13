@@ -4,6 +4,7 @@ from flask_cors import CORS, cross_origin
 from collections import Counter
 import copy
 import pandas as pd
+import yaml
 app = Flask(__name__)
 
 cors = CORS(app, resources={r"/foo": {"origins": "http://localhost:port"}})
@@ -25,11 +26,14 @@ state = {
 
 user = "admin"
 password = "p01ss0n"
-couch_server = couchdb.Server("http://%s:%s@172.26.37.219:5984/" % (user, password))
+ip_address = "172.26.37.219"
+port = "5984"
+tweeter_db = 'twitter'
+couch_server = couchdb.Server("http://%s:%s@%s:%s/" % (user, password, ip_address, port))
 db = couch_server['twitter']
 
-ip = "http://admin:p01ss0n@172.26.37.219:5984/"
-tweeter_db = 'twitter'
+ip = "http://" + user + ":" + password + "@" + ip_address + ":" + port
+
 aurin_data_location = 'csv_files/vote_2016.csv'
 
 @app.route('/')
@@ -340,6 +344,37 @@ def scenerio_3_tweet_sentiment(ip,tweeter_db, state_name):
     
     return df_twitter_sentiment
 
-
+def scenario_4_get_tweet_words(ip, tweeter_db, party_name, city_name, state_name, num_words):
+    couch_server = couchdb.Server(ip)
+    db = couch_server[tweeter_db]
+    view = db.view('_design/counts/_view/top_strong_negative_keywords_individual_party', reduce=True, group=True)
+    rows=[]
+    rows2 = []
+    for item in view:
+        key = item.key
+        party = str(key[0])
+        word = str(key[1])
+        city = str(key[4])
+        state = str(key[5])
+        value = item.value
+        if(party == "Liberal Democratic Party" or party == "Liberal National Party" or
+           party == "Liberal Party of Australia"):
+            if(state.islower()):
+                rows2.append({'party': 'Liberal Party of Australia', 'word': word,
+                              'city': city, 'state' :state, 'value':value})
+        else:
+            if(state.islower()):
+                rows.append({'party': party, 'word': word, 
+                             'city': city, 'state' :state, 'value':value})
+    df_keywords = pd.DataFrame(rows)
+    df_keywords = pd.concat([df_keywords, pd.DataFrame(rows2)])
+    
+    df_keywords = df_keywords[(df_keywords['state'] == state_name)&
+                              (df_keywords['city'] == city_name)&
+                              (df_keywords['party'] == party_name)].sort_values('value',
+                                                                                ascending = False)[['word',
+                                                                                                    'value']][0:num_words]
+    
+    return df_keywords
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',port=80)
+    app.run(port = 80)

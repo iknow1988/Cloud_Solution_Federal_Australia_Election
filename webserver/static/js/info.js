@@ -2,7 +2,7 @@
 var total_count;
 var arr = [['state','Number of tweets']];
 var arr1 = [['state','Percentage of tweets', 'Percentage of votes']]
-fetch('http://127.0.0.1:5000/scenario_1_1/')
+fetch('http://127.0.0.1:80/scenario_1_1/')
 .then(response => {
     return response.json()
 })
@@ -13,7 +13,7 @@ fetch('http://127.0.0.1:5000/scenario_1_1/')
 	}
 	google.charts.load("current",  {packages: ["corechart"]});
 	google.charts.setOnLoadCallback(drawChart);
-	fetch('http://127.0.0.1:5000/hashtag/')
+	fetch('http://127.0.0.1:80/hashtag/')
 		.then(response => {
 		return response.json()
 	})
@@ -22,7 +22,7 @@ fetch('http://127.0.0.1:5000/scenario_1_1/')
 		document.getElementById('tranding').innerHTML = '<h2>Australia Trends</h2>';
 		
 		for (var i in data){
-			document.getElementById('tranding').innerHTML += '<br><b>'+data[i]['key']+'</b> &nbsp; &nbsp;' + data[i]['value'] + "&nbsp; tweets" ;
+			document.getElementById('tranding').innerHTML += '<b>'+data[i]['key']+'</b> &nbsp; &nbsp;' + data[i]['value'] + "&nbsp; tweets <br>" ;
 			console.log(data)
 			console.log(i)
 			console.log(data[i]['key'],data[i]['value'])
@@ -32,7 +32,7 @@ fetch('http://127.0.0.1:5000/scenario_1_1/')
 	
 })
 
-fetch('http://127.0.0.1:5000/initial/')
+fetch('http://127.0.0.1:80/initial/')
 .then(response => {
     return response.json()
 })
