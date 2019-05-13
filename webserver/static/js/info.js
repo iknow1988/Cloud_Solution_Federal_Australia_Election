@@ -2,7 +2,7 @@
 var total_count;
 var arr = [['state','Number of tweets']];
 var arr1 = [['state','Percentage of tweets', 'Percentage of votes']]
-fetch('http://127.0.0.1:80/scenario_1_1/')
+fetch('http://172.26.38.76:80/scenario_1_1/')
 .then(response => {
     return response.json()
 })
@@ -13,7 +13,7 @@ fetch('http://127.0.0.1:80/scenario_1_1/')
 	}
 	google.charts.load("current",  {packages: ["corechart"]});
 	google.charts.setOnLoadCallback(drawChart);
-	fetch('http://127.0.0.1:80/hashtag/')
+	fetch('http://172.26.38.76:80/hashtag/')
 		.then(response => {
 		return response.json()
 	})
@@ -32,7 +32,7 @@ fetch('http://127.0.0.1:80/scenario_1_1/')
 	
 })
 
-fetch('http://127.0.0.1:80/initial/')
+fetch('http://172.26.38.76:80/initial/')
 .then(response => {
     return response.json()
 })
