@@ -58,13 +58,17 @@ class Database:
 		else:
 			print(datetime.datetime.now(), " : ", "Database configuration error")
 			exit(0)
-
-		credentials = pika.PlainCredentials(queue_config['queue_user'], queue_config['queue_password'])
-		parameters = pika.ConnectionParameters(queue_config['queue_server'], queue_config['queue_port'], '/', credentials)
-		connection = pika.BlockingConnection(parameters)
-		self.channel = connection.channel()
-		self.channel.queue_declare(queue=queue_config['queue_savetodb'])
-		self.channel.basic_consume(queue=queue_config['queue_savetodb'], auto_ack=True, on_message_callback=self.callback)
+		try:
+			credentials = pika.PlainCredentials(queue_config['queue_user'], queue_config['queue_password'])
+			parameters = pika.ConnectionParameters(queue_config['queue_server'], queue_config['queue_port'], '/', credentials)
+			connection = pika.BlockingConnection(parameters)
+			self.channel = connection.channel()
+			self.channel.queue_declare(queue=queue_config['queue_savetodb'])
+			self.channel.basic_consume(queue=queue_config['queue_savetodb'], auto_ack=True, on_message_callback=self.callback)
+		except Exception as e:
+			template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+			print(datetime.datetime.now(), " : ", template.format(type(e).__name__, e.args))
+			exit(0)
 
 
 	def set_twitter_credential(self):

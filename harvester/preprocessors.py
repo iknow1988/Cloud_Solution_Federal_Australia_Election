@@ -7,7 +7,7 @@ from nltk import word_tokenize,sent_tokenize,wordpunct_tokenize
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import pika
 import json
-
+import datetime
 
 class Location:
 	def __init__(self, place_name, state, geometry):
@@ -80,13 +80,18 @@ class Preprocessor:
 		self.locations = self.initialize_location_dictionaries()
 		self.sid = SentimentIntensityAnalyzer()
 		config = configs['QUEUE']
-		credentials = pika.PlainCredentials(config['queue_user'], config['queue_password'])
-		parameters = pika.ConnectionParameters(config['queue_server'], config['queue_port'], '/', credentials)
-		connection = pika.BlockingConnection(parameters)
-		self.channel = connection.channel()
-		self.channel.queue_declare(queue=config['queue_preprocess'])
-		self.channel.queue_declare(queue=config['queue_savetodb'])
-		self.channel.basic_consume(queue=config['queue_preprocess'], auto_ack=True, on_message_callback=self.callback)
+		try:
+			credentials = pika.PlainCredentials(config['queue_user'], config['queue_password'])
+			parameters = pika.ConnectionParameters(config['queue_server'], config['queue_port'], '/', credentials)
+			connection = pika.BlockingConnection(parameters)
+			self.channel = connection.channel()
+			self.channel.queue_declare(queue=config['queue_preprocess'])
+			self.channel.queue_declare(queue=config['queue_savetodb'])
+			self.channel.basic_consume(queue=config['queue_preprocess'], auto_ack=True, on_message_callback=self.callback)
+		except Exception as e:
+			template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+			print(datetime.datetime.now(), " : ", template.format(type(e).__name__, e.args))
+			exit(0)
 
 	def check_coordinate_in_australia(self, point, boundary):
 		if point['coordinates']:

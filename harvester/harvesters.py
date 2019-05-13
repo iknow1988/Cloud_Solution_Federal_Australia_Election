@@ -20,11 +20,16 @@ class Harvester:
 		self.auth = OAuthHandler(self.consumer_key, self.consumer_secret)
 		self.auth.set_access_token(self.access_token, self.access_token_secret)
 		self.api = API(self.auth, wait_on_rate_limit=True, retry_count=3, retry_delay=5, retry_errors = set([401, 404, 500, 503]))
-		credentials = pika.PlainCredentials(config['queue_user'], config['queue_password'])
-		parameters = pika.ConnectionParameters(config['queue_server'], config['queue_port'], '/', credentials)
-		connection = pika.BlockingConnection(parameters)
-		self.channel = connection.channel()
-		self.channel.queue_declare(queue=config['queue_preprocess'])
+		try:
+			credentials = pika.PlainCredentials(config['queue_user'], config['queue_password'])
+			parameters = pika.ConnectionParameters(config['queue_server'], config['queue_port'], '/', credentials)
+			connection = pika.BlockingConnection(parameters)
+			self.channel = connection.channel()
+			self.channel.queue_declare(queue=config['queue_preprocess'])
+		except Exception as e:
+			template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+			print(datetime.datetime.now(), " : ", template.format(type(e).__name__, e.args))
+			exit(0)
 
 	def start_harvesting(self):
 		pass
