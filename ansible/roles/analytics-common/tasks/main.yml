@@ -4,6 +4,8 @@
       dest: '{{ appsrc }}'
       version: '{{ version }}'
       force: yes
+  become: yes
+  become_user: '{{ ansible_user }}'
 
 - name: Install requirements
   pip: 

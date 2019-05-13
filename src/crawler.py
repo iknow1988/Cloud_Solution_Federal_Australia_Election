@@ -136,9 +136,6 @@ def main(argv):
 
 
 if __name__ == "__main__":
-	with open("mylog.txt","w") as f:
-		for i in range(0,1000):
-			f.write("maaaaan")
 	main(sys.argv)
 
 

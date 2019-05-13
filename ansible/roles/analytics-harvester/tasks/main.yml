@@ -44,3 +44,5 @@
   shell: "nohup python crawler.py &"
   args:
     chdir: "{{ appsrc }}/src/"
+  become: yes
+  become_user: '{{ ansible_user }}'
