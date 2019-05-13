@@ -1,0 +1,69 @@
+- name: Deploy app from repo
+  git:
+      repo: '{{ repo }}'
+      dest: '{{ appsrc }}'
+      version: '{{ version }}'
+      force: yes
+  become: yes
+  become_user: '{{ ansible_user }}'
+
+- name: Install requirements
+  pip: 
+      requirements: '{{ appsrc }}/requirements.txt'
+      executable: pip3
+
+- name: Updating configuration file
+  copy:
+    src: config.yaml
+    dest: "{{ appsrc }}/src/config.yaml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+
+- name: Getting CouchDB Node
+  set_fact:
+    couchdb_node: "{{ hostvars[item]['ansible_host'] }}"
+  with_items: "{{ groups['dbservers'] | default([]) }}"
+  run_once: true
+
+- name: Updating CouchDB node
+  replace:
+    dest: "{{ appsrc }}/src/config.yaml"
+    regexp: "couchdb_node"
+    replace: "{{ couchdb_node }}"
+
+- name: Updating CouchDB port
+  replace:
+    dest: "{{ appsrc }}/src/config.yaml"
+    regexp: "couchdb_port"
+    replace: "{{ http_api_port }}"
+
+- name: Updating CouchDB user
+  replace:
+    dest: "{{ appsrc }}/src/config.yaml"
+    regexp: "couchdb_user"
+    replace: "{{ www_user }}"
+
+- name: Updating CouchDB pwd
+  replace:
+    dest: "{{ appsrc }}/src/config.yaml"
+    regexp: "couchdb_pwd"
+    replace: "{{ www_password }}"
+
+- name: Updating CouchDB database for tweets
+  replace:
+    dest: "{{ appsrc }}/src/config.yaml"
+    regexp: "tweet_db:.*$"
+    replace: "tweet_db: '{{ tweet_db }}'"
+
+- name: Updating CouchDB database for users
+  replace:
+    dest: "{{ appsrc }}/src/config.yaml"
+    regexp: "users_db:.*$"
+    replace: "users_db: '{{ users_db }}'"
+
+- name: Updating CouchDB database for credentials
+  replace:
+    dest: "{{ appsrc }}/src/config.yaml"
+    regexp: "credential_db:.*$"
+    replace: "credential_db: '{{ credential_db }}'"

@@ -1,7 +1,7 @@
 import couchdb
-from flask import Flask, jsonify, make_response, render_template
+from flask import Flask, jsonify, render_template
 from flask_cors import CORS, cross_origin
-from collections import Counter, defaultdict
+from collections import Counter
 import copy
 import pandas as pd
 app = Flask(__name__)
@@ -88,6 +88,32 @@ def hello():
         result[key] = count[key]
     return jsonify(result)
 
+
+@app.route("/hashtag/", methods=['GET'])
+@cross_origin(origin='localhost',headers=['Content- Type','Authorization'])
+def hashtag():
+    view = db.view('_design/counts/_view/hashtags', reduce=True, group=True)
+    rows = []
+    for item in view:
+        key = item.key
+        value = item.value
+        rows.append({'key': key, 'value': value})
+
+    df_hashtags = pd.DataFrame(rows)
+    df_hashtags.sort_values(by=['value'], inplace=True, ascending=False)
+    result = {}
+    for i in range(1,11):
+        result[i] = {}
+    idx = 1
+    for index, row in df_hashtags.head(10).iterrows():
+        result[idx]['key'] = row['key']
+        result[idx]['value'] = row['value']
+        idx += 1
+    return jsonify(result)
+
+
+
+    
 
 @app.route("/state/", methods=['GET'])
 @cross_origin(origin='localhost',headers=['Content- Type','Authorization'])
@@ -316,4 +342,4 @@ def scenerio_3_tweet_sentiment(ip,tweeter_db, state_name):
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0',port=80)

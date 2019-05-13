@@ -2,17 +2,17 @@
 
 - name: Create instances
   os_server:
-    name: '{{ all_instance_prefix_name }}-{{ item }}'
+    name: '{{ instance_prefix }}-{{ item.instance_name }}'
     image: '{{ instance_image }}'
     key_name: '{{ instance_key_name }}'
     flavor: '{{ instance_flavor }}'
     availability_zone: '{{ availability_zone }}'
-    security_groups: '{{ all_instance_security_group }}'
+    security_groups: '{{ item.instance_security_group }}'
     auto_ip: yes
     wait: yes
     meta:
-      hostname: '{{ all_instance_prefix_name }}-{{ item }}'
-      groups: '{{ all_instance_group }}'
+      hostname: '{{ instance_prefix }}-{{ item.instance_name }}'
+      groups: '{{ item.instance_group }}'
 
     state: present
     userdata: |
@@ -24,64 +24,66 @@
             - ansible
           package_upgrade: true
   register: new_app_instances
-  loop: "{{ range(total_all_servers|int + 1, total_all_servers|int + all + 1, 1)|list }}"
-
-- name: Create DB instances
-  os_server:
-    name: '{{ db_instance_prefix_name }}-{{ item }}'
-    image: '{{ instance_image }}'
-    key_name: '{{ instance_key_name }}'
-    flavor: '{{ instance_flavor }}'
-    availability_zone: '{{ availability_zone }}'
-    security_groups: '{{ db_instance_security_group }}'
-    auto_ip: yes
-    wait: yes
-    meta:
-      hostname: '{{ db_instance_prefix_name }}-{{ item }} '
-      groups: '{{ db_instance_group }}'
-
-    state: present
-    userdata: |
-          chpasswd:
-            list: |
-              '{{ ansible_user }}':{{ ansible_user_password }}
-            expire: False
-          packages:
-            - ansible
-          package_upgrade: true
-  register: new_db_instances
-  loop: "{{ range(total_db_servers|int + 1, total_db_servers|int + db + 1, 1)|list }}"
-
-- name: Create APP instances
-  os_server:
-    name: '{{ app_instance_prefix_name }}-{{ item }}'
-    image: '{{ instance_image }}'
-    key_name: '{{ instance_key_name }}'
-    flavor: '{{ instance_flavor }}'
-    availability_zone: '{{ availability_zone }}'
-    security_groups: '{{ app_instance_security_group }}'
-    auto_ip: yes
-    wait: yes
-    meta:
-      hostname: '{{ app_instance_prefix_name }}-{{ item }}'
-      groups: '{{ app_instance_group }}'
-
-    state: present
-    userdata: |
-          chpasswd:
-            list: |
-              '{{ ansible_user }}':{{ ansible_user_password }}
-            expire: False
-          packages:
-            - ansible
-          package_upgrade: true
-  register: new_app_instances
-  loop: "{{ range(total_app_servers|int + 1, total_app_servers|int + app + 1, 1)|list }}"
+  loop: "{{ instances }}"
 
 
+# - name: Create DB instances
+#   os_server:
+#     name: '{{ db_instance_prefix_name }}-{{ item }}'
+#     image: '{{ instance_image }}'
+#     key_name: '{{ instance_key_name }}'
+#     flavor: '{{ instance_flavor }}'
+#     availability_zone: '{{ availability_zone }}'
+#     security_groups: '{{ db_instance_security_group }}'
+#     auto_ip: yes
+#     wait: yes
+#     meta:
+#       hostname: '{{ db_instance_prefix_name }}-{{ item }} '
+#       groups: '{{ db_instance_group }}'
 
-- name: Registering new instances
-  set_fact:
-    new_db_instances: "{{ new_app_instances }}"
-    new_app_instances: "{{ new_db_instances }}"
-  run_once: true
+#     state: present
+#     userdata: |
+#           chpasswd:
+#             list: |
+#               '{{ ansible_user }}':{{ ansible_user_password }}
+#             expire: False
+#           packages:
+#             - ansible
+#           package_upgrade: true
+#   register: new_db_instances
+#   loop: "{{ range(total_db_servers|int + 1, total_db_servers|int + db_num_servers + 1, 1)|list }}"
+  
+
+# - name: Create APP instances
+#   os_server:
+#     name: '{{ app_instance_prefix_name }}-{{ item }}'
+#     image: '{{ instance_image }}'
+#     key_name: '{{ instance_key_name }}'
+#     flavor: '{{ instance_flavor }}'
+#     availability_zone: '{{ availability_zone }}'
+#     security_groups: '{{ app_instance_security_group }}'
+#     auto_ip: yes
+#     wait: yes
+#     meta:
+#       hostname: '{{ app_instance_prefix_name }}-{{ item }}'
+#       groups: '{{ app_instance_group }}'
+
+#     state: present
+#     userdata: |
+#           chpasswd:
+#             list: |
+#               '{{ ansible_user }}':{{ ansible_user_password }}
+#             expire: False
+#           packages:
+#             - ansible
+#           package_upgrade: true
+#   register: new_app_instances
+#   loop: "{{ range(total_app_servers|int + 1, total_app_servers|int + app_num_servers + 1, 1)|list }}"
+
+
+
+# - name: Registering new instances
+#   set_fact:
+#     new_db_instances: "{{ new_app_instances }}"
+#     new_app_instances: "{{ new_db_instances }}"
+#   run_once: true
