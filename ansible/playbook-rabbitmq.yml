@@ -1,6 +1,7 @@
 - hosts: rabbitmq
   vars_files:
     - host_vars/nectar.yml
+    - group_vars/harvesters.yml
   gather_facts: false
   
   

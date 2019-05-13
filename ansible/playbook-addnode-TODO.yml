@@ -9,10 +9,11 @@
     - total_all_servers: "{{ groups['all']|default([]) | length }}"
   gather_facts: false
 
-  pre_tasks:
-    - name: Selecting coordinator node
-      set_fact:
-        new_db_instances: "{{ groups['dbservers']|default([]) }}"
+  # pre_tasks:
+  #   - name: Selecting coordinator node
+  #     set_fact:
+  #       new_db_instances: "{{ groups['dbservers']|default([]) }}"
+  
   roles:
     - role: openstack-instance
     - role: openstack-volume

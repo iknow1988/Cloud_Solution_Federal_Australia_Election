@@ -38,4 +38,7 @@ six==1.12.0
 ssh-import-id==5.5
 tweepy==3.7.0
 urllib3==1.24.3
-jupyterhub==1.0.0
+pika=1.0.1
+Flask==1.0.2
+Flask-Cors==3.0.4
+Flask-RESTful==0.3.7

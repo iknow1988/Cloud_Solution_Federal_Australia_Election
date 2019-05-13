@@ -1,0 +1,3 @@
+tweet_db: twitter
+users_db: twitter_users
+credential_db: twitter_credentials

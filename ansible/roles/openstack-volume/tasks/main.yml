@@ -1,24 +1,47 @@
 ---
 # create volume for server
+
+
 - name: Data volumes
   os_volume:
-    display_name: 'vol-data-{{ db_instance_prefix_name }}-{{ item }}'
+    display_name: 'vol-data-{{ instance_prefix }}-{{ item.instance_name }}'
     size: '{{ volume_size }}'
     availability_zone: '{{ availability_zone }}'
     wait: yes
     timeout: 600
     state: present
+  loop: "{{ instances }}"
 
-  loop: "{{ range(total_db_servers|int + 1, total_db_servers|int + db + 1, 1)|list }}"
+  
   
 - name: Attach volume to the instance for data storage 
   os_server_volume:
     state: present
-    server: '{{ db_instance_prefix_name }}-{{ item }}'
-    volume: 'vol-data-{{ db_instance_prefix_name }}-{{ item }}'
+    server: '{{ instance_prefix }}-{{ item.instance_name }}'
+    volume: 'vol-data-{{ instance_prefix }}-{{ item.instance_name }}'
     device: '{{ data_volume }}'
+  loop: "{{ instances }}"
 
-  loop: "{{ range(total_db_servers|int + 1, total_db_servers|int + db + 1, 1)|list }}"
+
+# - name: Data volumes
+#   os_volume:
+#     display_name: 'vol-data-{{ db_instance_prefix_name }}-{{ item }}'
+#     size: '{{ volume_size }}'
+#     availability_zone: '{{ availability_zone }}'
+#     wait: yes
+#     timeout: 600
+#     state: present
+
+#   loop: "{{ range(total_db_servers|int + 1, total_db_servers|int + db + 1, 1)|list }}"
+  
+# - name: Attach volume to the instance for data storage 
+#   os_server_volume:
+#     state: present
+#     server: '{{ db_instance_prefix_name }}-{{ item }}'
+#     volume: 'vol-data-{{ db_instance_prefix_name }}-{{ item }}'
+#     device: '{{ data_volume }}'
+
+#   loop: "{{ range(total_db_servers|int + 1, total_db_servers|int + db + 1, 1)|list }}"
   
 
   

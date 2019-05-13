@@ -17,7 +17,7 @@
     group: ubuntu
     mode: 0755
 
-- name: Install pacckage esl-erlang
+- name: Install package esl-erlang
   apt:
     deb: /home/ubuntu/esl-erlang_20.1-1~ubuntu~xenial_amd64.deb
 
@@ -40,15 +40,13 @@
 
 - name: fix unmet dependencies
   shell: apt-get -f install
-  warn: false
-
+  
 - name: Add rabbit repo
   shell: echo "deb https://dl.bintray.com/rabbitmq/debian xenial main" | tee /etc/apt/sources.list.d/bintray.rabbitmq.list
 
 - name: add trusted key
   shell: wget -O- https://www.rabbitmq.com/rabbitmq-release-signing-key.asc  | apt-key add -
-  warn: false
-
+  
 - name: System Update
   apt:
     update_cache: yes

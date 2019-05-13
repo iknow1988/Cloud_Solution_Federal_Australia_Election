@@ -1,0 +1,18 @@
+- hosts: localhost
+  vars_files:
+    - host_vars/nectar.yml
+  vars:
+    - instances: '{{ instances }}'
+  gather_facts: true
+
+  pre_tasks:
+    - name: Setting up cloud
+      debug:
+        msg: '{{ instances }}'
+
+  roles: 
+    
+     - role: openstack-security-group
+     - role: openstack-instance 
+     - role: openstack-volume
+     - {role: openstack-volume-snapshot, when: volume_snapshot  == 'Y' }
