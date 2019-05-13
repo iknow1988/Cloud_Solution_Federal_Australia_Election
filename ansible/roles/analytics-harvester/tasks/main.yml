@@ -41,4 +41,6 @@
     replace: "{{ rabbitmq_port }}"
     
 - name: Start harvester
-  shell: "nohup python {{ appsrc }}/src/crawler.py &"
+  shell: "python crawler.py </dev/null >/dev/null 2>&1 & sleep 1"
+  args:
+    chdir: "{{ appsrc }}/src/"

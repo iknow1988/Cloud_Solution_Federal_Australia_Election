@@ -40,9 +40,9 @@ def get_tracking_keywords(configs):
 def pre_check_files(argv):
 
 	if len(argv)>1:
-		file_name = './logs/log_'+argv[1]+'.txt'
+		file_name = 'logs/log_'+argv[1]+'.txt'
 	else:
-		file_name = './logs/log_api_streamline.txt'
+		file_name = 'logs/log_api_streamline.txt'
 
 	# sys.stdout = open(file_name, 'a+')
 
