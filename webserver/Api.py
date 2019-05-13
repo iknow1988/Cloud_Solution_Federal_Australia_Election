@@ -5,6 +5,7 @@ from collections import Counter
 import copy
 import pandas as pd
 import yaml
+import datetime
 app = Flask(__name__)
 
 cors = CORS(app, resources={r"/foo": {"origins": "http://localhost:port"}})
@@ -23,16 +24,26 @@ state = {
  'australian capital territory': 8
 }
 
+try:
+	with open("../config.yaml", 'r') as ymlfile:
+			# configs = yaml.load(ymlfile)
+		configs = yaml.load(ymlfile)
+		ymlfile.close()
+except Exception as e:
+	template = "An exception of type {0} occurred due to config file not found. Arguments:\n{1!r}"
+	print(datetime.datetime.now(), " : ", template.format(type(e).__name__, e.args))
+	exit(0)
 
-user = "admin"
-password = "p01ss0n"
-ip_address = "172.26.37.219"
-port = "5984"
-tweeter_db = 'twitter'
+
+user = configs['COUCHDB']['user']
+password = configs['COUCHDB']['password']
+ip_address = configs['COUCHDB']['ip']
+port = configs['COUCHDB']['port']
+tweeter_db = configs['COUCHDB']['tweet_db']
 couch_server = couchdb.Server("http://%s:%s@%s:%s/" % (user, password, ip_address, port))
 db = couch_server['twitter']
 
-ip = "http://" + user + ":" + password + "@" + ip_address + ":" + port
+ip = "http://" + user + ":" + password + "@" + ip_address + ":" + port + "/"
 
 aurin_data_location = 'csv_files/vote_2016.csv'
 
