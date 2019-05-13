@@ -316,4 +316,4 @@ def scenerio_3_tweet_sentiment(ip,tweeter_db, state_name):
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0',port=80)
