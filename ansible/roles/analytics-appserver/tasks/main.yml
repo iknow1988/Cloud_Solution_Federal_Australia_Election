@@ -1,2 +1,3 @@
 - name: Start appserver
-  shell: "nohup python {{ appsrc }}/UI/app.py &"
+  shell: "nohup python {{ appsrc }}/webserver/Api.py &"
+  become: true

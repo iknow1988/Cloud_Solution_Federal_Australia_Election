@@ -1,0 +1,28 @@
+- hosts: all
+  vars_files:
+    - host_vars/nectar.yml
+  
+  gather_facts: true
+
+  pre_tasks:
+    - name: Deploying cloud
+      debug:
+        msg: Deploying cloud for '{{ instances|length }}' instances
+      run_once: true
+
+
+- name: Deploying database cluster
+  import_playbook: playbook-dbcluster.yml
+  run_once: true
+
+- name: Deploying queue services
+  import_playbook: playbook-rabbitmq.yml
+  run_once: true
+
+- name: Deploying application services
+  import_playbook: playbook-appserver.yml
+  run_once: true
+
+- name: Deploying twitter harvester
+  import_playbook: playbook-harvester.yml
+  run_once: true

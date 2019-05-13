@@ -1,0 +1,11 @@
+- hosts: dbservers
+
+  gather_facts: true
+
+  pre_tasks:
+    - name: Scaling cloud
+      debug:
+        msg: '{{ ansible_play_hosts }}'
+
+    
+  

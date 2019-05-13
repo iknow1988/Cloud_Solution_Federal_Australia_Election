@@ -77,30 +77,31 @@ security_group_rules:
     port_range_max: 5672  
     remote_ip_prefix: 0.0.0.0/0
 
-db: 0
-app: 0
-all: 0
+# db: 0
+# app: 0
+# all: 0
 
-db_instance_prefix_name: db-dragonstone
-app_instance_prefix_name: app-winterfell
+# db_instance_prefix_name: db-dragonstone
+# app_instance_prefix_name: app-winterfell
+
+# db_instance_group: dbservers
+# db_instance_security_group: couchdb,ssh
+# app_instance_security_group: ssh
+# app_instance_group: appservers
+# db_app_instance_group: 'dbservers,appservers'
+# mq_instance_group: rabbitmq
+# all_instance_group: 'dbservers,appservers,rabbitmq'
+# all_instance_security_group: couchdb,ssh,rabbitmq
+# all_instance_prefix_name: lannister
+
+instance_prefix: vm
 instance_image: 'NeCTAR Ubuntu 16.04 LTS (Xenial) amd64' 
 instance_key_name: gild-nectar
 instance_flavor: uom.mse.2c9g
-db_instance_group: dbservers
-db_instance_security_group: couchdb,ssh
-app_instance_security_group: ssh
-app_instance_group: appservers
-db_app_instance_group: 'dbservers,appservers'
-mq_instance_group: rabbitmq
-all_instance_group: 'dbservers,appservers,rabbitmq'
-all_instance_security_group: couchdb,ssh,rabbitmq
-all_instance_prefix_name: lannister
-
-instance_prefix: vm
 instances:
   - instance_name: 1
-    instance_group: harvester, rabbitmq,appserver
+    instance_group: harvester,rabbitmq,appserver
     instance_security_group: ssh,rabbitmq
   - instance_name: 2
-    instance_group: harvester
+    instance_group: harvester,dbservers
     instance_security_group: ssh
