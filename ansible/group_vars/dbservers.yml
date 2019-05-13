@@ -3,12 +3,13 @@ couchdb_src_url: http://apache.mirror.serversaustralia.com.au/couchdb/source
 couchdb_src_file: apache-couchdb-2.3.1.tar.gz
 couchdb_src_folder: apache-couchdb-2.3.1
 couchdb_src_version: 2.3.1
+couchdb_node: 'localhost'
 
 # databases
 databases:
   - name: twitter
   - name: twitter_credentials
-  - name: twitter_users
+  - name: twitter_users_test
 
 # replicas
 n_replicas: 3

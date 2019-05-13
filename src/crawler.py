@@ -40,11 +40,11 @@ def get_tracking_keywords(configs):
 def pre_check_files(argv):
 
 	if len(argv)>1:
-		file_name = 'logs/log_'+argv[1]+'.txt'
+		file_name = './logs/log_'+argv[1]+'.txt'
 	else:
-		file_name = 'logs/log_api_streamline.txt'
+		file_name = './logs/log_api_streamline.txt'
 
-	sys.stdout = open(file_name, 'a+')
+	# sys.stdout = open(file_name, 'a+')
 
 	try:
 		with open("config.yaml", 'r') as ymlfile:
@@ -105,6 +105,7 @@ def run_app(harvester_type, twitter_credential, boundary, keywords, database, co
 def exit_handler(database):
 	print(datetime.datetime.now(), " : ", 'Application is ending!')
 	database.unlock_twitter_account()
+	sys.stdout.flush()
 	exit(0)
 
 

@@ -1,0 +1,30 @@
+QUEUE:
+    queue_user: 'rabbitmq_user'
+    queue_password: 'rabbitmq_pwd'
+    queue_server: 'rabbitmq_node'
+    queue_port: 'rabbitmq_port'
+    queue_preprocess: 'preprocess'
+    queue_savetodb: 'savetodb'
+
+APP_DATA:
+    keywords: ['auspol','ausvotes','AusVotes19','ausvote2019' ,'auspol2019', 'ausvotes2019', 'ausvotes19']
+    boundary: [110.0,-44.0,159.0,-8.0]
+    party_features: 'csv_files/political_party_attributes.csv'
+    harvester_type_1: 'api_stream'
+    harvester_type_2: 'api_search'
+    election_map_shape_file: 'shape_files/COM_ELB_region.shp'
+    gcc_map_shape_file: 'shape_files/GCCSA_2016_AUST.shp'
+    australia_city_names: 'csv_files/australia_city_names.csv'
+    aurin_data_locations: 'csv_files/aurin_location.csv'
+
+COUCHDB:
+    ip: 'couchdb_node'
+    port: 'couchdb_port'
+    user: 'couchdb_user'
+    password: 'couchdb_pwd'
+    tweet_db: 'couchdb_twitter'
+    users_db: 'couchdb_twitter_users'
+    credential_db: 'couchdb_twitter_credentials'
+
+MPI:
+    size: 2

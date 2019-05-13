@@ -1,0 +1,14 @@
+- hosts: harvester
+  vars_files:
+    - host_vars/nectar.yml
+    - group_vars/harvester.yml
+    - group_vars/dbservers.yml
+
+  gather_facts: true
+  
+  roles: 
+    #- role: openstack-sshkeys
+    #- role: openstack-common
+    - role: analytics-common
+    - role: analytics-harvester
+

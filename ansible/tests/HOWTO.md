@@ -15,7 +15,7 @@ http://docs.couchdb.com/en/latest/setup/cluster.html?highlight=test
 - Make sure you have the ip addreses in `vm.args` host
 - To get a node: `curl -X GET "http://115.146.85.179:5986/_nodes/couchdb@115.146.85.220" --user admin`
 - To delete a node: `curl -X DELETE "http://115.146.85.179:5986/_nodes/couchdb@127.0.0.1?rev=1-967a00dff5e02add41819138abb3284d" --user admin`
-- To add a node: `curl -X PUT "http://115.146.85.179:5986/_nodes/couchdb@127.0.0.1" -d {} --user admin`
+- To add a node: `curl -X PUT "http://172.26.37.219:5986/_nodes/couchdb@172.26.38.34" -d {} --user admin`
 
 # 3. test
 
@@ -80,7 +80,7 @@ apt-get update
 
 ##########################################
  Clarification on adding a new node to CouchDB Cluster
- 
+
  Hi teaching stuff,
 
 I'm a bit confused on the procedure on how to add a new node and how to make sure my cluster is set up correctly.
@@ -98,3 +98,4 @@ Suppose for scalability, I need to add a new node. Then, if I follow this
 https://docs.couchdb.org/en/latest/cluster/nodes.html 
 
 
+curl -X PUT "http://172.26.37.219:5984/test?n=3&q=8" -u admin

@@ -1,0 +1,44 @@
+- name: Downloading NLTK data
+  shell: "python -m nltk.downloader stopwords && python -m nltk.downloader vader_lexicon && python -m nltk.downloader punkt"
+  become: yes
+  become_user: '{{ ansible_user }}'
+
+- name: Downloading NLTK data
+  shell: "python -m nltk.downloader stopwords && python -m nltk.downloader vader_lexicon && python -m nltk.downloader punkt && python -m nltk.downloader wordnet"
+  become: yes
+  become_user: '{{ ansible_user }}'
+
+
+
+- name: Updating RabbitMQ user
+  replace:
+    dest: "{{ appsrc }}/src/config.yaml"
+    regexp: "rabbitmq_user"
+    replace: "{{ rabbitmq_admin_user }}"
+
+- name: Updating RabbitMQ user password
+  replace:
+    dest: "{{ appsrc }}/src/config.yaml"
+    regexp: "rabbitmq_pwd"
+    replace: "{{ rabbitmq_admin_password }}"
+
+- name: Getting RabbitMQ Server
+  set_fact:
+    rabbitmq_node: "{{ hostvars[item]['ansible_host'] }}"
+  with_items: "{{ groups['rabbitmq'] | default([])}}"
+  run_once: true
+
+- name: Updating RabbitMQ server
+  replace:
+    dest: "{{ appsrc }}/src/config.yaml"
+    regexp: "rabbitmq_node"
+    replace: "{{ rabbitmq_node }}"
+
+- name: Updating RabbitMQ port
+  replace:
+    dest: "{{ appsrc }}/src/config.yaml"
+    regexp: "rabbitmq_port"
+    replace: "{{ rabbitmq_port }}"
+    
+- name: Start harvester
+  shell: "nohup python {{ appsrc }}/src/crawler.py &"

@@ -2,7 +2,7 @@
   vars_files:
     - host_vars/nectar.yml
     - group_vars/dbservers.yml
-  gather_facts: false
+  gather_facts: true
   
   
   pre_tasks:
@@ -26,13 +26,14 @@
 
     - name: Debug
       debug:  
-        msg: 'Coordinator node {{ coordinator_node }} selected out of {{ ansible_play_hosts | length }} nodes.'
+        msg: 'Coordinator node {{ coordinator_node }} selected out of {{ ansible_play_hosts }} nodes.'
       run_once: true
 
   roles: 
-    - role: openstack-sshkeys
-    - role: openstack-common
-    - role: couchdb-install
-    - role: couchdb-cluster
-    - role: couchdb-databases
+    
+     - role: openstack-sshkeys
+     - role: openstack-common
+     - role: couchdb-install
+     - role: couchdb-cluster
+     - role: couchdb-databases
 

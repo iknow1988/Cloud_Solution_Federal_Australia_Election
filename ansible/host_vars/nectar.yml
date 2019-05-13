@@ -14,7 +14,7 @@ no_proxy: 127.0.0.1,localhost,127.0.1.1,ubuntu
 data_volume: /dev/vdb
 
 # volume size
-volume_size: 50
+volume_size: 20
 
 # data fstype
 volume_fstype: ext4
@@ -80,12 +80,12 @@ security_group_rules:
 db: 0
 app: 0
 all: 0
-# uom.mse.2c9g
+
 db_instance_prefix_name: db-dragonstone
 app_instance_prefix_name: app-winterfell
 instance_image: 'NeCTAR Ubuntu 16.04 LTS (Xenial) amd64' 
 instance_key_name: gild-nectar
-instance_flavor: uom.general.1c4g 
+instance_flavor: uom.mse.2c9g
 db_instance_group: dbservers
 db_instance_security_group: couchdb,ssh
 app_instance_security_group: ssh
@@ -95,3 +95,12 @@ mq_instance_group: rabbitmq
 all_instance_group: 'dbservers,appservers,rabbitmq'
 all_instance_security_group: couchdb,ssh,rabbitmq
 all_instance_prefix_name: lannister
+
+instance_prefix: vm
+instances:
+  - instance_name: 1
+    instance_group: harvester, rabbitmq,appserver
+    instance_security_group: ssh,rabbitmq
+  - instance_name: 2
+    instance_group: harvester
+    instance_security_group: ssh

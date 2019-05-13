@@ -1,0 +1,2 @@
+- name: Start appserver
+  shell: "nohup python {{ appsrc }}/UI/app.py &"
