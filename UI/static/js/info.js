@@ -13,7 +13,22 @@ fetch('http://127.0.0.1:5000/scenario_1_1/')
 	}
 	google.charts.load("current",  {packages: ["corechart"]});
 	google.charts.setOnLoadCallback(drawChart);
-
+	fetch('http://127.0.0.1:5000/hashtag/')
+		.then(response => {
+		return response.json()
+	})
+	.then(data => {
+		// Work with JSON data here
+		document.getElementById('tranding').innerHTML = '<h2>Australia Trends</h2>';
+		
+		for (var i in data){
+			document.getElementById('tranding').innerHTML += '<br><b>'+data[i]['key']+'</b> &nbsp; &nbsp;' + data[i]['value'] + "&nbsp; tweets" ;
+			console.log(data)
+			console.log(i)
+			console.log(data[i]['key'],data[i]['value'])
+		}
+	
+	})
 	
 })
 
@@ -28,8 +43,8 @@ fetch('http://127.0.0.1:5000/initial/')
 		count += data[i];
 		arr.push([i,data[i]]);
 	}
-	total_count  = 	'Total Numer of Tweets ' + count;
-	// Load google charts
+	total_count  = 	'Total Numer of Political Tweets ' + count;
+	//Load google charts
 	//google.charts.load('43', {'packages':['corechart']});
 	
 })
@@ -45,7 +60,7 @@ function drawChart() {
   var view = new google.visualization.DataView(data);
   // Optional; add a title and set the width and height of the chart
 
-  var options = {'title': "DING DONG", 'width':550, 'height':400, 
+  var options = {'title': total_count, 'width':550, 'height':400, 
 			legend: { position: 'top', maxLines: 3 },
 			theme: 'material',
 			tooltip: { isHtml: true},
