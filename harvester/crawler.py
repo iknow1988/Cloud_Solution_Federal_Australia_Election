@@ -2,9 +2,9 @@ import atexit
 import datetime
 import pandas as pd
 import yaml
-from harvesters import StreamTweetHarvester, KeywordsHarvester
-from preprocessors import Preprocessor
-from database_saver import Database
+from harvester.harvesters import StreamTweetHarvester, KeywordsHarvester
+from harvester.preprocessors import Preprocessor
+from harvester.database_saver import Database
 import threading
 import sys
 import time
@@ -40,11 +40,11 @@ def get_tracking_keywords(configs):
 def pre_check_files(argv):
 
 	if len(argv)>1:
-		file_name = '../logs/log_'+argv[1]+'.txt'
+		file_name = 'logs/log_'+argv[1]+'.txt'
 	else:
-		file_name = '../logs/log_api_streamline.txt'
+		file_name = 'logs/log_api_streamline.txt'
 
-	# sys.stdout = open(file_name, 'a+')
+	sys.stdout = open(file_name, 'a+')
 
 	try:
 		with open("../config.yaml", 'r') as ymlfile:
@@ -81,7 +81,6 @@ def start_database(database):
 
 
 def run_app(harvester_type, twitter_credential, boundary, keywords, database, configs):
-	harvester = None
 	preprocessor = Preprocessor(configs, boundary, keywords)
 	if harvester_type == configs['APP_DATA']['harvester_type_1']:
 		harvester = StreamTweetHarvester(twitter_credential, boundary, keywords, configs['QUEUE'])
