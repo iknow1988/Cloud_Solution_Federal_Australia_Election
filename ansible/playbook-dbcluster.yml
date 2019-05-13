@@ -1,4 +1,5 @@
 - hosts: dbservers
+  any_errors_fatal: true
   vars_files:
     - host_vars/nectar.yml
     - group_vars/dbservers.yml

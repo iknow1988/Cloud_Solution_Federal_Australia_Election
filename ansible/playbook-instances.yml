@@ -16,3 +16,10 @@
      - role: openstack-instance 
      - role: openstack-volume
      - {role: openstack-volume-snapshot, when: volume_snapshot  == 'Y' }
+
+  post_tasks:
+    - name: Updating inventory
+      debug:
+          msg: updating dynamic inventory
+    - name: Refresh in-memory Inventory
+      meta: refresh_inventory
