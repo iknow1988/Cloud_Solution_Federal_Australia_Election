@@ -24,7 +24,7 @@
 	})
   
   
-  L.tileLayer('http://{s}.tile.stamen.com/{style}/{z}/{x}/{y}.png', { style: 'toner-background' }).addTo(map);
+  L.tileLayer('https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=8SXGwerAtAzQSi65BPF0', { attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">© MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a>' }).addTo(map);
   
   $.getJSON("static/js/states.geojson", function(data) {
 
@@ -55,7 +55,7 @@
 				console.log(pol_arr[i]);
 			}
 			this._div.innerHTML = '<b>' + props['STATE_NAME'] + '</b>' ;
-			this._div.innerHTML += '<b>      Number of Tweets : </b>' + state_total_tweets;
+			this._div.innerHTML += '<b> &nbsp; &nbsp; Number of Tweets : </b>' + state_total_tweets;
 			google.charts.load("current",  {packages: ["corechart"]});
 			google.charts.setOnLoadCallback(drawBarChart);
 			function drawBarChart() {
@@ -118,7 +118,7 @@
 			}
 			
 		}else{
-			this._div.innerHTML = '<b> Hover over a state </b>';
+			//this._div.innerHTML = '<b> Hover over a state </b>';
 			//document.getElementById("map2").innerHTML = "";
 		}
 		
@@ -136,8 +136,8 @@
       style: function (feature) {
         return {
           color: '#3498db',
-          weight: 2,
-          fillOpacity: 0.5
+          weight: 1,
+          fillOpacity: 0.1
         };
       },
       onEachFeature: function (feature, layer) {
@@ -146,8 +146,8 @@
         layer
         .on('mouseover', function(e) {
           layer.setStyle({
-            weight: 4,
-            fillOpacity: 0.8
+            weight: 2,
+            fillOpacity: 0.3
           });
           info.update(layer.feature.properties);
         })
