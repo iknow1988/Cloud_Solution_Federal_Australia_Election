@@ -1,8 +1,8 @@
 QUEUE:
-    queue_user: 'admin'
-    queue_password: 'p01ss0n'
-    queue_server: '45.113.233.94'
-    queue_port: '5672'
+    queue_user: 'rabbitmq_user'
+    queue_password: 'rabbitmq_pwd'
+    queue_server: 'rabbitmq_node'
+    queue_port: 'rabbitmq_port'
     queue_preprocess: 'preprocess'
     queue_savetodb: 'savetodb'
 
@@ -18,13 +18,16 @@ APP_DATA:
     aurin_data_locations: '../input/csv_files/aurin_location.csv'
 
 COUCHDB:
-    ip: '172.26.37.219'
-    port: '5984'
-    user: 'admin'
-    password: 'p01ss0n'
+    ip: 'couchdb_node'
+    port: 'couchdb_port'
+    user: 'couchdb_user'
+    password: 'couchdb_pwd'
     tweet_db: 'twitter'
     users_db: 'twitter_users'
     credential_db: 'twitter_credentials'
 
 MPI:
     size: 2
+
+APPSERVER:
+    appserver_ip: 'appserver_node'
