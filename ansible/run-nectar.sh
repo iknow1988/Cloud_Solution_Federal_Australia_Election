@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# env variables
+export ANSIBLE_PERSISTENT_CONNECT_TIMEOUT=1200
+export ANSIBLE_PERSISTENT_COMMAND_TIMEOUT=1200
+export ANSIBLE_PERSISTENT_CONNECT_RETRY_TIMEOUT=900
+export ANSIBLE_PARAMIKO_HOST_KEY_AUTO_ADD=True
+
 # defaults
 openrc="./openrc/unimelb-comp90024-group-2-openrc.sh"
 key="~/.ssh/gild-nectar.pem"
@@ -36,7 +42,11 @@ while [ "$1" != "" ]; do
         -s )                    echo "Setting up cloud  - Software setup"
                                 tasks=2
                                 ;;
-                                
+        -i )                    inventory=$1
+                                echo "Setting up inventory to: $inventory"
+                                ;;
+        -k )                    key=$1
+                                echo "Setting key file to: $key"
                                 
     esac
     shift
@@ -44,7 +54,11 @@ done
 
 
 echo "OpenRC file: $openrc"
+
+
+
 echo "Task ID: $tasks"
+exit
 source $openrc
 export PYTHONWARNINGS=ignore::UserWarning
 

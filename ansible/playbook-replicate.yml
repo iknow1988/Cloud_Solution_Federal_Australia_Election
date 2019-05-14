@@ -1,8 +1,8 @@
 - hosts: dbservers
   vars: 
      # add here the database and source
-     database_to_replicate: 'twitter_users'
-     database_source: '172.26.37.219'
+     database_to_replicate: 'twitter'
+     database_source: '103.6.254.49'
   vars_files:
     - host_vars/nectar.yml
     - group_vars/dbservers.yml
