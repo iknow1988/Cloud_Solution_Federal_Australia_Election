@@ -44,7 +44,7 @@
     regexp: "couchdb_user"
     replace: "{{ www_user }}"
 
-- name: Updating CouchDB pwd
+- name: Updating CouchDB credentials
   replace:
     dest: "{{ appsrc }}/config.yaml"
     regexp: "couchdb_pwd"
@@ -67,3 +67,21 @@
     dest: "{{ appsrc }}/config.yaml"
     regexp: "credential_db:.*$"
     replace: "credential_db: '{{ credential_db }}'"
+
+- name: Getting App Server information
+  set_fact:
+    appserver_node: "{{ hostvars[item]['ansible_host'] }}"
+  with_items: "{{ groups['appserver'] | default([])}}"
+  run_once: true
+
+- name: Updating App Server config [Info]
+  replace:
+    dest: "{{ appsrc }}/webserver/static/js/info.js"
+    regexp: "127.0.0.1"
+    replace: "{{ appserver_node }}"
+
+- name: Updating App Server config [Scripts]
+  replace:
+    dest: "{{ appsrc }}/webserver/static/js/scripts.js"
+    regexp: "127.0.0.1"
+    replace: "{{ appserver_node }}"
