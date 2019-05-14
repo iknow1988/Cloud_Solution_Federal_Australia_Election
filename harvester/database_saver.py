@@ -1,3 +1,15 @@
+#####################################
+# COMP 90024
+# GROUP NUMBER : 2
+# CITY         : Melbourne
+# GROUP MEMBERS:
+#  - Kazi Abir Adnan - 940406>
+#  - Ahmed Fahmin - 926184
+#  - Mohammad Nafis Ul Islam - 926190
+#  - Daniel Gil - 905923
+#  - Kun Chen - 965513
+####################################
+
 import datetime
 import couchdb
 import pika
@@ -5,6 +17,7 @@ import json
 
 
 class Database:
+	'''Class that saves data to database and responsible for database connection'''
 
 	def __init__(self, configs):
 		tweet_db = None
@@ -69,7 +82,6 @@ class Database:
 			template = "An exception of type {0} occurred. Arguments:\n{1!r}"
 			print(datetime.datetime.now(), " : ", template.format(type(e).__name__, e.args))
 			exit(0)
-
 
 	def set_twitter_credential(self):
 		user = None
