@@ -62,12 +62,12 @@ security_group_rules:
     port_range_min: 5984
     port_range_max: 5984  
     remote_ip_prefix: 0.0.0.0/0
-  - name: CouchDB - Cluster communication External (Compatibility)
+  - name: CouchDB - Cluster communication Internal
     security_group: couchdb
     direction: ingress
     protocol: tcp
-    port_range_min: 9584
-    port_range_max: 9584  
+    port_range_min: 9100
+    port_range_max: 9200  
     remote_ip_prefix: 0.0.0.0/0
   - name: RabbitMQ - Communication
     security_group: rabbitmq

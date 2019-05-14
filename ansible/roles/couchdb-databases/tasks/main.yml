@@ -7,18 +7,19 @@
     body: '{}'
     body_format: json
     return_content: yes
-    status_code: 201
+    status_code: 201,202,409,412 # status code when it's not failing
     headers:
       Content-Type: "application/json"
 
   register: result
   run_once: true
+
   loop: '{{ databases }}'
 
 - name: Populate credential database
   uri:
     url: http://{{ coordinator_node }}:{{ http_api_port }}/{{ credential_db }}/_bulk_docs
-    method: PUT
+    method: POST
     user: "{{ www_user }}"
     password: "{{ www_password }}"
     body: "{{ lookup('file','credentials.json') }}"
