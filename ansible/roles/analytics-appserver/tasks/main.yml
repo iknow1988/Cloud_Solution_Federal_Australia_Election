@@ -18,4 +18,6 @@
 
 - name: Start appserver
   shell: "nohup python {{ appsrc }}/webserver/api.py &"
+  args:
+    chdir: "{{ appsrc }}/webserver/"
   become: true

@@ -1,0 +1,36 @@
+- hosts: dbservers
+  vars: 
+     # add here the database and source
+     database_to_replicate: 'twitter_users'
+     database_source: '172.26.37.219'
+  vars_files:
+    - host_vars/nectar.yml
+    - group_vars/dbservers.yml
+  gather_facts: true
+
+  pre_tasks:
+    - name: Selecting coordinator node
+      set_fact:
+        coordinator_node: '{{ ansible_host }}'
+      run_once: true
+
+    - name: Debug
+      debug:  
+        msg: 'Coordinator node {{ coordinator_node }}. Replicationg database {{ database_to_replicate }} from {{ database_source }}'
+      run_once: true
+    
+    
+  tasks: 
+
+    - name: Replicate database
+      uri:
+        url: http://{{ coordinator_node }}:{{ http_api_port }}/_replicate
+        method: POST
+        user: "{{ www_user }}"
+        password: "{{ www_password }}"
+        body: '{"source": "http://{{ www_user }}:{{ www_password }}@{{ database_source }}:{{ http_api_port }}/{{ database_to_replicate }}/", "target": "http://{{ www_user }}:{{ www_password }}@{{ coordinator_node}}:{{ http_api_port }}/{{ database_to_replicate }}/"}'
+        body_format: json
+        return_content: no
+        headers:
+          Content-Type: "application/json"
+      run_once: true
