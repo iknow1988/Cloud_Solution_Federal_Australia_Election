@@ -170,6 +170,7 @@
 						if (value == "1" || value == "0"){
 				
 							var str = 'http://'+appserver+'/gettopwords/?state='+state_name+'&party='+title1+'&poll='+value
+							console.log(str);
 							fetch(str)
 								.then(response => {
 									return response.json()
