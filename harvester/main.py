@@ -22,10 +22,6 @@ def get_tracking_keywords(configs):
 	for text in df[df.party_name.notnull()].party_name.values:
 		keywords.extend([x.lower().strip() for x in text.split(',')])
 
-	# Add party abbr name
-	for text in df[df.abbr.notnull()].abbr.values:
-		keywords.extend([x.lower().strip() for x in text.split(',')])
-
 	# Add leader name
 	for text in df[df.leader.notnull()].leader.values:
 		keywords.extend([x.lower().strip() for x in text.split(',')])
@@ -83,11 +79,11 @@ def start_database(database):
 def run_app(harvester_type, twitter_credential, boundary, keywords, database, configs):
 	preprocessor = Preprocessor(configs, boundary, keywords)
 	if harvester_type == configs['APP_DATA']['harvester_type_1']:
-		harvester = StreamTweetHarvester(twitter_credential, boundary, keywords, configs['QUEUE'])
+		harvester = StreamTweetHarvester(twitter_credential, boundary, keywords, configs)
 	elif harvester_type == configs['APP_DATA']['harvester_type_2']:
-		harvester = KeywordsHarvester(twitter_credential, boundary, keywords, configs['QUEUE'])
+		harvester = KeywordsHarvester(twitter_credential, boundary, keywords, configs)
 	else:
-		harvester = StreamTweetHarvester(twitter_credential, boundary, keywords, configs['QUEUE'])
+		harvester = StreamTweetHarvester(twitter_credential, boundary, keywords, configs)
 	print(datetime.datetime.now(), "tweeter user in use ", twitter_credential.id)
 
 	harvester_thread = threading.Thread(target=start_harvester, args=(harvester,))
@@ -123,15 +119,17 @@ def main(argv):
 				harvester_type = argv[1]
 			run_app(harvester_type, user, boundary, keywords, database, configs)
 		except KeyboardInterrupt:
+			print(datetime.datetime.now(), " : ", "INTERRUPTED!")
 			exit_handler(database)
 		except Exception as generic:
 			template = "An exception of type {0} occurred. Arguments:\n{1!r}"
 			print(datetime.datetime.now(), " : ", template.format(type(generic).__name__, generic.args))
 			database.unlock_twitter_account()
-			time.sleep(30)
+			time.sleep(120)
 			continue
-		finally:
-			exit_handler(database)
+		else:
+			database.unlock_twitter_account()
+			continue
 
 
 if __name__ == "__main__":

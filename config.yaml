@@ -16,6 +16,9 @@ APP_DATA:
     gcc_map_shape_file: '../input/shape_files/GCCSA_2016_AUST.shp'
     australia_city_names: '../input/csv_files/australia_city_names.csv'
     aurin_data_locations: '../input/csv_files/aurin_location.csv'
+    search_api_tweets_per_query: 100
+    search_api_max_tweets: 100000
+    search_api_geo: "-31.53162668535551,135.53294849999997,2514.0km"
 
 COUCHDB:
     ip: '172.26.37.219'
