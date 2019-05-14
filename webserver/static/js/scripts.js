@@ -46,7 +46,17 @@
 			}
 			x = 0;
 			for (var i in state_party_vote){
-				arr2.push([i,state_party_vote[i][0]*100, state_party_vote[i][1]*100])
+				if(i == "United Australia Party"){
+					arr2.push(["One Nation Party",state_party_vote[i][0]*100, state_party_vote[i][1]*100])
+				
+				}
+				else{
+					
+					arr2.push([i,state_party_vote[i][0]*100, state_party_vote[i][1]*100])
+				
+				}
+				
+				
 				pol_arr[x].push(['Positive', state_party_vote[i][2]*100 ]);
 				pol_arr[x].push(['Negative', state_party_vote[i][3]*100 ]);
 				pol_arr[x].push(['Neutral', state_party_vote[i][4]*100 ]);
@@ -142,9 +152,9 @@
 					else if (i == 3){
 						title4 = "United Australia Party";
 						placeholder = "pie4";
-						
-						var options4 = {'title': title4, 'width':250, 'height':250, 
-						legend: { position: 'top', maxLines: 3 },
+						t4 = "One Nation Party"
+						var options4 = {'title': t4,'width':250, 'height':250, 
+						legend: { position: 'top', maxLines: 4 },
 						theme: 'material',
 						tooltip: { isHtml: true},
 						backgroundColor: { fill:'transparent' },
@@ -163,14 +173,13 @@
 					
 					
 					function selectHandler1(){
-						console.log(state_name)
-						console.log(title1)
+						
 						var selectedItem = chart1.getSelection()[0];
 						var value = selectedItem.row;
 						if (value == "1" || value == "0"){
 				
-							var str = 'http://'+appserver+'/gettopwords/?state='+state_name+'&party='+title1+'&poll='+value
-							console.log(str);
+							var str = 'http://'+appserver+'/gettopwords/?state='+state_name+'&party='+title1+'&poll='+value;
+							
 							fetch(str)
 								.then(response => {
 									return response.json()
@@ -184,10 +193,15 @@
 								else{
 									senti = "Negative";
 								}
-								document.getElementById('top').innerHTML = '<h4>'+state_name+'</h4><h5>'+title1+'('+senti+')</h5>';
+								document.getElementById('top').innerHTML = '<h4>'+state_name+'</h4><h5>'+title1+'('+senti+')</h5><br>';
 		
+								var j = 1;
 								for (var i in data){
-									document.getElementById('top').innerHTML += '<b>'+data[i]['word']+'</b><br>' ;
+									document.getElementById('top').innerHTML += '<b>'+ data[i]['word']+'</b>  &nbsp; &nbsp;';
+									if(j % 2 == 0){
+										document.getElementById('top').innerHTML += '<br>';
+									}
+									j = j + 1;
 			
 								}
 						
@@ -199,14 +213,13 @@
 
 					}
 					function selectHandler2(){
-						console.log(state_name);
-						console.log(title2);
+						
 						var selectedItem = chart2.getSelection()[0];
 						var value = selectedItem.row;
 						if (value == "1" || value == "0"){
 				
-							var str = 'http://'+appserver+'/gettopwords/?state='+state_name+'&party='+title2+'&poll='+value
-							console.log(str);
+							var str = 'http://'+appserver+'/gettopwords/?state='+state_name+'&party='+title2+'&poll='+value;
+							
 							fetch(str)
 								.then(response => {
 									return response.json()
@@ -220,10 +233,16 @@
 								else{
 									senti = "Negative";
 								}
-								document.getElementById('top').innerHTML = '<h4>'+state_name+'</h4><h5>'+title2+'('+senti+')</h5>';
+								document.getElementById('top').innerHTML = '<h4>'+state_name+'</h4><h5>'+title2+'('+senti+')</h5><br>';
 		
+								var j = 1;
 								for (var i in data){
-									document.getElementById('top').innerHTML += '<b>'+data[i]['word']+'</b><br>' ;
+									document.getElementById('top').innerHTML += '<b>'+ data[i]['word']+'</b>  &nbsp; &nbsp;';
+									if(j % 2 == 0){
+										document.getElementById('top').innerHTML += '<br>';
+									
+									}
+									j = j + 1;
 			
 								}
 							})
@@ -233,14 +252,13 @@
 							
 					}
 					function selectHandler3(){
-						console.log(state_name)
-						console.log(title3)
+					
 						var selectedItem = chart3.getSelection()[0];
 						var value = selectedItem.row;
 						if (value == "1" || value == "0"){
 				
-							var str = 'http://'+appserver+'/gettopwords/?state='+state_name+'&party='+title3+'&poll='+value
-							console.log(str);
+							var str = 'http://'+appserver+'/gettopwords/?state='+state_name+'&party='+title3+'&poll='+value;
+							
 							fetch(str)
 								.then(response => {
 									return response.json()
@@ -254,10 +272,15 @@
 								else{
 									senti = "Negative";
 								}
-								document.getElementById('top').innerHTML = '<h4>'+state_name+'</h4><h5>'+title3+'('+senti+')</h5>';
+								document.getElementById('top').innerHTML = '<h4>'+state_name+'</h4><h5>'+title3+'('+senti+')</h5><br>';
 		
+								var j = 1;
 								for (var i in data){
-									document.getElementById('top').innerHTML += '<b>'+data[i]['word']+'</b><br>' ;
+									document.getElementById('top').innerHTML += '<b>'+ data[i]['word']+'</b>  &nbsp; &nbsp;';
+									if(j % 2 == 0){
+										document.getElementById('top').innerHTML += '<br>';
+									}
+									j = j + 1;
 			
 								}
 							})
@@ -266,14 +289,13 @@
 						}
 					}
 					function selectHandler4(){
-						console.log(state_name)
-						console.log(title4)
+						
 						var selectedItem = chart4.getSelection()[0];
 						var value = selectedItem.row;
 						if (value == "1" || value == "0"){
 				
-							var str = 'http://'+appserver+'/gettopwords/?state='+state_name+'&party='+title4+'&poll='+value
-							console.log(str);
+							var str = 'http://'+appserver+'/gettopwords/?state='+state_name+'&party='+title4+'&poll='+value;
+							
 							fetch(str)
 								.then(response => {
 									return response.json()
@@ -287,10 +309,15 @@
 								else{
 									senti = "Negative";
 								}
-								document.getElementById('top').innerHTML = '<h4>'+state_name+'</h4><h5>'+title4+'('+senti+')</h5>';
-		
+								document.getElementById('top').innerHTML = '<h4>'+state_name+'</h4><h5>'+t4+'('+senti+')</h5><br>';
+								var j = 1;
 								for (var i in data){
-									document.getElementById('top').innerHTML += '<b>'+data[i]['word']+'</b><br>' ;
+									document.getElementById('top').innerHTML += '<b>'+ data[i]['word']+'</b>  &nbsp; &nbsp;';
+									if(j % 2 == 0){
+										document.getElementById('top').innerHTML += '<br>';
+									
+									}
+									j = j + 1;
 			
 								}
 							})
@@ -337,14 +364,19 @@
             weight: 2,
             fillOpacity: 0.3
           });
-          info.update(layer.feature.properties);
+          //info.update(layer.feature.properties);
         })
         .on('mouseout', function(e) {
           geojson.resetStyle(layer);
           info.update();
         })
 		.on('click', function(e) {
-			map.fitBounds(layer);
+			layer.setStyle({
+            weight: 2,
+            fillOpacity: 0.3
+          });
+		  info.update(layer.feature.properties);
+		  map.fitBounds(layer);
         })
       }
     })

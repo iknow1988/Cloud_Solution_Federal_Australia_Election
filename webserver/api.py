@@ -138,7 +138,7 @@ def create_cm():
     if party == "Liberal Party":
         party = 'Liberal Party of Australia'
 
-    if poll == "1":
+    if poll == "0":
         df = scenario_5_get_positive_tweet_words(ip, tweeter_db, party, state.lower(), num_words)
     else:
         df = scenario_5_get_negative_tweet_words(ip, tweeter_db, party, state.lower(), num_words) 
