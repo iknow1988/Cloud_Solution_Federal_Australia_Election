@@ -1,3 +1,15 @@
+#####################################
+# COMP 90024
+# GROUP NUMBER : 2
+# CITY         : Melbourne
+# GROUP MEMBERS:
+#  - Kazi Abir Adnan - 940406>
+#  - Ahmed Fahmin - 926184
+#  - Mohammad Nafis Ul Islam - 926190
+#  - Daniel Gil - 905923
+#  - Kun Chen - 965513
+####################################
+
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler, Stream, API
 import json
@@ -9,6 +21,7 @@ import pika
 
 
 class Harvester:
+	'''Parent class of harvesters. '''
 
 	def __init__(self, twitter_credential, boundary, tags, configs):
 		self.boundary = boundary
@@ -19,8 +32,11 @@ class Harvester:
 		self.tags = tags
 		self.auth = OAuthHandler(self.consumer_key, self.consumer_secret)
 		self.auth.set_access_token(self.access_token, self.access_token_secret)
-		self.api = API(self.auth, wait_on_rate_limit=True, retry_count=3, retry_delay=5, retry_errors = set([401, 404, 500, 503]))
+		self.api = API(self.auth, wait_on_rate_limit=True, retry_count=3, retry_delay=5,
+					   retry_errors = set([401, 404, 500, 503]))
 		config = configs['QUEUE']
+
+		# connect to RabbitMQ TODO
 		try:
 			credentials = pika.PlainCredentials(config['queue_user'], config['queue_password'])
 			parameters = pika.ConnectionParameters(config['queue_server'], config['queue_port'], '/', credentials)
@@ -32,6 +48,7 @@ class Harvester:
 			print(datetime.datetime.now(), " : ", template.format(type(e).__name__, e.args))
 			exit(0)
 
+	# Override this function in inherited class
 	def start_harvesting(self):
 		pass
 
@@ -87,6 +104,7 @@ class StreamTweetHarvester(Harvester):
 
 
 class TimeLineHarvester(Harvester):
+	'''Harvester using user timeline API'''
 
 	def __init__(self, twitter_credential, boundary, tags, twitter_ids, configs):
 		Harvester.__init__(self, twitter_credential, boundary, tags, configs)
@@ -121,6 +139,7 @@ class TimeLineHarvester(Harvester):
 
 
 class KeywordsHarvester(Harvester):
+	'''Harvester using search API'''
 
 	def __init__(self, twitter_credential, boundary, tags, configs):
 		Harvester.__init__(self, twitter_credential, boundary, tags, configs)

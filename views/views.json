@@ -1,0 +1,73 @@
+{
+  "_id": "_design/counts",
+  "_rev": "33-e8abdb05e56ad8f092e21f667b517e1f",
+  "views": {
+    "hashtag_cities": {
+      "map": "function (doc) {\n  if(doc.city && doc.entities.hashtags){\n    for (i in doc.entities.hashtags){\n      name = doc.entities.hashtags[i].text;\n\t\t\tname = name.toLowerCase();\n      emit([doc.city, name], 1);\n    }\n  }\n}",
+      "reduce": "_sum"
+    },
+    "hashtags": {
+      "map": "function(doc){\n\tif(doc.entities.hashtags){\n\t\tfor (i in doc.entities.hashtags) {\n\t\t\tname = doc.entities.hashtags[i].text;\n\t\t\tname = name.toLowerCase();\n\t\t\temit(name, 1);\n\t\t}\n    }\n}",
+      "reduce": "_sum"
+    },
+    "party": {
+      "map": "function (doc) {\n  if(doc.party){\n    for(i in doc.party){\n      emit(doc.party[i], 1);\n    }\n  }\n}",
+      "reduce": "_sum"
+    },
+    "location_city": {
+      "map": "function (doc) {\n  if(doc.city){\n    emit(doc.city, 1);\n  }\n}",
+      "reduce": "_sum"
+    },
+    "party_in_cities": {
+      "map": "function (doc) {\n  if(doc.city && doc.party){\n    for (i in doc.party){\n      emit([doc.city, doc.party[i]], 1);\n    }\n  }\n}",
+      "reduce": "_sum"
+    },
+    "party_in_states": {
+      "map": "function (doc) {\n  if(doc.city && doc.party){\n    for (i in doc.party){\n      emit([doc.state, doc.party[i]], 1);\n    }\n  }\n}",
+      "reduce": "_sum"
+    },
+    "location_state": {
+      "map": "function (doc) {\n  if(doc.state){\n    emit(doc.state, 1);\n  }\n}",
+      "reduce": "_sum"
+    },
+    "leader_mentions": {
+      "map": "function(doc) {\n\tparties = ['BrucePoon', 'LeithEriksonABF', 'corybernardi', 'elisa_resce', 'RichardDiNatale', 'billshortenmp', 'Rob4Canberra', 'Stirling_G', 'Senator_Patrick', 'MakeMayoMatter', 'Socworker63', 'frednile', 'gary_mla', 'HumanHeadline', 'nathanspataro', 'fraser_anning', 'RealBobKatter', 'DavidLeyonhjelm', 'DebFrecklington', 'ScottMorrisonMP', 'Kimmaree13', 'M_McCormackMP', 'PaulineHansonOz', 'FionaPattenMLC', 'PastorNalliah', 'Andrea__Leong', 'parrasocialist', 'jcogan_sep', 'William_Bourke', 'RodCulletonGAP', 'storertim', 'CliveFPalmer', 'IgnatiosUAP', 'sueabolton', 'CrJulieMatheson'];\n\tif (doc.entities.user_mentions) {\n\t\tfor (i in doc.entities.user_mentions) {\n\t\t\tname = doc.entities.user_mentions[i].screen_name;\n\t\t\ttemp = 0;\n\t\t\tfor (j in parties){\n\t\t\t\tif(name == parties[j]){\n\t\t\t\t\ttemp = 1;\n\t\t\t\t\tbreak;\n\t\t\t\t}\n\t\t\t}\n\t\t\tif(temp){\n\t\t\t\temit(name, 1);\n\t\t\t}\n\t\t}\n    }\n}",
+      "reduce": "_sum"
+    },
+    "top_keywords_party": {
+      "map": "function (doc) {\n  if(doc.processed_text&& doc.party){\n    for(i in doc.party){\n      for (j in doc.processed_text){\n        emit([doc.party[i],doc.processed_text[j]], 1);\n      }\n    }\n  }\n}",
+      "reduce": "_sum"
+    },
+    "top_keywords": {
+      "map": "function (doc) {\n  if(doc.processed_text){\n    for(i in doc.processed_text){\n      emit(doc.processed_text[i], 1);\n    }\n  }\n}",
+      "reduce": "_sum"
+    },
+    "location_city_state": {
+      "reduce": "_sum",
+      "map": "function (doc) {\n  if(doc.city && doc.state){\n    emit([doc.city, doc.state], 1);\n  }\n}"
+    },
+    "sentiment_party": {
+      "reduce": "_sum",
+      "map": "function (doc) {\n  if(doc.state && (doc.party.length == 1)){\n    emit([doc.party[0], doc.tweet_sentiment, doc.tweet_intensity, doc.city, doc.state], 1);\n  }\n}"
+    },
+    "top_strong_negative_keywords_individual_party": {
+      "reduce": "_sum",
+      "map": "function (doc) {\n  if((doc.party.length == 1) && (doc.tweet_sentiment == \"Negative\") && (doc.tweet_intensity == \"Strong\") && doc.city && doc.processed_text){\n    for (j in doc.processed_text){\n      emit([doc.party[0],doc.processed_text[j], doc.tweet_sentiment, doc.tweet_intensity, doc.city, doc.state], 1);\n    }\n  }\n}"
+    },
+    "latlong_counts": {
+      "reduce": "_sum",
+      "map": "function (doc) {\n  if((doc.hasOwnProperty(\"coordinates\")) && (doc.coordinates)){\n\t\temit(\"Coordinates\", 1);\n    }\n\telse if((doc.hasOwnProperty(\"geo\")) && (doc.geo)){\n\t\temit(\"Coordinates\", 1);\n\t}\n\telse if(doc.place){\n\t\temit(\"Place\", 1);\n\t}\n\telse{\n\t\temit(\"User\",1);\n\t}\n}"
+    },
+    "top_strong_positive_keywords_party_individual": {
+      "reduce": "_sum",
+      "map": "function (doc) {\n  if((doc.party.length == 1) && (doc.tweet_sentiment == \"Positive\") && (doc.tweet_intensity == \"Strong\") && doc.city && doc.processed_text){\n    for (j in doc.processed_text){\n      emit([doc.party[0],doc.processed_text[j], doc.city, doc.state], 1);\n    }\n  }\n}"
+    },
+    "tweet_counts_per_day": {
+      "reduce": "_sum",
+      "map": "function (doc) {\n  var ts = new Date(doc.created_at);\n  emit(ts.toLocaleDateString(), 1);\n}"
+    }
+  },
+  "language": "javascript",
+  "tweet_intensity": "Strong",
+  "tweet_sentiment": "Positive"
+}

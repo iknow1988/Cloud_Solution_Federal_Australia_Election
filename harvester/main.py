@@ -1,3 +1,15 @@
+#####################################
+# COMP 90024
+# GROUP NUMBER : 2
+# CITY         : Melbourne
+# GROUP MEMBERS:
+#  - Kazi Abir Adnan - 940406>
+#  - Ahmed Fahmin - 926184
+#  - Mohammad Nafis Ul Islam - 926190
+#  - Daniel Gil - 905923
+#  - Kun Chen - 965513
+####################################
+
 import atexit
 import datetime
 import pandas as pd
@@ -11,6 +23,8 @@ import time
 
 
 def get_tracking_keywords(configs):
+	'''Returns tracking keywords to for tweet collections'''
+
 	df = pd.read_csv(configs['party_features'], encoding = "ISO-8859-1")
 	keywords = configs['keywords']
 
@@ -34,6 +48,7 @@ def get_tracking_keywords(configs):
 
 
 def pre_check_files(argv):
+	'''Check whether required files are present to run'''
 
 	if len(argv)>1:
 		file_name = 'logs/log_'+argv[1]+'.txt'
@@ -65,18 +80,25 @@ def pre_check_files(argv):
 
 
 def start_harvester(harvester):
+	'''Thread function to start the harvester'''
+
 	harvester.start_harvesting()
 
 
 def start_preprocessor(preprocessor):
+	'''Thread function to start the preprocessor'''
+
 	preprocessor.start_processing()
 
 
 def start_database(database):
+	'''Thread function to start the database'''
 	database.start_saving()
 
 
 def run_app(harvester_type, twitter_credential, boundary, keywords, database, configs):
+	'''Function to launch the application of harvester'''
+
 	preprocessor = Preprocessor(configs, boundary, keywords)
 	if harvester_type == configs['APP_DATA']['harvester_type_1']:
 		harvester = StreamTweetHarvester(twitter_credential, boundary, keywords, configs)
@@ -98,6 +120,8 @@ def run_app(harvester_type, twitter_credential, boundary, keywords, database, co
 
 
 def exit_handler(database):
+	'''Exit function to stop the harvester'''
+
 	print(datetime.datetime.now(), " : ", 'Application is ending!')
 	database.unlock_twitter_account()
 	sys.stdout.flush()
@@ -106,13 +130,20 @@ def exit_handler(database):
 
 def main(argv):
 	while True:
+
+		# precheck files
 		configs = pre_check_files(argv)
+
+		# launch database
 		database = Database(configs)
+
+		# set variables
 		boundary = configs['APP_DATA']['boundary']
 		keywords = get_tracking_keywords(configs['APP_DATA'])
-
 		user = database.get_twitter_credential()
 		atexit.register(exit_handler, database)
+
+		# Run the application
 		try:
 			harvester_type = 'api_streamline'
 			if len(argv) > 1:

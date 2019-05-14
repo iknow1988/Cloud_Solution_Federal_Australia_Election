@@ -135,23 +135,22 @@ def create_cm():
     poll = request.args.get('poll', None)
     num_words = 10
     
-    if state == "Liberal Party":
-        state = 'Liberal Party of Australia'
+    if party == "Liberal Party":
+        party = 'Liberal Party of Australia'
 
-    if poll == "0":
-        df = scenario_5_get_negative_tweet_words(ip, tweeter_db, party, state, num_words) 
+    if poll == "1":
+        df = scenario_5_get_positive_tweet_words(ip, tweeter_db, party, state.lower(), num_words)
     else:
-        df = scenario_5_get_positive_tweet_words(ip, tweeter_db, party, state, num_words)
+        df = scenario_5_get_negative_tweet_words(ip, tweeter_db, party, state.lower(), num_words) 
         
     result = {}
     for i in range(1,11):
         result[i] = {}
     idx = 1
-    for index, row in df.head(10).iterrows():
+    for index, row in df.iterrows():
         result[idx]['word'] = row['word']
         #result[idx]['value'] = row['value']
         idx += 1
-    print(result)
         
     # do something, eg. return json response
     return jsonify(result)

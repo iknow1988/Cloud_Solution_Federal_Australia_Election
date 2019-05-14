@@ -1,3 +1,15 @@
+#####################################
+# COMP 90024
+# GROUP NUMBER : 2
+# CITY         : Melbourne
+# GROUP MEMBERS:
+#  - Kazi Abir Adnan - 940406>
+#  - Ahmed Fahmin - 926184
+#  - Mohammad Nafis Ul Islam - 926190
+#  - Daniel Gil - 905923
+#  - Kun Chen - 965513
+####################################
+
 from shapely.geometry import shape, Point, Polygon
 import geopandas as gpd
 import pandas as pd
@@ -8,6 +20,7 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import pika
 import json
 import datetime
+
 
 class Location:
 	def __init__(self, place_name, state, geometry):
@@ -50,6 +63,7 @@ class Location:
 
 
 class Preprocessor:
+	'''Preprocessor class for processing tweets, fltering and extracting information'''
 
 	def __init__(self, configs, boundary, tags):
 		self.config = configs['APP_DATA']
@@ -65,6 +79,8 @@ class Preprocessor:
 		self.regex = re.compile('[^a-zA-Z0-9_ ]')
 		self.tags = tags
 		self.regex = re.compile('[^a-zA-Z0-9_ ]')
+
+		#TODO
 		temp = []
 		for tag in self.tags:
 			tag = tag.lower()
@@ -73,6 +89,7 @@ class Preprocessor:
 			else:
 				temp.append(tag.replace('@', ''))
 		temp.extend(['rt', 'RT', 'u', 'he'])
+
 		self.tags_tokenized = set(temp)
 		self.election_seat_polygons = self.initialize_election_map()
 		self.gcc_polygons = self.initialize_gcc_map()
@@ -80,6 +97,8 @@ class Preprocessor:
 		self.locations = self.initialize_location_dictionaries()
 		self.sid = SentimentIntensityAnalyzer()
 		config = configs['QUEUE']
+
+		#TODO
 		try:
 			credentials = pika.PlainCredentials(config['queue_user'], config['queue_password'])
 			parameters = pika.ConnectionParameters(config['queue_server'], config['queue_port'], '/', credentials)
@@ -92,6 +111,85 @@ class Preprocessor:
 			template = "An exception of type {0} occurred. Arguments:\n{1!r}"
 			print(datetime.datetime.now(), " : ", template.format(type(e).__name__, e.args))
 			exit(0)
+
+	def initialize_election_map(self):
+		geodf_seats = gpd.read_file(self.config['election_map_shape_file'])
+		geodf_seats.crs = {'init': 'epsg:4326'}
+		seats = []
+		for index, row in geodf_seats.iterrows():
+			seat = Location(row['Elect_div'], row['State'], row['geometry'])
+			seats.append(seat)
+
+		return seats
+
+	def initialize_gcc_map(self):
+		geodf = gpd.read_file(self.config['gcc_map_shape_file'])
+		geodf = geodf.dropna()
+		geodf.crs = {'init': 'epsg:4326'}
+		sa4 = []
+		for index, row in geodf.iterrows():
+			seat = Location(row['GCC_NAME16'], row['STE_NAME16'], row['geometry'])
+			sa4.append(seat)
+
+		return sa4
+
+	def get_party_features(self):
+		df = pd.read_csv(self.config['party_features'], encoding="ISO-8859-1")
+		dictionary = {}
+		for index, row in df.iterrows():
+			vector = list()
+			if not pd.isnull(row['party_name']):
+				vector.extend([x.strip() for x in row['party_name'].split(',')])
+			if not pd.isnull(row['twitter']):
+				vector.extend([x.strip() for x in row['twitter'].split(',')])
+			if not pd.isnull(row['abbr']):
+				vector.extend([x.strip() for x in row['abbr'].split(',')])
+			if not pd.isnull(row['leader']):
+				vector.extend([x.strip() for x in row['leader'].split(',')])
+			if not pd.isnull(row['leader_twitter']):
+				vector.extend([x.strip() for x in row['leader_twitter'].split(',')])
+			# if not pd.isnull(row['ideology']):
+			# 	vector.extend([x.strip() for x in row['ideology'].split(',')])
+			vector = [x.lower() for x in vector if not pd.isnull(x)]
+			vector = [x for x in vector if not x in self.stopwords]
+			dictionary[row['party_name']] = vector
+
+		return dictionary
+
+	def initialize_location_dictionaries(self):
+		df_city_names = pd.read_csv(self.config['australia_city_names'])
+		df_aurin = pd.read_csv(self.config['aurin_data_locations'])
+		cities = {}
+
+		for index, row in df_city_names.iterrows():
+			cities[row['city'].lower()] = row['admin'].lower()
+
+		for index, row in df_aurin.iterrows():
+			cities[row['city'].lower()] = row['state'].lower()
+			cities[row['seat'].lower()] = row['state'].lower()
+
+		states = dict()
+		states['NSW'] = 'New South Wales'
+		states['QLD'] = 'Queensland'
+		states['WA'] = 'Western Australia'
+		states['VIC'] = 'Victoria'
+		states['SA'] = 'South Australia'
+		states['TAS'] = 'Tasmania'
+		states['NT'] = 'Northern Territory'
+		states['ACT'] = 'Australian Capital Territory'
+		states['New South Wales'] = 'New South Wales'
+		states['Queensland'] = 'Queensland'
+		states['Western Australia'] = 'Western Australia'
+		states['Victoria'] = 'Victoria'
+		states['South Australia'] = 'South Australia'
+		states['Tasmania'] = 'Tasmania'
+		states['Northern Territory'] = 'Northern Territory'
+		states['Australian Capital Territory'] = 'Australian Capital Territory'
+
+		states = dict((k.lower(), v.lower()) for k, v in states.items())
+		countries = set(['australia', 'au'])
+
+		return [cities, states, countries]
 
 	def check_coordinate_in_australia(self, point, boundary):
 		if point['coordinates']:
@@ -203,85 +301,6 @@ class Preprocessor:
 
 		return seat_locations
 
-	def initialize_election_map(self):
-		geodf_seats = gpd.read_file(self.config['election_map_shape_file'])
-		geodf_seats.crs = {'init': 'epsg:4326'}
-		seats = []
-		for index, row in geodf_seats.iterrows():
-			seat = Location(row['Elect_div'], row['State'], row['geometry'])
-			seats.append(seat)
-
-		return seats
-
-	def initialize_gcc_map(self):
-		geodf = gpd.read_file(self.config['gcc_map_shape_file'])
-		geodf = geodf.dropna()
-		geodf.crs = {'init': 'epsg:4326'}
-		sa4 = []
-		for index, row in geodf.iterrows():
-			seat = Location(row['GCC_NAME16'], row['STE_NAME16'], row['geometry'])
-			sa4.append(seat)
-
-		return sa4
-
-	def get_party_features(self):
-		df = pd.read_csv(self.config['party_features'], encoding="ISO-8859-1")
-		dictionary = {}
-		for index, row in df.iterrows():
-			vector = list()
-			if not pd.isnull(row['party_name']):
-				vector.extend([x.strip() for x in row['party_name'].split(',')])
-			if not pd.isnull(row['twitter']):
-				vector.extend([x.strip() for x in row['twitter'].split(',')])
-			if not pd.isnull(row['abbr']):
-				vector.extend([x.strip() for x in row['abbr'].split(',')])
-			if not pd.isnull(row['leader']):
-				vector.extend([x.strip() for x in row['leader'].split(',')])
-			if not pd.isnull(row['leader_twitter']):
-				vector.extend([x.strip() for x in row['leader_twitter'].split(',')])
-			# if not pd.isnull(row['ideology']):
-			# 	vector.extend([x.strip() for x in row['ideology'].split(',')])
-			vector = [x.lower() for x in vector if not pd.isnull(x)]
-			vector = [x for x in vector if not x in self.stopwords]
-			dictionary[row['party_name']] = vector
-
-		return dictionary
-
-	def initialize_location_dictionaries(self):
-		df_city_names = pd.read_csv(self.config['australia_city_names'])
-		df_aurin = pd.read_csv(self.config['aurin_data_locations'])
-		cities = {}
-
-		for index, row in df_city_names.iterrows():
-			cities[row['city'].lower()] = row['admin'].lower()
-
-		for index, row in df_aurin.iterrows():
-			cities[row['city'].lower()] = row['state'].lower()
-			cities[row['seat'].lower()] = row['state'].lower()
-
-		states = dict()
-		states['NSW'] = 'New South Wales'
-		states['QLD'] = 'Queensland'
-		states['WA'] = 'Western Australia'
-		states['VIC'] = 'Victoria'
-		states['SA'] = 'South Australia'
-		states['TAS'] = 'Tasmania'
-		states['NT'] = 'Northern Territory'
-		states['ACT'] = 'Australian Capital Territory'
-		states['New South Wales'] = 'New South Wales'
-		states['Queensland'] = 'Queensland'
-		states['Western Australia'] = 'Western Australia'
-		states['Victoria'] = 'Victoria'
-		states['South Australia'] = 'South Australia'
-		states['Tasmania'] = 'Tasmania'
-		states['Northern Territory'] = 'Northern Territory'
-		states['Australian Capital Territory'] = 'Australian Capital Territory'
-
-		states = dict((k.lower(), v.lower()) for k, v in states.items())
-		countries = set(['australia', 'au'])
-
-		return [cities, states, countries]
-
 	def lemmatize(self, word):
 		lemma = self.lemmatizer.lemmatize(word, 'v')
 
@@ -346,6 +365,8 @@ class Preprocessor:
 		return loc
 
 	def process(self, data):
+		''' Add new processing layer in this function '''
+
 		result = False
 		text = None
 		if 'extended_tweet' in data and data['extended_tweet']:
