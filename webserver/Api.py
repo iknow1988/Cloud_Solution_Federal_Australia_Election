@@ -1,5 +1,5 @@
 import couchdb
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS, cross_origin
 from collections import Counter
 import copy
@@ -41,7 +41,7 @@ ip_address = configs['COUCHDB']['ip']
 port = configs['COUCHDB']['port']
 tweeter_db = configs['COUCHDB']['tweet_db']
 couch_server = couchdb.Server("http://%s:%s@%s:%s/" % (user, password, ip_address, port))
-db = couch_server['twitter']
+db = couch_server[tweeter_db]
 
 ip = "http://" + user + ":" + password + "@" + ip_address + ":" + port + "/"
 
@@ -127,7 +127,19 @@ def hashtag():
     return jsonify(result)
 
 
-
+@app.route('/gettopwords/', methods=['get'])
+@cross_origin(origin='localhost',headers=['Content- Type','Authorization'])
+def create_cm():
+    state = request.args.get('state', None) 
+    party = request.args.get('party', None)
+    poll = request.args.get('poll', None)
+    
+    if state == "Liberal Party":
+        state = 'Liberal Party of Australia'
+        
+    
+    # do something, eg. return json response
+    return jsonify({'state': state, 'party': party, 'poll': poll})
     
 
 @app.route("/state/", methods=['GET'])
@@ -388,4 +400,4 @@ def scenario_4_get_tweet_words(ip, tweeter_db, party_name, city_name, state_name
     
     return df_keywords
 if __name__ == '__main__':
-    app.run(port = 80)
+    app.run(host="0.0.0.0", port = 80)
