@@ -3,8 +3,8 @@
   vars_files:
     - host_vars/nectar.yml
     - group_vars/dbservers.yml
-  gather_facts: true
   
+  gather_facts: true
   
   pre_tasks:
     - name: Wait for system to become reachable
@@ -29,7 +29,7 @@
       debug:  
         msg: 'Coordinator node {{ coordinator_node }} selected out of {{ ansible_play_hosts }} nodes.'
       run_once: true
-
+  
   roles: 
     
      - role: openstack-sshkeys

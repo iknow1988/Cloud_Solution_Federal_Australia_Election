@@ -9,11 +9,12 @@
     update_cache: yes
     upgrade: dist
 
-- name: Checking if package erlang is installed
-  shell: dpkg-query -s erlang | grep 'install ok installed'
-  register: is_installed
-  failed_when: no
-  changed_when: no
+
+# - name: Checking if package erlang is installed
+#   shell: dpkg-query -s erlang | grep 'install ok installed'
+#   register: is_installed
+#   failed_when: no
+#   changed_when: no
 
 - name: Download esl erlang package if needed
   get_url:
@@ -22,14 +23,14 @@
     owner: ubuntu
     group: ubuntu
     mode: 0755
-  when: is_installed.rc == 0
+  #when: is_installed.rc == 0
 
 
 
 - name: Install package esl erlang if needed
   apt:
     deb: /home/ubuntu/esl-erlang_20.1-1~ubuntu~xenial_amd64.deb
-  when: is_installed.rc == 0
+  #when: is_installed.rc == 0
 
 - name: Download erlang solutions if needed
   get_url:
@@ -38,18 +39,18 @@
     owner: ubuntu
     group: ubuntu
     mode: 0755
-  when: is_installed.rc == 0
+  #when: is_installed.rc == 0
 
 - name: Install erlang repository if needed
   apt:
     deb: /home/ubuntu/erlang-solutions_1.0_all.deb
-  when: is_installed.rc == 0
+  #when: is_installed.rc == 0
 
 - name: Add an Apt signing key
   apt_key:
     url: https://packages.erlang-solutions.com/debian/erlang_solutions.asc
     state: present
-  when: is_installed.rc == 0
+  #when: is_installed.rc == 0
 
 - name: fix unmet dependencies
   shell: apt-get -f install

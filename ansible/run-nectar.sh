@@ -34,7 +34,7 @@ export PYTHONWARNINGS=ignore::UserWarning
 ##################
 
 # INTIAL SETUP
-ansible-playbook -i ./inventory/openstack_prod_inventory.py --private-key  ~/.ssh/gild-nectar.pem playbook-instances.yml
+#ansible-playbook -i ./inventory/openstack_prod_inventory.py --private-key  ~/.ssh/gild-nectar.pem playbook-instances.yml
 
 ansible-playbook -i ./inventory/openstack_prod_inventory.py --private-key ~/.ssh/gild-nectar.pem -u ubuntu -k -b --become-method=sudo -K playbook-setup.yml
 
