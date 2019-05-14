@@ -28,3 +28,6 @@ COUCHDB:
 
 MPI:
     size: 2
+
+APPSERVER:
+    appserver_ip: 'localhost'
