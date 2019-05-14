@@ -1,5 +1,5 @@
 import couchdb
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS, cross_origin
 from collections import Counter
 import copy
@@ -18,8 +18,8 @@ state = {
  'victoria': 2,
  'queensland': 3,
  'south australia': 4,
- 'western australia': 5, 
- 'tasmania': 6, 
+ 'western australia': 5,
+ 'tasmania': 6,
  'northern territory': 7,
  'australian capital territory': 8
 }
@@ -41,7 +41,7 @@ ip_address = configs['COUCHDB']['ip']
 port = configs['COUCHDB']['port']
 tweeter_db = configs['COUCHDB']['tweet_db']
 couch_server = couchdb.Server("http://%s:%s@%s:%s/" % (user, password, ip_address, port))
-db = couch_server['twitter']
+db = couch_server[tweeter_db]
 
 ip = "http://" + user + ":" + password + "@" + ip_address + ":" + port + "/"
 
@@ -84,7 +84,7 @@ def scenario_1_2():
         df3 = scenerio_3_tweet_sentiment(ip,tweeter_db, key)
         for index, row in df3.iterrows():
             result[state[key]][row['party']][2] = row['Positive']
-            result[state[key]][row['party']][3] = row['Negative'] 
+            result[state[key]][row['party']][3] = row['Negative']
             result[state[key]][row['party']][4] = row['Neutral']
     return jsonify(result)
 
@@ -127,13 +127,25 @@ def hashtag():
     return jsonify(result)
 
 
+@app.route('/gettopwords/', methods=['get'])
+@cross_origin(origin='localhost',headers=['Content- Type','Authorization'])
+def create_cm():
+    state = request.args.get('state', None)
+    party = request.args.get('party', None)
+    poll = request.args.get('poll', None)
 
-    
+    if state == "Liberal Party":
+        state = 'Liberal Party of Australia'
+
+
+    # do something, eg. return json response
+    return jsonify({'state': state, 'party': party, 'poll': poll})
+
 
 @app.route("/state/", methods=['GET'])
 @cross_origin(origin='localhost',headers=['Content- Type','Authorization'])
 def state_total_count():
-    
+
     view = db.view('_design/counts/_view/location_state', reduce=True, group=True)
     count = Counter()
 
@@ -150,7 +162,7 @@ def state_total_count():
 
 
 def scenario_1_get_combined_distribution_twitter_aurin(ip,tweeter_db,aurin_data_location):
-    
+
     # **********fetching data from couchdb**********
     couch_server = couchdb.Server(ip)
     db = couch_server[tweeter_db]
@@ -171,7 +183,7 @@ def scenario_1_get_combined_distribution_twitter_aurin(ip,tweeter_db,aurin_data_
                 rows.append({'party': party, 'state':state, 'tweet_mentions':value})
 
     # **********Twitter data dataframe creating**********
-    
+
     df_twitter_party = pd.DataFrame(rows)
     df_twitter_party = pd.concat([df_twitter_party, pd.DataFrame(rows2).groupby(['party','state']).sum().reset_index()])
     df_twitter_party = pd.pivot_table(df_twitter_party,values='tweet_mentions',index=['state'],
@@ -181,9 +193,9 @@ def scenario_1_get_combined_distribution_twitter_aurin(ip,tweeter_db,aurin_data_
     columns = ["state","Australian Labor Party", "Liberal Party of Australia", "Australian Greens",
                "United Australia Party","total_tweets"]
     df_twitter_party = df_twitter_party[columns]
-    
+
     # **********Voting data dataframe creating**********
-    
+
     df_vote = pd.read_csv(aurin_data_location)
     df_vote = df_vote.rename(columns=lambda x: x.strip())
     df_vote = df_vote.rename(columns = {'divisionnm':'seat'})
@@ -206,7 +218,7 @@ def scenario_1_get_combined_distribution_twitter_aurin(ip,tweeter_db,aurin_data_
     columns = ["state","Australian Labor Party", "Liberal Party of Australia", "Australian Greens",
                "United Australia Party","total_votes"]
     df_vote = df_vote[columns]
-    
+
     # ********** Combining two dataframe by state and calculating percentage**********
     df_combined = pd.merge(df_vote,df_twitter_party, on =['state'])
     df_combined['percent_tweets']= df_combined['total_tweets']/df_combined['total_tweets'].sum()
@@ -219,15 +231,15 @@ def scenario_1_get_combined_distribution_twitter_aurin(ip,tweeter_db,aurin_data_
     df_combined['united_twitter']= df_combined['United Australia Party_y']/df_combined['United Australia Party_y'].sum()
     df_combined['greens_vote']= df_combined['Australian Greens_x']/df_combined['Australian Greens_x'].sum()
     df_combined['greens_twitter']= df_combined['Australian Greens_y']/df_combined['Australian Greens_y'].sum()
-    
+
     df_combined = df_combined[['state','percent_votes','percent_tweets','labor_vote','labor_twitter',
              'liberal_vote','liberal_twitter','united_vote','united_twitter',
             'greens_vote','greens_twitter']].round(4)
-    
+
     return df_combined
 
 def scenerio_2_popularity_of_party_in_state_vs_aurion(ip,tweeter_db,aurin_data_location):
-    
+
     # **********fetching data from couchdb**********
     couch_server = couchdb.Server(ip)
     db = couch_server[tweeter_db]
@@ -247,9 +259,9 @@ def scenerio_2_popularity_of_party_in_state_vs_aurion(ip,tweeter_db,aurin_data_l
         else:
             if(state.islower()):
                 rows.append({'party': party, 'state':state, 'tweet_mentions':value})
-    
+
     # **********Twitter data dataframe creating**********
-    
+
     df_twitter_party = pd.DataFrame(rows)
     df_twitter_party = pd.concat([df_twitter_party, pd.DataFrame(rows2).groupby(['party','state']).sum().reset_index()])
 
@@ -266,13 +278,13 @@ def scenerio_2_popularity_of_party_in_state_vs_aurion(ip,tweeter_db,aurin_data_l
     df_twitter_party = df_twitter_party.rename(columns = {'index':'party'})
 
     df_twitter_party = df_twitter_party.reset_index().round(4)
-    df_twitter_party = df_twitter_party[(df_twitter_party['party'] == "Australian Labor Party") | 
+    df_twitter_party = df_twitter_party[(df_twitter_party['party'] == "Australian Labor Party") |
                      (df_twitter_party['party'] == "Liberal Party of Australia") |
                      (df_twitter_party['party'] == "Australian Greens") |
                      (df_twitter_party['party'] == "United Australia Party")]
     df_twitter_party = df_twitter_party.drop(columns = ['index'])
-    
-    
+
+
     df_vote = pd.read_csv(aurin_data_location)
     df_vote = df_vote.rename(columns=lambda x: x.strip())
     df_vote = df_vote.rename(columns = {'divisionnm':'seat'})
@@ -285,9 +297,9 @@ def scenerio_2_popularity_of_party_in_state_vs_aurion(ip,tweeter_db,aurin_data_l
                                         'grn_votes': 'Australian Greens',
                                         'on_votes': 'United Australia Party'})
 
-    
+
     # **********Voting data dataframe creating**********
-    
+
     df_vote = pd.merge(df_vote,pd.read_csv('csv_files/aurin_location.csv')[['seat','city','state']], on='seat')
     df_vote = df_vote.fillna(0)
     df_vote['state'] = df_vote['state'].str.lower()
@@ -300,18 +312,18 @@ def scenerio_2_popularity_of_party_in_state_vs_aurion(ip,tweeter_db,aurin_data_l
     df_vote = df_vote.reset_index()
     df_vote = df_vote.rename(columns = {'index':'party'})
 
-    df_vote = df_vote[(df_vote['party'] == "Australian Labor Party") | 
+    df_vote = df_vote[(df_vote['party'] == "Australian Labor Party") |
             (df_vote['party'] == "Liberal Party of Australia") |
             (df_vote['party'] == "Australian Greens") |
             (df_vote['party'] == "United Australia Party")]
 
     df_vote = df_vote.reset_index().round(4)
     df_vote = df_vote.drop(columns = ['index'])
-    
+
     return df_twitter_party, df_vote
 
 def scenerio_3_tweet_sentiment(ip,tweeter_db, state_name):
-    
+
     # **********fetching data from couchdb**********
     couch_server = couchdb.Server(ip)
     db = couch_server[tweeter_db]
@@ -338,11 +350,11 @@ def scenerio_3_tweet_sentiment(ip,tweeter_db, state_name):
                              'state' :state, 'count': count})
 
     # **********Twitter data dataframe creating**********
-    
+
     df_twitter_sentiment = pd.DataFrame(rows)
     df_twitter_sentiment = pd.concat([df_twitter_sentiment, pd.DataFrame(rows2)])
     df_twitter_sentiment = df_twitter_sentiment[df_twitter_sentiment['state'] == state_name]
-    df_twitter_sentiment = df_twitter_sentiment[(df_twitter_sentiment['party'] == "Australian Labor Party") | 
+    df_twitter_sentiment = df_twitter_sentiment[(df_twitter_sentiment['party'] == "Australian Labor Party") |
                          (df_twitter_sentiment['party'] == "Liberal Party of Australia") |
                          (df_twitter_sentiment['party'] == "Australian Greens") |
                          (df_twitter_sentiment['party'] == "United Australia Party")]
@@ -352,7 +364,7 @@ def scenerio_3_tweet_sentiment(ip,tweeter_db, state_name):
     df_twitter_sentiment = pd.pivot_table(df_twitter_sentiment,values='count',index=['party'],
                                           columns=['sentiment'])
     df_twitter_sentiment = df_twitter_sentiment.div(df_twitter_sentiment.sum(axis=1), axis=0).round(2).reset_index()
-    
+
     return df_twitter_sentiment
 
 def scenario_4_get_tweet_words(ip, tweeter_db, party_name, city_name, state_name, num_words):
@@ -375,17 +387,17 @@ def scenario_4_get_tweet_words(ip, tweeter_db, party_name, city_name, state_name
                               'city': city, 'state' :state, 'value':value})
         else:
             if(state.islower()):
-                rows.append({'party': party, 'word': word, 
+                rows.append({'party': party, 'word': word,
                              'city': city, 'state' :state, 'value':value})
     df_keywords = pd.DataFrame(rows)
     df_keywords = pd.concat([df_keywords, pd.DataFrame(rows2)])
-    
+
     df_keywords = df_keywords[(df_keywords['state'] == state_name)&
                               (df_keywords['city'] == city_name)&
                               (df_keywords['party'] == party_name)].sort_values('value',
                                                                                 ascending = False)[['word',
                                                                                                     'value']][0:num_words]
-    
+
     return df_keywords
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port = 80)

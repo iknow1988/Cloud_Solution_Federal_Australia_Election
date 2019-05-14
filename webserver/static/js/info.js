@@ -23,9 +23,7 @@ fetch('http://172.26.38.76:80/scenario_1_1/')
 		
 		for (var i in data){
 			document.getElementById('tranding').innerHTML += '<b>'+data[i]['key']+'</b> &nbsp; &nbsp;' + data[i]['value'] + "&nbsp; tweets <br>" ;
-			console.log(data)
-			console.log(i)
-			console.log(data[i]['key'],data[i]['value'])
+			
 		}
 	
 	})

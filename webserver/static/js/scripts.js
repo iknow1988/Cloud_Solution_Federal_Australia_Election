@@ -5,6 +5,7 @@
     attributionControl: false
   });
     var state_twitter;
+	var state_name;
 	var arr2 = [['state','Percentage of tweets', 'Percentage of votes']]
 	fetch('http://172.26.38.76:80/state/')
 	.then(response => {
@@ -50,10 +51,7 @@
 				pol_arr[x].push(['Neutral', state_party_vote[i][4]*100 ]);
 				x = x + 1;
 			}
-			
-			for (var i = 0; i < pol_arr.length; i++) {
-				console.log(pol_arr[i]);
-			}
+			state_name = props['STATE_NAME'];
 			this._div.innerHTML = '<b>' + props['STATE_NAME'] + '</b>' ;
 			this._div.innerHTML += '<b> &nbsp; &nbsp; Number of Tweets : </b>' + state_total_tweets;
 			google.charts.load("current",  {packages: ["corechart"]});
@@ -80,25 +78,12 @@
 				
 				for (var i = 0; i < pol_arr.length; i++) {
 				
-					var data1 = google.visualization.arrayToDataTable(pol_arr[i]);
-					var view1 = new google.visualization.DataView(data1);
+		
 					if(i == 0){
-						title = "Australian Greens";
+						title3 = "Australian Greens";
 						placeholder = "pie3";
-					}else if (i == 1){
-						title = "Australian Labor Party";
-						placeholder = "pie2";
-					}
-					else if (i == 2){
-						title = "Liberal Party";
-						placeholder = "pie1";
-					}
-					else if (i == 3){
-						title = "United Australia Party";
-						placeholder = "pie4";
-					}
-
-					var options1 = {'title': title, 'width':250, 'height':250, 
+						
+						var options3 = {'title': title3, 'width':250, 'height':250, 
 						legend: { position: 'top', maxLines: 3 },
 						theme: 'material',
 						tooltip: { isHtml: true},
@@ -106,11 +91,117 @@
 						animation: {
 							duration: 1500,
 							startup: true
-					}};
+						}};
+						var data3 = google.visualization.arrayToDataTable(pol_arr[i]);
+						var view3 = new google.visualization.DataView(data3);
+						var chart3 = new google.visualization.PieChart(document.getElementById(placeholder));
+						google.visualization.events.addListener(chart3, 'select', selectHandler3);
+					
+						chart3.draw(view3, options3);
+					}else if (i == 1){
+						title2 = "Australian Labor Party";
+						placeholder = "pie2";
+						
+						var options2 = {'title': title2, 'width':250, 'height':250, 
+						legend: { position: 'top', maxLines: 3 },
+						theme: 'material',
+						tooltip: { isHtml: true},
+						backgroundColor: { fill:'transparent' },
+						animation: {
+							duration: 1500,
+							startup: true
+						}};
+						var data2 = google.visualization.arrayToDataTable(pol_arr[i]);
+						var view2 = new google.visualization.DataView(data2);
+						var chart2 = new google.visualization.PieChart(document.getElementById(placeholder));
+						google.visualization.events.addListener(chart2, 'select', selectHandler2);
+					
+						chart2.draw(view2, options2);
+					}
+					else if (i == 2){
+						title1 = "Liberal Party";
+						placeholder = "pie1";
+						
+						var options1 = {'title': title1, 'width':250, 'height':250, 
+						legend: { position: 'top', maxLines: 3 },
+						theme: 'material',
+						tooltip: { isHtml: true},
+						backgroundColor: { fill:'transparent' },
+						animation: {
+							duration: 1500,
+							startup: true
+						}};
+						var data1 = google.visualization.arrayToDataTable(pol_arr[i]);
+						var view1 = new google.visualization.DataView(data1);
+						var chart1 = new google.visualization.PieChart(document.getElementById(placeholder));
+						google.visualization.events.addListener(chart1, 'select', selectHandler1);
+					
+						chart1.draw(view1, options1);
+					}
+					else if (i == 3){
+						title4 = "United Australia Party";
+						placeholder = "pie4";
+						
+						var options4 = {'title': title4, 'width':250, 'height':250, 
+						legend: { position: 'top', maxLines: 3 },
+						theme: 'material',
+						tooltip: { isHtml: true},
+						backgroundColor: { fill:'transparent' },
+						animation: {
+							duration: 1500,
+							startup: true
+						}};
+						var data4 = google.visualization.arrayToDataTable(pol_arr[i]);
+						var view4 = new google.visualization.DataView(data3);
+						var chart4 = new google.visualization.PieChart(document.getElementById(placeholder));
+						google.visualization.events.addListener(chart4, 'select', selectHandler4);
+					
+						chart4.draw(view4, options4);
+					}
+
+					
+					
+					function selectHandler1(){
+						console.log(state_name)
+						console.log(title1)
+						var selectedItem = chart1.getSelection()[0];
+						var value = selectedItem.row;
+						if (value == "1" || value == "0"){
 				
-					var chart1 = new google.visualization.PieChart(document.getElementById(placeholder));
-					chart1.draw(view1, options1);
-				
+							var str = 'http://127.0.0.1:80/gettopwords/?state='+state_name+'&party='+title1+'&poll='+value
+							fetch(str)
+								.then(response => {
+									return response.json()
+							})
+							.then(data => {
+								console.log(data)
+							})
+							
+							
+						}
+							
+
+					}
+					function selectHandler2(){
+						console.log(state_name);
+						console.log(title2);
+						var selectedItem = chart2.getSelection()[0];
+						var value = selectedItem.row;
+							
+					}
+					function selectHandler3(){
+						console.log(state_name)
+						console.log(title3)
+						var selectedItem = chart3.getSelection()[0];
+						var value = selectedItem.row;
+					}
+					function selectHandler4(){
+						console.log(state_name)
+						console.log(title4)
+						var selectedItem = chart4.getSelection()[0];
+						var value = selectedItem.row;
+					}
+					
 				
 				}
 				
