@@ -34,3 +34,4 @@
         headers:
           Content-Type: "application/json"
       run_once: true
+      failed_when: false
