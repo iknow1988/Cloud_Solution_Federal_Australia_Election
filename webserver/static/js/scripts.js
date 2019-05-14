@@ -176,7 +176,21 @@
 									return response.json()
 							})
 							.then(data => {
-								console.log(data)
+								// Work with JSON data here
+								var senti;
+								if (value == "0"){
+									senti = "Positive";
+								}
+								else{
+									senti = "Negative";
+								}
+								document.getElementById('top').innerHTML = '<h4>'+state_name+'</h4><h5>'+title1+'('+senti+')</h5>';
+		
+								for (var i in data){
+									document.getElementById('top').innerHTML += '<b>'+data[i]['word']+'</b><br>' ;
+			
+								}
+						
 							})
 							
 							
@@ -189,6 +203,33 @@
 						console.log(title2);
 						var selectedItem = chart2.getSelection()[0];
 						var value = selectedItem.row;
+						if (value == "1" || value == "0"){
+				
+							var str = 'http://'+appserver+'/gettopwords/?state='+state_name+'&party='+title2+'&poll='+value
+							console.log(str);
+							fetch(str)
+								.then(response => {
+									return response.json()
+							})
+							.then(data => {
+								// Work with JSON data here
+								var senti;
+								if (value == "0"){
+									senti = "Positive";
+								}
+								else{
+									senti = "Negative";
+								}
+								document.getElementById('top').innerHTML = '<h4>'+state_name+'</h4><h5>'+title2+'('+senti+')</h5>';
+		
+								for (var i in data){
+									document.getElementById('top').innerHTML += '<b>'+data[i]['word']+'</b><br>' ;
+			
+								}
+							})
+							
+							
+						}
 							
 					}
 					function selectHandler3(){
@@ -196,12 +237,66 @@
 						console.log(title3)
 						var selectedItem = chart3.getSelection()[0];
 						var value = selectedItem.row;
+						if (value == "1" || value == "0"){
+				
+							var str = 'http://'+appserver+'/gettopwords/?state='+state_name+'&party='+title3+'&poll='+value
+							console.log(str);
+							fetch(str)
+								.then(response => {
+									return response.json()
+							})
+							.then(data => {
+								// Work with JSON data here
+								var senti;
+								if (value == "0"){
+									senti = "Positive";
+								}
+								else{
+									senti = "Negative";
+								}
+								document.getElementById('top').innerHTML = '<h4>'+state_name+'</h4><h5>'+title3+'('+senti+')</h5>';
+		
+								for (var i in data){
+									document.getElementById('top').innerHTML += '<b>'+data[i]['word']+'</b><br>' ;
+			
+								}
+							})
+							
+							
+						}
 					}
 					function selectHandler4(){
 						console.log(state_name)
 						console.log(title4)
 						var selectedItem = chart4.getSelection()[0];
 						var value = selectedItem.row;
+						if (value == "1" || value == "0"){
+				
+							var str = 'http://'+appserver+'/gettopwords/?state='+state_name+'&party='+title4+'&poll='+value
+							console.log(str);
+							fetch(str)
+								.then(response => {
+									return response.json()
+							})
+							.then(data => {
+								// Work with JSON data here
+								var senti;
+								if (value == "0"){
+									senti = "Positive";
+								}
+								else{
+									senti = "Negative";
+								}
+								document.getElementById('top').innerHTML = '<h4>'+state_name+'</h4><h5>'+title4+'('+senti+')</h5>';
+		
+								for (var i in data){
+									document.getElementById('top').innerHTML += '<b>'+data[i]['word']+'</b><br>' ;
+			
+								}
+							})
+							
+							
+						}
 					}
 					
 				
