@@ -1,4 +1,3 @@
----
 - name: Grant internet access - http
   lineinfile:
     dest: /etc/environment

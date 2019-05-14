@@ -1,5 +1,3 @@
-
-
 - name: Create databases
   uri:
     url: http://{{ coordinator_node }}:{{ http_api_port }}/{{ item.name }}?n={{ n_replicas }}&q={{ q_shards }}
@@ -17,6 +15,21 @@
   run_once: true
   loop: '{{ databases }}'
 
+- name: Populate credential database
+  uri:
+    url: http://{{ coordinator_node }}:{{ http_api_port }}/{{ credential_db }}/_bulk_docs
+    method: PUT
+    user: "{{ www_user }}"
+    password: "{{ www_password }}"
+    body: "{{ lookup('file','credentials.json') }}"
+    body_format: json
+    return_content: yes
+    status_code: 201
+    headers:
+      Content-Type: "application/json"
+
+  register: result
+  run_once: true
 - name: debug databases
   debug:
     msg: "Databases created with coordinating node: {{ coordinator_node }}: {{ result }}"

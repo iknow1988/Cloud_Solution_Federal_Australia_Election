@@ -6,6 +6,10 @@ couchdb_src_version: 2.3.1
 couchdb_node: 'localhost'
 
 # databases
+tweet_db: twitter
+users_db: twitter_users
+credential_db: twitter_credentials
+
 databases:
   - name: twitter
   - name: twitter_credentials
