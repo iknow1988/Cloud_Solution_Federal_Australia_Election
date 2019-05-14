@@ -18,8 +18,20 @@
      - {role: openstack-volume-snapshot, when: volume_snapshot  == 'Y' }
 
   post_tasks:
-    - name: Updating inventory
-      debug:
-          msg: updating dynamic inventory
+
     - name: Refresh in-memory Inventory
       meta: refresh_inventory
+
+    
+
+    - name: Wait for ssh connection
+      become: false
+      wait_for:
+        port: 22
+        delay: 2
+        connect_timeout: 10
+        timeout: 600
+        host: "{{ hostvars[item]['ansible_host'] }}"
+      loop: "{{groups['all']}}"
+    
+    

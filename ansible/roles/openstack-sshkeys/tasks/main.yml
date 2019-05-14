@@ -5,3 +5,11 @@
     key: "{{ lookup('file', '{{ item.file_name }}') }}"
   loop: '{{ keys }}'
 
+- name: Add to known hosts if possible
+  known_hosts:
+    path: ~/.ssh/known_hosts
+    name: '{{ ansible_host }}'
+    key: "{{ lookup('file', '{{ item.file_name }}') }}"
+    state: present
+  loop: '{{ keys }}'
+  failed_when: false
