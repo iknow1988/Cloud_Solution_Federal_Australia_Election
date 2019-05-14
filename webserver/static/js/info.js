@@ -24,7 +24,6 @@ fetch('http://'+appserver+'/scenario_1_1/')
 		
 		for (var i in data){
 			document.getElementById('trending').innerHTML += '<b>'+data[i]['key']+'</b> &nbsp; &nbsp;' + data[i]['value'] + "&nbsp; tweets <br>" ;
-			document.getElementById('top').innerHTML += "&nbsp; tweets <br>" ;
 			
 		}
 	

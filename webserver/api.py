@@ -133,13 +133,28 @@ def create_cm():
     state = request.args.get('state', None)
     party = request.args.get('party', None)
     poll = request.args.get('poll', None)
-
+    num_words = 10
+    
     if state == "Liberal Party":
         state = 'Liberal Party of Australia'
 
-
+    if poll == "0":
+        df = scenario_5_get_negative_tweet_words(ip, tweeter_db, party, state, num_words) 
+    else:
+        df = scenario_5_get_positive_tweet_words(ip, tweeter_db, party, state, num_words)
+        
+    result = {}
+    for i in range(1,11):
+        result[i] = {}
+    idx = 1
+    for index, row in df.head(10).iterrows():
+        result[idx]['word'] = row['word']
+        #result[idx]['value'] = row['value']
+        idx += 1
+    print(result)
+        
     # do something, eg. return json response
-    return jsonify({'state': state, 'party': party, 'poll': poll})
+    return jsonify(result)
 
 
 @app.route("/state/", methods=['GET'])
@@ -398,6 +413,66 @@ def scenario_4_get_tweet_words(ip, tweeter_db, party_name, city_name, state_name
                                                                                 ascending = False)[['word',
                                                                                                     'value']][0:num_words]
 
+    return df_keywords
+
+def scenario_5_get_negative_tweet_words(ip, tweeter_db, party_name, state_name, num_words):
+    couch_server = couchdb.Server(ip)
+    db = couch_server[tweeter_db]
+    view = db.view('_design/counts/_view/top_strong_negative_keywords_individual_party', reduce=True, group=True)
+    rows=[]
+    rows2 = []
+    for item in view:
+        key = item.key
+        party = str(key[0])
+        word = str(key[1])
+        city = str(key[4])
+        state = str(key[5])
+        value = item.value
+        if(party == "Liberal Democratic Party" or party == "Liberal National Party" or
+           party == "Liberal Party of Australia"):
+            if(state.islower()):
+                rows2.append({'party': 'Liberal Party of Australia', 'word': word,
+                              'state' :state, 'value':value})
+        else:
+            if(state.islower()):
+                rows.append({'party': party, 'word': word, 
+                             'state' :state, 'value':value})
+    df_keywords = pd.DataFrame(rows)
+    df_keywords = pd.concat([df_keywords, pd.DataFrame(rows2)])
+    df_keywords = df_keywords[(df_keywords['state'] == state_name)&
+                              (df_keywords['party'] == party_name)].sort_values('value',
+                                                                                ascending = False)[['word',
+                                                                                                    'value']][0:num_words]
+    
+    return df_keywords
+
+def scenario_5_get_positive_tweet_words(ip, tweeter_db, party_name, state_name, num_words):
+    couch_server = couchdb.Server(ip)
+    db = couch_server[tweeter_db]
+    view = db.view('_design/counts/_view/top_strong_positive_keywords_party_individual', reduce=True, group=True)
+    rows=[]
+    rows2 = []
+    for item in view:
+        key = item.key
+        party = str(key[0])
+        word = str(key[1])
+        city = str(key[2])
+        state = str(key[3])
+        value = item.value
+        if(party == "Liberal Democratic Party" or party == "Liberal National Party" or
+           party == "Liberal Party of Australia"):
+            if(state.islower()):
+                rows2.append({'party': 'Liberal Party of Australia', 'word': word, 'state' :state, 'value':value})
+        else:
+            if(state.islower()):
+                rows.append({'party': party, 'word': word, 'state' :state, 'value':value})
+    df_keywords = pd.DataFrame(rows)
+    df_keywords = pd.concat([df_keywords, pd.DataFrame(rows2)])
+    df_keywords = df_keywords[(df_keywords['state'] == state_name)&
+                              (df_keywords['party'] == party_name)].sort_values('value',
+                                                                                ascending = False)[['word',
+                                                                                                    'value']][0:num_words]
+    
     return df_keywords
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port = 80)
