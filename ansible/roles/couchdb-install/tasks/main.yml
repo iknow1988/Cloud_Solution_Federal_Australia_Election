@@ -23,22 +23,24 @@
   register: service_couchdb_status
 
 # for testing purposes
-# - name: Stop couchdb service if exists
-#   systemd:
-#     name: couchdb
-#     state: stopped
-#   when: service_couchdb_status is not failed
+- name: Stop couchdb service if exists
+  systemd:
+    name: couchdb
+    state: stopped
+  when: service_couchdb_status is not failed
 
 # - name: Verifying if a service is present in the instance
 #   debug:
 #     msg: "If couchdb is runing we will fail the playbook for safety"
 #   failed_when: service_couchdb_status is not failed
 
+# not failing playbook of no volume can be formatted
 - name: Create a ext4 filesystem for data storage (if empty volume)
   filesystem:
     fstype: '{{ volume_fstype }}'
     dev: '{{ data_volume }}'
     force: no
+  failed_when: false
 
 - name: Mount data volume
   mount:
@@ -46,6 +48,7 @@
     src: '{{ data_volume }}'
     fstype: '{{ volume_fstype }}'
     state: mounted
+  failed_when: false
 
 - name: Download CouchDB
   get_url:

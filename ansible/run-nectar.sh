@@ -1,41 +1,76 @@
 #!/bin/bash
 
-source ./openrc/unimelb-comp90024-group-2-openrc.sh
-#source ./openrc/pt-34689-openrc.sh 
+# defaults
+openrc="./openrc/unimelb-comp90024-group-2-openrc.sh"
+key="~/.ssh/gild-nectar.pem"
+inventory="./inventory/openstack_dev_inventory.py"
+
+tasks=0
+while [ "$1" != "" ]; do
+    case $1 in
+        -f | --file )           shift
+                                openrc=$1
+                                echo "$openrc"
+                                ;;
+        -h | --help )           echo "usage: run-nectar.sh -f [openrc_file] <command> [arg]"
+                                echo "-f             : location of file openrc"
+                                echo "-r             : Database to replicate (change vars in playbook)"
+                                echo "-a             : Run ansible for create instances and install software"
+                                echo "-m             : Run ansible just to create instances"
+                                echo "-s             : Run ansible just to install software"
+                                exit
+                                ;;
+        -r | --replicate)       echo "Database replication"
+                                tasks=3                             
+                                ;;       
+
+        -a | --all )            shift
+                                echo "Setting up cloud  - Instances and software setup"
+                                tasks=0
+                                ;;
+        
+        -m )                    echo "Setting up cloud  - Instances"
+                                tasks=1
+                                ;;
+        
+        -s )                    echo "Setting up cloud  - Software setup"
+                                tasks=2
+                                ;;
+                                
+                                
+    esac
+    shift
+done
+
+
+echo "OpenRC file: $openrc"
+echo "Task ID: $tasks"
+source $openrc
 export PYTHONWARNINGS=ignore::UserWarning
 
-#ansible-playbook -i ./inventory/openstack_dev_inventory.py --private-key  ~/.ssh/gild-nectar.pem --ask-become-pass playbook-setup.yml -e '{"all": 1}'
-#ansible-playbook -i ./inventory/openstack_dev_inventory.py --private-key ~/.ssh/gild-nectar.pem -u ubuntu -k -b --become-method=sudo -K playbook-mq.yml
 
-#ansible-playbook -i ./inventory/openstack_prod_inventory.py --private-key  ~/.ssh/gild-nectar.pem playbook-setup.yml -e '{"db": 1 }'
-#ansible-playbook -i ./inventory/openstack_prod_inventory.py --private-key ~/.ssh/gild-nectar.pem -u ubuntu -k -b --become-method=sudo -K playbook-dbcluster.yml --limit "db-dragonstone-3"
-#ansible-playbook -i ./inventory/openstack_prod_inventory.py --private-key ~/.ssh/gild-nectar.pem -u ubuntu -k -b --become-method=sudo -K playbook-addnode.yml
+if [ "$tasks" = "0" ]; then
+    
+    ansible-playbook -i $inventory --private-key  $key playbook-instances.yml
 
-#ansible-playbook -i ./inventory/openstack_prod_inventory.py --private-key ~/.ssh/gild-nectar.pem -u ubuntu -k -b --become-method=sudo -K playbook-prod-monitor.yml
-#ansible-playbook -i ./inventory/openstack_prod_inventory.py --private-key ~/.ssh/gild-nectar.pem -u ubuntu -k -b --become-method=sudo -K playbook-prod-analytics.yml
+    ansible-playbook -i $inventory --private-key $key -u ubuntu -k -b --become-method=sudo -K playbook-setup.yml
+fi
 
+if [ "$tasks" = "1" ]; then
+    
+    ansible-playbook -i $inventory --private-key  $key playbook-instances.yml
 
-# FINAL RUN
-# Setup cloud
-#ansible-playbook -i ./inventory/openstack_prod_inventory.py --private-key  ~/.ssh/gild-nectar.pem playbook-instances.yml
+fi
 
-# Setup databases
-#ansible-playbook -i ./inventory/openstack_prod_inventory.py --private-key ~/.ssh/gild-nectar.pem -u ubuntu -k -b --become-method=sudo -K playbook-dbcluster.yml
+if [ "$tasks" = "2" ]; then
+    
+    ansible-playbook -i $inventory --private-key $key -u ubuntu -k -b --become-method=sudo -K playbook-setup.yml
 
-# Setup RabbitMQ
-#ansible-playbook -i ./inventory/openstack_dev_inventory.py --private-key ~/.ssh/gild-nectar.pem -u ubuntu -k -b --become-method=sudo -K playbook-rabbitmq.yml
+fi
 
-# setup harvester
-#ansible-playbook -i ./inventory/openstack_prod_inventory.py --private-key ~/.ssh/gild-nectar.pem -u ubuntu -k -b --become-method=sudo -K playbook-harvester.yml
+if [ "$tasks" = "3" ]; then
+    
+    ansible-playbook -i $inventory --private-key $key -u ubuntu -k -b --become-method=sudo -K playbook-replicate.yml -e "db: $database_replicate source: $source_replicate"
 
-# app server
-#ansible-playbook -i ./inventory/openstack_prod_inventory.py --private-key ~/.ssh/gild-nectar.pem -u ubuntu -k -b --become-method=sudo -K playbook-appserver.yml
+fi
 
-##################
-
-# INTIAL SETUP
-#ansible-playbook -i ./inventory/openstack_prod_inventory.py --private-key  ~/.ssh/gild-nectar.pem playbook-instances.yml
-
-ansible-playbook -i ./inventory/openstack_prod_inventory.py --private-key ~/.ssh/gild-nectar.pem -u ubuntu -k -b --become-method=sudo -K playbook-setup.yml
-
-# ADD NEW NODE

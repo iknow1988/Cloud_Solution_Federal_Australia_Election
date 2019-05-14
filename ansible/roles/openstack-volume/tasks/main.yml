@@ -1,6 +1,5 @@
----
 # create volume for server
-
+# It will not fail if it is not able to create volumes
 
 - name: Data volumes
   os_volume:
@@ -11,6 +10,7 @@
     timeout: 600
     state: present
   loop: "{{ instances }}"
+  failed_when: false
 
   
   
@@ -21,6 +21,7 @@
     volume: 'vol-data-{{ instance_prefix }}-{{ item.instance_name }}'
     device: '{{ data_volume }}'
   loop: "{{ instances }}"
+  failed_when: false
 
 
 # - name: Data volumes
