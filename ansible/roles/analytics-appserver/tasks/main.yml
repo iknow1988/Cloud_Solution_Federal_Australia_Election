@@ -17,5 +17,5 @@
     replace: "{{ appserver_node }}"
 
 - name: Start appserver
-  shell: "nohup python {{ appsrc }}/webserver/Api.py &"
+  shell: "nohup python {{ appsrc }}/webserver/api.py &"
   become: true
