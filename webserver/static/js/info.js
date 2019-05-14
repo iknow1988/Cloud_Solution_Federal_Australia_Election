@@ -1,8 +1,9 @@
-
 var total_count;
 var arr = [['state','Number of tweets']];
 var arr1 = [['state','Percentage of tweets', 'Percentage of votes']]
-fetch('http://172.26.38.76:80/scenario_1_1/')
+
+var appserver = "127.0.0.1";
+fetch('http://'+appserver+'/scenario_1_1/')
 .then(response => {
     return response.json()
 })
@@ -13,16 +14,17 @@ fetch('http://172.26.38.76:80/scenario_1_1/')
 	}
 	google.charts.load("current",  {packages: ["corechart"]});
 	google.charts.setOnLoadCallback(drawChart);
-	fetch('http://172.26.38.76:80/hashtag/')
+	fetch('http://'+appserver+'/hashtag/')
 		.then(response => {
 		return response.json()
 	})
 	.then(data => {
 		// Work with JSON data here
-		document.getElementById('tranding').innerHTML = '<h2>Australia Trends</h2>';
+		document.getElementById('trending').innerHTML = '<h2>Australia Trends</h2>';
 		
 		for (var i in data){
-			document.getElementById('tranding').innerHTML += '<b>'+data[i]['key']+'</b> &nbsp; &nbsp;' + data[i]['value'] + "&nbsp; tweets <br>" ;
+			document.getElementById('trending').innerHTML += '<b>'+data[i]['key']+'</b> &nbsp; &nbsp;' + data[i]['value'] + "&nbsp; tweets <br>" ;
+			document.getElementById('top').innerHTML += "&nbsp; tweets <br>" ;
 			
 		}
 	
@@ -30,7 +32,7 @@ fetch('http://172.26.38.76:80/scenario_1_1/')
 	
 })
 
-fetch('http://172.26.38.76:80/initial/')
+fetch('http://'+appserver+'/initial/')
 .then(response => {
     return response.json()
 })

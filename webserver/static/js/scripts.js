@@ -4,10 +4,11 @@
   var map = L.map('map', {
     attributionControl: false
   });
+	var appserver = "127.0.0.1"
     var state_twitter;
 	var state_name;
 	var arr2 = [['state','Percentage of tweets', 'Percentage of votes']]
-	fetch('http://172.26.38.76:80/state/')
+	fetch('http://'+appserver+'/state/')
 	.then(response => {
 		return response.json()
 	})
@@ -16,7 +17,7 @@
 	})
 	
 	var state_party;
-	fetch('http://172.26.38.76:80/scenario_1_2/')
+	fetch('http://'+appserver+'/scenario_1_2/')
 	.then(response => {
 		return response.json()
 	})
@@ -168,7 +169,7 @@
 						var value = selectedItem.row;
 						if (value == "1" || value == "0"){
 				
-							var str = 'http://127.0.0.1:80/gettopwords/?state='+state_name+'&party='+title1+'&poll='+value
+							var str = 'http://'+appserver+'/gettopwords/?state='+state_name+'&party='+title1+'&poll='+value
 							fetch(str)
 								.then(response => {
 									return response.json()
