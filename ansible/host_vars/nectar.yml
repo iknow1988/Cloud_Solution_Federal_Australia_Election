@@ -1,4 +1,20 @@
-# common
+# Instances configuration
+instance_prefix: vm
+instance_image: 'NeCTAR Ubuntu 16.04 LTS (Xenial) amd64' 
+instance_key_name: gild-nectar
+instance_flavor: uom.mse.2c9g
+instances:
+  - instance_name: 1
+    instance_group: harvester,rabbitmq,appserver
+    instance_security_group: ssh,rabbitmq
+  - instance_name: 2
+    instance_group: dbservers
+    instance_security_group: ssh,couchdb
+  - instance_name: 3
+    instance_group: dbservers
+    instance_security_group: ssh,couchdb
+
+# common configurations
 availability_zone: melbourne-qh2-uom
 ansible_user: ubuntu
 ansible_user_password: p01ss0n
@@ -14,7 +30,7 @@ no_proxy: 127.0.0.1,localhost,127.0.1.1,ubuntu
 data_volume: /dev/vdb
 
 # volume size
-volume_size: 20
+volume_size: 10
 
 # data fstype
 volume_fstype: ext4
@@ -79,15 +95,4 @@ security_group_rules:
 
 
 
-#uom.mse.2c9g
-instance_prefix: vm
-instance_image: 'NeCTAR Ubuntu 16.04 LTS (Xenial) amd64' 
-instance_key_name: gild-nectar
-instance_flavor: uom.general.1c4g
-instances:
-  - instance_name: 1
-    instance_group: harvester,rabbitmq,appserver
-    instance_security_group: ssh,rabbitmq
-  - instance_name: 2
-    instance_group: harvester,dbservers
-    instance_security_group: ssh
+

@@ -3,7 +3,7 @@
 # defaults
 openrc="./openrc/unimelb-comp90024-group-2-openrc.sh"
 key="~/.ssh/gild-nectar.pem"
-inventory="./inventory/openstack_dev_inventory.py"
+inventory="./inventory/openstack_prod_inventory.py"
 
 tasks=0
 while [ "$1" != "" ]; do
@@ -12,9 +12,9 @@ while [ "$1" != "" ]; do
                                 openrc=$1
                                 echo "$openrc"
                                 ;;
-        -h | --help )           echo "usage: run-nectar.sh -f [openrc_file] <command> [arg]"
+        -h | --help )           echo "usage: run-nectar.sh [options] <command> [arg]"
                                 echo "-f             : location of file openrc"
-                                echo "-r             : Database to replicate (change vars in playbook)"
+                                echo "-r             : Database replication (change vars in playbook)"
                                 echo "-a             : Run ansible for create instances and install software"
                                 echo "-m             : Run ansible just to create instances"
                                 echo "-s             : Run ansible just to install software"
