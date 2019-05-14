@@ -7,7 +7,7 @@
     var state_twitter;
 	var state_name;
 	var arr2 = [['state','Percentage of tweets', 'Percentage of votes']]
-	fetch('http://127.0.0.1:80/state/')
+	fetch('http://172.26.38.76:80/state/')
 	.then(response => {
 		return response.json()
 	})
@@ -16,7 +16,7 @@
 	})
 	
 	var state_party;
-	fetch('http://127.0.0.1:80/scenario_1_2/')
+	fetch('http://172.26.38.76:80/scenario_1_2/')
 	.then(response => {
 		return response.json()
 	})

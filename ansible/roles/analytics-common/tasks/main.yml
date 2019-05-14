@@ -15,7 +15,7 @@
 - name: Updating configuration file
   copy:
     src: config.yaml
-    dest: "{{ appsrc }}/src/config.yaml"
+    dest: "{{ appsrc }}/config.yaml"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
 
@@ -28,42 +28,42 @@
 
 - name: Updating CouchDB node
   replace:
-    dest: "{{ appsrc }}/src/config.yaml"
+    dest: "{{ appsrc }}/config.yaml"
     regexp: "couchdb_node"
     replace: "{{ couchdb_node }}"
 
 - name: Updating CouchDB port
   replace:
-    dest: "{{ appsrc }}/src/config.yaml"
+    dest: "{{ appsrc }}/config.yaml"
     regexp: "couchdb_port"
     replace: "{{ http_api_port }}"
 
 - name: Updating CouchDB user
   replace:
-    dest: "{{ appsrc }}/src/config.yaml"
+    dest: "{{ appsrc }}/config.yaml"
     regexp: "couchdb_user"
     replace: "{{ www_user }}"
 
 - name: Updating CouchDB pwd
   replace:
-    dest: "{{ appsrc }}/src/config.yaml"
+    dest: "{{ appsrc }}/config.yaml"
     regexp: "couchdb_pwd"
     replace: "{{ www_password }}"
 
 - name: Updating CouchDB database for tweets
   replace:
-    dest: "{{ appsrc }}/src/config.yaml"
+    dest: "{{ appsrc }}/config.yaml"
     regexp: "tweet_db:.*$"
     replace: "tweet_db: '{{ tweet_db }}'"
 
 - name: Updating CouchDB database for users
   replace:
-    dest: "{{ appsrc }}/src/config.yaml"
+    dest: "{{ appsrc }}/config.yaml"
     regexp: "users_db:.*$"
     replace: "users_db: '{{ users_db }}'"
 
 - name: Updating CouchDB database for credentials
   replace:
-    dest: "{{ appsrc }}/src/config.yaml"
+    dest: "{{ appsrc }}/config.yaml"
     regexp: "credential_db:.*$"
     replace: "credential_db: '{{ credential_db }}'"

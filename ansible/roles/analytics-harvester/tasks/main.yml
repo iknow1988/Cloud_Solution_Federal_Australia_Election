@@ -8,17 +8,15 @@
   become: yes
   become_user: '{{ ansible_user }}'
 
-
-
 - name: Updating RabbitMQ user
   replace:
-    dest: "{{ appsrc }}/src/config.yaml"
+    dest: "{{ appsrc }}/config.yaml"
     regexp: "rabbitmq_user"
     replace: "{{ rabbitmq_admin_user }}"
 
 - name: Updating RabbitMQ user password
   replace:
-    dest: "{{ appsrc }}/src/config.yaml"
+    dest: "{{ appsrc }}/config.yaml"
     regexp: "rabbitmq_pwd"
     replace: "{{ rabbitmq_admin_password }}"
 
@@ -30,19 +28,26 @@
 
 - name: Updating RabbitMQ server
   replace:
-    dest: "{{ appsrc }}/src/config.yaml"
+    dest: "{{ appsrc }}/config.yaml"
     regexp: "rabbitmq_node"
     replace: "{{ rabbitmq_node }}"
 
 - name: Updating RabbitMQ port
   replace:
-    dest: "{{ appsrc }}/src/config.yaml"
+    dest: "{{ appsrc }}/config.yaml"
     regexp: "rabbitmq_port"
     replace: "{{ rabbitmq_port }}"
     
-- name: Start harvester
-  shell: "nohup python crawler.py &"
+- name: Start harvester [Streaming API]
+  shell: "nohup python main.py &"
   args:
-    chdir: "{{ appsrc }}/src/"
+    chdir: "{{ appsrc }}/harvester/"
+  become: yes
+  become_user: '{{ ansible_user }}'
+
+- name: Start harvester [Search API]
+  shell: "nohup python main.py api_search &"
+  args:
+    chdir: "{{ appsrc }}/harvester/"
   become: yes
   become_user: '{{ ansible_user }}'

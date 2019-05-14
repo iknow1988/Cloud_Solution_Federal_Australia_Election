@@ -10,7 +10,7 @@ import pika
 
 class Harvester:
 
-	def __init__(self, twitter_credential, boundary, tags, config):
+	def __init__(self, twitter_credential, boundary, tags, configs):
 		self.boundary = boundary
 		self.access_token = twitter_credential['access_token']
 		self.access_token_secret = twitter_credential['access_token_secret']
@@ -20,11 +20,17 @@ class Harvester:
 		self.auth = OAuthHandler(self.consumer_key, self.consumer_secret)
 		self.auth.set_access_token(self.access_token, self.access_token_secret)
 		self.api = API(self.auth, wait_on_rate_limit=True, retry_count=3, retry_delay=5, retry_errors = set([401, 404, 500, 503]))
-		credentials = pika.PlainCredentials(config['queue_user'], config['queue_password'])
-		parameters = pika.ConnectionParameters(config['queue_server'], config['queue_port'], '/', credentials)
-		connection = pika.BlockingConnection(parameters)
-		self.channel = connection.channel()
-		self.channel.queue_declare(queue=config['queue_preprocess'])
+		config = configs['QUEUE']
+		try:
+			credentials = pika.PlainCredentials(config['queue_user'], config['queue_password'])
+			parameters = pika.ConnectionParameters(config['queue_server'], config['queue_port'], '/', credentials)
+			connection = pika.BlockingConnection(parameters)
+			self.channel = connection.channel()
+			self.channel.queue_declare(queue=config['queue_preprocess'])
+		except Exception as e:
+			template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+			print(datetime.datetime.now(), " : ", template.format(type(e).__name__, e.args))
+			exit(0)
 
 	def start_harvesting(self):
 		pass
@@ -62,8 +68,8 @@ class StdOutListener(StreamListener):
 
 class StreamTweetHarvester(Harvester):
 
-	def __init__(self, twitter_credential, boundary, tags, config):
-		Harvester.__init__(self, twitter_credential, boundary, tags, config)
+	def __init__(self, twitter_credential, boundary, tags, configs):
+		Harvester.__init__(self, twitter_credential, boundary, tags, configs)
 
 	def start_harvesting(self):
 		stream = Stream(self.auth, StdOutListener(self))
@@ -82,8 +88,8 @@ class StreamTweetHarvester(Harvester):
 
 class TimeLineHarvester(Harvester):
 
-	def __init__(self, twitter_credential, boundary, tags, twitter_ids, config):
-		Harvester.__init__(self, twitter_credential, boundary, tags, config)
+	def __init__(self, twitter_credential, boundary, tags, twitter_ids, configs):
+		Harvester.__init__(self, twitter_credential, boundary, tags, configs)
 		self.twitter_screen_names = twitter_ids
 
 	def get_all_tweets(self, screen_name):
@@ -116,14 +122,17 @@ class TimeLineHarvester(Harvester):
 
 class KeywordsHarvester(Harvester):
 
-	def __init__(self, twitter_credential, boundary, tags, config):
-		Harvester.__init__(self, twitter_credential, boundary, tags, config)
+	def __init__(self, twitter_credential, boundary, tags, configs):
+		Harvester.__init__(self, twitter_credential, boundary, tags, configs)
+		self.tweets_per_query = configs['APP_DATA']['search_api_tweets_per_query']
+		self.max_tweets = configs['APP_DATA']['search_api_max_tweets']
+		self.geo = configs['APP_DATA']['search_api_geo']
 
 	def get_all_tweets(self, search_query, max_id=None, since_id=None):
 		tweet_count = 0
 		tweets_per_query = 100
-		max_tweets = 50000
-		geo = "-31.53162668535551,135.53294849999997,2514.0km"
+		max_tweets = self.tweets_per_query
+		geo = self.geo
 		while tweet_count < max_tweets:
 			if not max_id:
 				if not since_id:
@@ -158,14 +167,23 @@ class KeywordsHarvester(Harvester):
 				index = index + 1
 			else:
 				n = n + len(words)
-				if n < 8:
+				if n < 4:
 					keywords.append(word)
 				else:
+					keywords.append(word)
 					keyword = ' OR '.join(keywords)
 					print(index, datetime.datetime.now(), " STARTED WITH: ", keywords)
 					self.get_all_tweets(search_query = keyword, max_id= None)
 					n = 0
 					keywords = list()
 					index = index + 1
+		# last call
+		keyword = ' OR '.join(keywords)
+		print(index, datetime.datetime.now(), " STARTED WITH: ", keywords)
+		self.get_all_tweets(search_query=keyword, max_id=None)
+		n = 0
+		keywords = list()
+		index = index + 1
+
 
 

@@ -1,2 +1,15 @@
+- name: Getting App Server information
+  set_fact:
+    appserver_node: "{{ hostvars[item]['ansible_host'] }}"
+  with_items: "{{ groups['appserver'] | default([])}}"
+  run_once: true
+
+- name: Updating App Server config
+  replace:
+    dest: "{{ appsrc }}/config.yaml"
+    regexp: "appserver_node"
+    replace: "{{ appserver_node }}"
+
 - name: Start appserver
-  shell: "nohup python {{ appsrc }}/UI/app.py &"
+  shell: "nohup python {{ appsrc }}/webserver/Api.py &"
+  become: true

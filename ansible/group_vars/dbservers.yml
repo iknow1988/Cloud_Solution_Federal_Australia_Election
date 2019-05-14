@@ -9,7 +9,7 @@ couchdb_node: 'localhost'
 databases:
   - name: twitter
   - name: twitter_credentials
-  - name: twitter_users_test
+  - name: twitter_users
 
 # replicas
 n_replicas: 3

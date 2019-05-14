@@ -15,6 +15,24 @@
     state: latest
     install_recommends: no
 
+# For safety, if an instance is running the service we will fail the playbook
+- name: Getting current couchdb services
+  command: systemctl status couchdb
+  ignore_errors: true
+  changed_when: false
+  register: service_couchdb_status
+
+# for testing purposes
+# - name: Stop couchdb service if exists
+#   systemd:
+#     name: couchdb
+#     state: stopped
+#   when: service_couchdb_status is not failed
+
+- name: Verifying if a service is present in the instance
+  debug:
+    msg: "If couchdb is runing we will fail the playbook for safety"
+  failed_when: service_couchdb_status is not failed
 
 - name: Create a ext4 filesystem for data storage (if empty volume)
   filesystem:
@@ -28,19 +46,6 @@
     src: '{{ data_volume }}'
     fstype: '{{ volume_fstype }}'
     state: mounted
-
-- name: Check if a current couchdb service is running
-  command: systemctl status couchdb
-  ignore_errors: true
-  changed_when: false
-  register: service_couchdb_status
-
-- name: Stop couchdb service if exists
-  systemd:
-    name: couchdb
-    state: stopped
-  when: service_couchdb_status is not failed
-
 
 - name: Download CouchDB
   get_url:
