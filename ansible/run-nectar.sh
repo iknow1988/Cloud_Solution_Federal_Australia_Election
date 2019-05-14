@@ -19,6 +19,7 @@ while [ "$1" != "" ]; do
                                 echo "$openrc"
                                 ;;
         -h | --help )           echo "usage: run-nectar.sh [options] <command> [arg]"
+                                echo "e.g. $./run-nectar.sh -i ./inventory/openstack_prod_inventory.py -k ~/.ssh/gild-nectar.pub -f openrc/pt-34689-openrc.sh"
                                 echo "-f             : location of file openrc"
                                 echo "-r             : Database replication (change vars in playbook)"
                                 echo "-a             : Run ansible for create instances and install software"
