@@ -54,12 +54,8 @@ while [ "$1" != "" ]; do
 done
 
 
-echo "OpenRC file: $openrc"
+echo "Using OpenRC file: $openrc"
 
-
-
-echo "Task ID: $tasks"
-exit
 source $openrc
 export PYTHONWARNINGS=ignore::UserWarning
 
