@@ -2,9 +2,9 @@ import atexit
 import datetime
 import pandas as pd
 import yaml
-from harvester.harvesters import StreamTweetHarvester, KeywordsHarvester
-from harvester.preprocessors import Preprocessor
-from harvester.database_saver import Database
+from harvesters import StreamTweetHarvester, KeywordsHarvester
+from preprocessors import Preprocessor
+from database_saver import Database
 import threading
 import sys
 import time
