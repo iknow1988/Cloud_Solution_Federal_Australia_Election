@@ -4,10 +4,16 @@
   with_items: "{{ groups['appserver'] | default([])}}"
   run_once: true
 
-- name: Updating App Server config
+- name: Updating App Server config [Info]
   replace:
-    dest: "{{ appsrc }}/config.yaml"
-    regexp: "appserver_node"
+    dest: "{{ appsrc }}/webserver/static/js/info.js"
+    regexp: "127.0.0.1"
+    replace: "{{ appserver_node }}"
+
+- name: Updating App Server config [Scripts]
+  replace:
+    dest: "{{ appsrc }}/webserver/static/js/scripts.js"
+    regexp: "127.0.0.1"
     replace: "{{ appserver_node }}"
 
 - name: Start appserver
