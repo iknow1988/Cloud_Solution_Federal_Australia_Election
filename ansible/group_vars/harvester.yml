@@ -2,3 +2,5 @@
 rabbitmq_admin_user: admin
 rabbitmq_admin_password: p01ss0n
 rabbitmq_port: 5672
+rabbitmq_node: localhost
+appserver_node: localhost

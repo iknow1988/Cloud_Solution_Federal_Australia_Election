@@ -16,15 +16,16 @@ while [ "$1" != "" ]; do
     case $1 in
         -f | --file )           shift
                                 openrc=$1
-                                echo "$openrc"
                                 ;;
         -h | --help )           echo "usage: run-nectar.sh [options] <command> [arg]"
-                                echo "e.g. $./run-nectar.sh -i ./inventory/openstack_prod_inventory.py -k ~/.ssh/gild-nectar.pub -f openrc/pt-34689-openrc.sh"
-                                echo "-f             : location of file openrc"
-                                echo "-r             : Database replication (change vars in playbook)"
-                                echo "-a             : Run ansible for create instances and install software"
-                                echo "-m             : Run ansible just to create instances"
-                                echo "-s             : Run ansible just to install software"
+                                echo "e.g. $./run-nectar.sh -i ./inventory/openstack_prod_inventory.py -k ~/.ssh/gild-nectar.pem -f openrc/pt-34689-openrc.sh"
+                                echo "-f  : Path of location of file openrc"
+                                echo "-r  : Database replication (change vars in playbook)"
+                                echo "-a  : Run ansible for create instances and install software"
+                                echo "-m  : Run ansible just to create instances"
+                                echo "-s  : Run ansible just to install software"
+                                echo "-k  : Path to private key file"
+                                echo "-i  : Path to inventory. Usually on folder inventory. E.g. ansible/inventory/openstack_[ENV]_inventory.py"
                                 exit
                                 ;;
         -r | --replicate)       echo "Database replication"
@@ -43,10 +44,10 @@ while [ "$1" != "" ]; do
         -s )                    echo "Setting up cloud  - Software setup"
                                 tasks=2
                                 ;;
-        -i )                    inventory=$1
+        -i )                    inventory=$2
                                 echo "Setting up inventory to: $inventory"
                                 ;;
-        -k )                    key=$1
+        -k )                    key=$2
                                 echo "Setting key file to: $key"
                                 
     esac

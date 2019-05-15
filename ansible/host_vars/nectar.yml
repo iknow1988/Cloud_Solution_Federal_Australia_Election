@@ -13,6 +13,9 @@ instances:
   - instance_name: 3
     instance_group: dbservers
     instance_security_group: ssh,couchdb
+  - instance_name: 4-scaled
+    instance_group: harvester
+    instance_security_group: ssh
 
 # common configurations
 availability_zone: melbourne-qh2-uom
