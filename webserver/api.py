@@ -1,3 +1,14 @@
+#####################################
+# COMP 90024
+# GROUP NUMBER : 2
+# CITY         : Melbourne
+# GROUP MEMBERS:
+#  - Kazi Abir Adnan - 940406>
+#  - Ahmed Fahmin - 926184
+#  - Mohammad Nafis Ul Islam - 926190
+#  - Daniel Gil - 905923
+#  - Kun Chen - 965513
+####################################
 import couchdb
 from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS, cross_origin
@@ -9,10 +20,6 @@ import datetime
 app = Flask(__name__)
 
 cors = CORS(app, resources={r"/foo": {"origins": "http://localhost:port"}})
-
-
-
-
 state = {
  'new south wales': 1,
  'victoria': 2,
