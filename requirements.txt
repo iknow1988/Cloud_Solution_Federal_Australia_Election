@@ -40,5 +40,5 @@ tweepy==3.7.0
 urllib3==1.24.3
 pika==1.0.1
 Flask==1.0.2
-Flask-Cors==3.0.4
+Flask-Cors==3.0.9
 Flask-RESTful==0.3.7
