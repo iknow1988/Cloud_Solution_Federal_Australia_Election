@@ -20,7 +20,7 @@ language-selector==0.1
 MarkupSafe==0.23
 munch==2.3.2
 nltk==3.4.1
-numpy==1.16.3
+numpy==1.22.0
 oauthlib==3.0.1
 pandas==0.24.2
 pyasn1==0.1.9
