@@ -19,7 +19,7 @@ jsonpointer==1.9
 language-selector==0.1
 MarkupSafe==0.23
 munch==2.3.2
-nltk==3.4.1
+nltk==3.4.5
 numpy==1.16.3
 oauthlib==3.0.1
 pandas==0.24.2
